@@ -1,4 +1,4 @@
-import { styled, alpha } from '@mui/material/styles';
+import { styled, alpha, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -7,14 +7,16 @@ import Typography from '@mui/material/Typography';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 import { useLoadScript } from '@react-google-maps/api';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { PlaceAutocomplete } from './PlaceAutocomplete';
+import { DrawerMenu } from './DrawerMenu';
 import { getSpotsAtom, mapAtom } from 'src/atoms/map';
 import { userAtom } from 'src/atoms/auth';
-import { Button } from '@mui/material';
-import { Link } from '@tanstack/react-router';
+import { Button, useMediaQuery, Stack } from '@mui/material';
+import { Link, useNavigate } from '@tanstack/react-router';
 import supabase from 'src/supabase';
+import { Home, AccountCircle, Login, Logout } from '@mui/icons-material';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -45,11 +47,15 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 const libraries: any = ["places"];
 
 export default function SearchAppBar() {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: "AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE",
         libraries,
     });
-    const inputRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null!);
     const map = useAtomValue(mapAtom);
     const getSpots = useAtomValue(getSpotsAtom);
     const user = useAtomValue(userAtom);
@@ -57,11 +63,14 @@ export default function SearchAppBar() {
     const onPlaceSelect = (place: google.maps.places.PlaceResult) => {
         const lat = place.geometry?.location?.lat();
         const lng = place.geometry?.location?.lng();
-        if (lat && lng && map && getSpots) {
-            map.flyTo([lat, lng], 12, {
-                duration: 1
-            });
-            getSpots();
+        if (lat && lng) {
+            if (map && getSpots) {
+                map.flyTo([lat, lng], 12, {
+                    duration: 1
+                });
+                map.once('moveend', () => getSpots(map.getBounds()));
+            }
+            navigate({ to: '/', search: { lat, lng } });
         }
         if (inputRef.current) {
             inputRef.current.value = '';
@@ -74,17 +83,21 @@ export default function SearchAppBar() {
 
     return (
         <Box sx={{ flexGrow: 1 }}>
+            <DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
             <AppBar position="static">
                 <Toolbar>
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="open drawer"
-                        sx={{ mr: 2 }}
-                    >
-                        <MenuIcon />
-                    </IconButton>
+                    {isMobile ? (
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            aria-label="open drawer"
+                            sx={{ mr: 2 }}
+                            onClick={() => setDrawerOpen(true)}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    ) : null}
                     <Typography
                         variant="h6"
                         noWrap
@@ -97,14 +110,27 @@ export default function SearchAppBar() {
                         <SearchIconWrapper>
                             <SearchIcon />
                         </SearchIconWrapper>
-                        <PlaceAutocomplete onPlaceSelect={onPlaceSelect} />
+                        <PlaceAutocomplete onPlaceSelect={onPlaceSelect} inputRef={inputRef} />
                     </Search>
-                    {!user?.user.aud ?
-                        <Button color="inherit" component={Link} to="/login">
-                            Login
-                        </Button> : <Button color="inherit" onClick={() => supabase.auth.signOut()}>
-                            Sign Out
-                        </Button>}
+                    {isMobile ? null : (
+                        <Stack direction="row" spacing={2}>
+                            <Button color="inherit" component={Link} to="/" startIcon={<Home />}>
+                                Spots
+                            </Button>
+                            <Button color="inherit" component={Link} to="/profile" startIcon={<AccountCircle />}>
+                                Profile
+                            </Button>
+                            {!user?.user.aud ? (
+                                <Button color="inherit" component={Link} to="/login" startIcon={<Login />}>
+                                    Login
+                                </Button>
+                            ) : (
+                                <Button color="inherit" onClick={() => supabase.auth.signOut()} startIcon={<Logout />}>
+                                    Sign Out
+                                </Button>
+                            )}
+                        </Stack>
+                    )}
                 </Toolbar>
             </AppBar>
         </Box>

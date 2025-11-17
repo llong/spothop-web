@@ -1,0 +1,2 @@
+Use MUI components to create components - follow latest documentation: https://mui.com/material-ui/all-components/
+Remember the Grid component from MUI does not have an item prop and for sizing it uses a "size" prop object ie: size={{sm:12,md:6}}

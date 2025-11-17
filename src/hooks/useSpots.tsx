@@ -1,23 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import supabase from "src/supabase";
-import { useAtomValue } from "jotai";
-import { boundsAtom } from "src/atoms/map";
+import { useAtom } from "jotai";
+import { spotsAtom } from "src/atoms/spots";
+import { LatLngBounds } from "leaflet";
 
 export default function () {
-    const [spots, setSpots] = useState<any[]>([]);
+    const [spots, setSpots] = useAtom(spotsAtom);
     const [error, setError] = useState<string | null>(null)
-    const bounds = useAtomValue(boundsAtom);
 
-    const getSpots = useCallback(async () => {
-        const currentBounds = bounds;
-        if (!currentBounds) return;
+    const getSpots = useCallback(async (bounds: LatLngBounds) => {
+        if (!bounds) return;
         try {
+            // Clear spots before fetching new ones
+            setSpots([]);
+
             const { data, error } = await supabase
                 .rpc("spots_in_view", {
-                    min_lat: currentBounds.getSouth(),
-                    min_lng: currentBounds.getWest(),
-                    max_lat: currentBounds.getNorth(),
-                    max_lng: currentBounds.getEast(),
+                    min_lat: bounds.getSouth(),
+                    min_lng: bounds.getWest(),
+                    max_lat: bounds.getNorth(),
+                    max_lng: bounds.getEast(),
                 })
 
             if (error) {
@@ -36,13 +38,7 @@ export default function () {
             setError(error.message as string)
             console.error("Exception fetching spots:", error);
         }
-    }, [bounds]);
-
-    useEffect(() => {
-        if (bounds) {
-            getSpots();
-        }
-    }, [bounds, getSpots]);
+    }, [setSpots]);
 
     return {
         spots,

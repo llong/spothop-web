@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Box, Button, Grid, Typography } from "@mui/material";
+import { z } from 'zod';
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import useSpots from 'src/hooks/useSpots';
 import SpotsListCard from './-components/SpotsListCard';
@@ -19,13 +20,18 @@ const currentTheme =
 
 
 function MapEvents({ onMove }: { onMove: () => void }) {
-    useMapEvents({
+    const setBoundsAtom = useSetAtom(boundsAtom);
+    const map = useMapEvents({
         move: onMove,
+        moveend: () => {
+            setBoundsAtom(map.getBounds());
+        },
     });
     return null;
 }
 
 function HomeComponent() {
+    const { lat, lng } = Route.useSearch();
     const [map, setMap] = useState<LeafletMap | null>(null);
     const [moved, setMoved] = useState(false);
     const { spots, getSpots } = useSpots()
@@ -49,17 +55,45 @@ function HomeComponent() {
     }, []);
 
     useEffect(() => {
+        if (map && !lat && !lng) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const { latitude, longitude } = position.coords;
+                map.flyTo([latitude, longitude], 12, {
+                    duration: 1
+                });
+            });
+        }
+    }, [map, getSpots, lat, lng]);
+
+    useEffect(() => {
         if (map) {
-            getSpots();
+            map.once('moveend', () => getSpots(map.getBounds()));
         }
     }, [map, getSpots]);
+
+    useEffect(() => {
+        if (lat && lng && map) {
+            const onMoveEnd = () => {
+                getSpots(map.getBounds());
+                map.off('moveend', onMoveEnd);
+            };
+            map.on('moveend', onMoveEnd);
+            map.flyTo([lat, lng], 12, {
+                duration: 1
+            });
+            setMoved(false);
+        }
+    }, [lat, lng, map, getSpots]);
+
     return (
         <Grid container spacing={0} sx={{ height: 'calc(100vh - 64px)' }}>
             <Grid size={{ xs: 12, md: 8 }} sx={{ height: '100%', p: 0, position: 'relative' }}>
                 {moved && (
                     <Box sx={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
                         <Button variant="contained" onClick={() => {
-                            getSpots();
+                            if (map) {
+                                getSpots(map.getBounds());
+                            }
                             setMoved(false);
                         }}>
                             Search this area
@@ -67,7 +101,7 @@ function HomeComponent() {
                     </Box>
                 )}
                 <MapContainer
-                    center={position}
+                    center={lat && lng ? [lat, lng] : position}
                     zoom={12}
                     scrollWheelZoom={false}
                     style={{ height: '100%', width: '100%' }}
@@ -103,6 +137,12 @@ function HomeComponent() {
     )
 }
 
+const indexSearchSchema = z.object({
+    lat: z.number().optional(),
+    lng: z.number().optional(),
+});
+
 export const Route = createFileRoute('/')({
     component: HomeComponent,
+    validateSearch: (search) => indexSearchSchema.parse(search),
 });

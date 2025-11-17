@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { InputBase } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
@@ -20,9 +20,12 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     },
 }));
 
-export const PlaceAutocomplete = ({ onPlaceSelect }: { onPlaceSelect: (place: google.maps.places.PlaceResult) => void }) => {
-    const inputRef = useRef<HTMLInputElement>(null);
+interface PlaceAutocompleteProps {
+    onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
+    inputRef: React.RefObject<HTMLInputElement>;
+}
 
+export const PlaceAutocomplete = ({ onPlaceSelect, inputRef }: PlaceAutocompleteProps) => {
     useEffect(() => {
         if (inputRef.current) {
             const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
@@ -31,7 +34,7 @@ export const PlaceAutocomplete = ({ onPlaceSelect }: { onPlaceSelect: (place: go
                 onPlaceSelect(place);
             });
         }
-    }, [onPlaceSelect]);
+    }, [onPlaceSelect, inputRef]);
 
     return <StyledInputBase placeholder="Search…" inputProps={{ 'aria-label': 'search', ref: inputRef }} />;
 }
