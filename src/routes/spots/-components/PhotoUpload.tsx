@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Button, Box, CircularProgress, Typography } from '@mui/material';
 import supabase from 'src/supabase';
 import { optimizePhoto, generateImageFilename } from 'src/utils/imageOptimization';
+import { useAtomValue } from 'jotai';
+import { userAtom } from 'src/atoms/auth';
 
 interface PhotoUploadProps {
     onUpload: (urls: { original: string; thumbnailSmall: string; thumbnailLarge: string }) => void;
@@ -11,8 +13,12 @@ interface PhotoUploadProps {
 export const PhotoUpload = ({ onUpload, spotId }: PhotoUploadProps) => {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState<string>('');
+    const user = useAtomValue(userAtom);
 
     const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (!user) {
+            throw new Error('User is not authenticated.');
+        }
         try {
             setUploading(true);
             setUploadProgress('Processing image...');
@@ -37,7 +43,7 @@ export const PhotoUpload = ({ onUpload, spotId }: PhotoUploadProps) => {
             const { original, thumbnailSmall, thumbnailLarge } = await optimizePhoto(file);
 
             // Generate filenames
-            const filename = generateImageFilename();
+            const filename = generateImageFilename(user?.user?.id);
 
             // Define storage paths following mobile app structure:
             // {spotId}/photos/originals/{filename}

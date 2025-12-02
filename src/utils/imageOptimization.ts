@@ -28,36 +28,6 @@ export interface PhotoUploadResult {
         takenAt?: string;
         location?: string;
     };
-/**
- * Image Optimization Utility
- * 
- * This utility handles image optimization for spot photos:
- * - Creates thumbnails (small: 200x200, large: 800x800)
- * - Optimizes full-sized images (max 1920x1920)
- * - Maintains proper folder structure in Supabase storage
- * - Preserves image metadata
- */
-
-export interface ImageDimensions {
-    width: number;
-    height: number;
-}
-
-export interface OptimizedImage {
-    blob: Blob;
-    dimensions: ImageDimensions;
-}
-
-export interface PhotoUploadResult {
-    originalUrl: string;
-    thumbnailSmallUrl: string;
-    thumbnailLargeUrl: string;
-    metadata: {
-        width: number;
-        height: number;
-        takenAt?: string;
-        location?: string;
-    };
 }
 
 /**
@@ -236,7 +206,7 @@ export async function optimizePhoto(file: File): Promise<{
  * Generates a unique filename for the image
  * Format matches mobile app: {userId}_{uuid}
  */
-export function generateImageFilename(userId: string, prefix: string = 'photo'): string {
+export function generateImageFilename(userId: string): string {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 9);
     return `${userId}_${timestamp}_${random}`;
