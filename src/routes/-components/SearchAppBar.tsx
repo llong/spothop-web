@@ -4,26 +4,27 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
+import { Map, List } from '@mui/icons-material';
 import { useLoadScript } from '@react-google-maps/api';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useAtomValue } from 'jotai';
 import { PlaceAutocomplete } from './PlaceAutocomplete';
-import { DrawerMenu } from './DrawerMenu';
 import { getSpotsAtom, mapAtom } from 'src/atoms/map';
 import { userAtom } from 'src/atoms/auth';
 import { Button, useMediaQuery, Stack } from '@mui/material';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useLocation } from '@tanstack/react-router';
 import supabase from 'src/supabase';
 import { Home, AccountCircle, Login, Logout } from '@mui/icons-material';
+import { useAtom } from 'jotai';
+import { viewAtom } from 'src/atoms/map';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    backgroundColor: alpha(theme.palette.common.black, 0.05),
     '&:hover': {
-        backgroundColor: alpha(theme.palette.common.white, 0.25),
+        backgroundColor: alpha(theme.palette.common.black, 0.10),
     },
     marginLeft: 0,
     flexGrow: 1,
@@ -47,10 +48,10 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 const libraries: any = ["places"];
 
 export default function SearchAppBar() {
-    const [drawerOpen, setDrawerOpen] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: "AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE",
         libraries,
@@ -59,6 +60,7 @@ export default function SearchAppBar() {
     const map = useAtomValue(mapAtom);
     const getSpots = useAtomValue(getSpotsAtom);
     const user = useAtomValue(userAtom);
+    const [view, setView] = useAtom(viewAtom);
 
     const onPlaceSelect = (place: google.maps.places.PlaceResult) => {
         const lat = place.geometry?.location?.lat();
@@ -82,57 +84,45 @@ export default function SearchAppBar() {
     }
 
     return (
-        <Box sx={{ flexGrow: 1 }}>
-            <DrawerMenu open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-            <AppBar position="static">
-                <Toolbar>
-                    {isMobile ? (
-                        <IconButton
-                            size="large"
-                            edge="start"
-                            color="inherit"
-                            aria-label="open drawer"
-                            sx={{ mr: 2 }}
-                            onClick={() => setDrawerOpen(true)}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                    ) : null}
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        component="div"
-                        sx={{ flexShrink: 1, display: { xs: 'none', sm: 'block' } }}
-                    >
-                        SpotHop
-                    </Typography>
-                    <Search onClick={() => inputRef.current?.focus()}>
-                        <SearchIconWrapper>
-                            <SearchIcon />
-                        </SearchIconWrapper>
-                        <PlaceAutocomplete onPlaceSelect={onPlaceSelect} inputRef={inputRef} />
-                    </Search>
-                    {isMobile ? null : (
-                        <Stack direction="row" spacing={2}>
-                            <Button color="inherit" component={Link} to="/" startIcon={<Home />}>
-                                Spots
-                            </Button>
-                            <Button color="inherit" component={Link} to="/profile" startIcon={<AccountCircle />}>
-                                Profile
-                            </Button>
-                            {!user?.user.aud ? (
-                                <Button color="inherit" component={Link} to="/login" startIcon={<Login />}>
-                                    Login
-                                </Button>
-                            ) : (
-                                <Button color="inherit" onClick={() => supabase.auth.signOut()} startIcon={<Logout />}>
-                                    Sign Out
-                                </Button>
-                            )}
-                        </Stack>
+        <Toolbar>
+            <Typography
+                variant="h6"
+                noWrap
+                component="div"
+                sx={{ flexShrink: 1, display: { xs: 'none', sm: 'block' } }}
+            >
+                SpotHop
+            </Typography>
+            <Search onClick={() => inputRef.current?.focus()}>
+                <SearchIconWrapper>
+                    <SearchIcon />
+                </SearchIconWrapper>
+                <PlaceAutocomplete onPlaceSelect={onPlaceSelect} inputRef={inputRef} />
+            </Search>
+            {isMobile && location.pathname === '/' && (
+                <IconButton color="inherit" onClick={() => setView(view === 'map' ? 'list' : 'map')}>
+                    {view === 'map' ? <List /> : <Map />}
+                </IconButton>
+            )}
+            {!isMobile && (
+                <Stack direction="row" spacing={2}>
+                    <Button color="inherit" component={Link} to="/" startIcon={<Home />}>
+                        Spots
+                    </Button>
+                    <Button color="inherit" component={Link} to="/profile" startIcon={<AccountCircle />}>
+                        Profile
+                    </Button>
+                    {!user?.user.aud ? (
+                        <Button color="inherit" component={Link} to="/login" startIcon={<Login />}>
+                            Login
+                        </Button>
+                    ) : (
+                        <Button color="inherit" onClick={() => supabase.auth.signOut()} startIcon={<Logout />}>
+                            Sign Out
+                        </Button>
                     )}
-                </Toolbar>
-            </AppBar>
-        </Box>
+                </Stack>
+            )}
+        </Toolbar>
     );
 }

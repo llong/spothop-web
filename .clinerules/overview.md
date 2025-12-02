@@ -1,0 +1,3 @@
+
+
+- use mobile-app.codebase.md for understanding of the mobile version of this app and what we are trying to accomplish

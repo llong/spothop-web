@@ -15,12 +15,12 @@ export default function () {
             setSpots([]);
 
             const { data, error } = await supabase
-                .rpc("spots_in_view", {
-                    min_lat: bounds.getSouth(),
-                    min_lng: bounds.getWest(),
-                    max_lat: bounds.getNorth(),
-                    max_lng: bounds.getEast(),
-                })
+                .from('spots')
+                .select('*')
+                .gte('latitude', bounds.getSouth())
+                .lte('latitude', bounds.getNorth())
+                .gte('longitude', bounds.getWest())
+                .lte('longitude', bounds.getEast());
 
             if (error) {
                 console.error("Error fetching spots:", error);
@@ -33,6 +33,9 @@ export default function () {
                 return;
             }
 
+            if (data && data.length > 0) {
+                console.log('Spot data:', data[0]);
+            }
             setSpots(data || []);
         } catch (error: any) {
             setError(error.message as string)

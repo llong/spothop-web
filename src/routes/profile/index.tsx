@@ -2,6 +2,7 @@ import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import supabase from "../../supabase";
+import type { Spot } from "src/types";
 import {
     Container,
     Box,
@@ -17,6 +18,10 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
 } from "@mui/material";
 import { useProfile } from "../../hooks/useProfile";
 import { useAtom } from "jotai";
@@ -28,6 +33,24 @@ const ProfileComponent: FC = () => {
     const [user] = useAtom(userAtom);
     const { profile, updateProfile } = useProfile();
     const [formData, setFormData] = useState<UserProfile | null>(null);
+    const [favoriteSpots, setFavoriteSpots] = useState<Spot[]>([]);
+
+    useEffect(() => {
+        const getFavoriteSpots = async () => {
+            if (user?.user.id) {
+                const { data } = await supabase
+                    .from('user_favorite_spots')
+                    .select('spots(*)')
+                    .eq('user_id', user.user.id);
+
+                if (data) {
+                    const spots: Spot[] = data.map((item: any) => item.spots).filter(Boolean);
+                    setFavoriteSpots(spots);
+                }
+            }
+        };
+        getFavoriteSpots();
+    }, [user]);
 
     useEffect(() => {
         if (profile) {
@@ -36,7 +59,11 @@ const ProfileComponent: FC = () => {
     }, [profile]);
 
     if (!formData) {
-        return <CircularProgress />;
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
     }
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: unknown } }) => {
@@ -176,6 +203,26 @@ const ProfileComponent: FC = () => {
                                     </Button>
                                 </Box>
                             </Box>
+                        </CardContent>
+                    </Card>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                                Favorite Spots
+                            </Typography>
+                            <List>
+                                {favoriteSpots.map(spot => (
+                                    <ListItem key={spot.id} disablePadding>
+                                        <Link to="/spots/$spotId" params={{ spotId: spot.id.toString() }} style={{ textDecoration: 'none', width: '100%' }}>
+                                            <ListItemButton>
+                                                <ListItemText primary={spot.name} />
+                                            </ListItemButton>
+                                        </Link>
+                                    </ListItem>
+                                ))}
+                            </List>
                         </CardContent>
                     </Card>
                 </Grid>

@@ -1,14 +1,17 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
-import { CssBaseline } from '@mui/material'
+import { AppBar, Box, CssBaseline, useMediaQuery, useTheme } from '@mui/material'
 import { useEffect } from 'react'
 import { useSetAtom } from 'jotai'
 import { userAtom } from 'src/atoms/auth'
 import supabase from 'src/supabase'
 import { useDevtools } from 'src/hooks/useDevTools'
 import SearchAppBar from './-components/SearchAppBar'
+import { BottomNav } from './-components/BottomNav'
 
-function RootComponent() {
+export function RootComponent() {
     useDevtools();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
     const setUser = useSetAtom(userAtom)
 
     useEffect(() => {
@@ -31,8 +34,23 @@ function RootComponent() {
     return (
         <>
             <CssBaseline />
-            <SearchAppBar />
-            <Outlet />
+            <style>
+                {`
+                    .pac-container {
+                        z-index: 1300 !important;
+                    }
+                    .pac-logo:after {
+                        display: none;
+                    }
+                `}
+            </style>
+            <AppBar position="sticky" sx={{ backgroundColor: 'white', color: 'black' }}>
+                <SearchAppBar />
+            </AppBar>
+            <Box sx={{ pb: isMobile ? 9 : 0 }}>
+                <Outlet />
+            </Box>
+            {isMobile && <BottomNav />}
         </>
     )
 }

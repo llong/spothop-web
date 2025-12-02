@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignupIndexRouteImport } from './routes/signup/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as SpotsNewRouteImport } from './routes/spots/new'
+import { Route as SpotsSpotIdRouteImport } from './routes/spots/$spotId'
 import { Route as ProfileUsernameRouteImport } from './routes/profile/$username'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +37,16 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpotsNewRoute = SpotsNewRouteImport.update({
+  id: '/spots/new',
+  path: '/spots/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SpotsSpotIdRoute = SpotsSpotIdRouteImport.update({
+  id: '/spots/$spotId',
+  path: '/spots/$spotId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileUsernameRoute = ProfileUsernameRouteImport.update({
   id: '/profile/$username',
   path: '/profile/$username',
@@ -44,6 +56,8 @@ const ProfileUsernameRoute = ProfileUsernameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/profile/$username': typeof ProfileUsernameRoute
+  '/spots/$spotId': typeof SpotsSpotIdRoute
+  '/spots/new': typeof SpotsNewRoute
   '/login': typeof LoginIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/signup': typeof SignupIndexRoute
@@ -51,6 +65,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/profile/$username': typeof ProfileUsernameRoute
+  '/spots/$spotId': typeof SpotsSpotIdRoute
+  '/spots/new': typeof SpotsNewRoute
   '/login': typeof LoginIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/signup': typeof SignupIndexRoute
@@ -59,19 +75,37 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/profile/$username': typeof ProfileUsernameRoute
+  '/spots/$spotId': typeof SpotsSpotIdRoute
+  '/spots/new': typeof SpotsNewRoute
   '/login/': typeof LoginIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/signup/': typeof SignupIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile/$username' | '/login' | '/profile' | '/signup'
+  fullPaths:
+    | '/'
+    | '/profile/$username'
+    | '/spots/$spotId'
+    | '/spots/new'
+    | '/login'
+    | '/profile'
+    | '/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile/$username' | '/login' | '/profile' | '/signup'
+  to:
+    | '/'
+    | '/profile/$username'
+    | '/spots/$spotId'
+    | '/spots/new'
+    | '/login'
+    | '/profile'
+    | '/signup'
   id:
     | '__root__'
     | '/'
     | '/profile/$username'
+    | '/spots/$spotId'
+    | '/spots/new'
     | '/login/'
     | '/profile/'
     | '/signup/'
@@ -80,6 +114,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProfileUsernameRoute: typeof ProfileUsernameRoute
+  SpotsSpotIdRoute: typeof SpotsSpotIdRoute
+  SpotsNewRoute: typeof SpotsNewRoute
   LoginIndexRoute: typeof LoginIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
   SignupIndexRoute: typeof SignupIndexRoute
@@ -115,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/spots/new': {
+      id: '/spots/new'
+      path: '/spots/new'
+      fullPath: '/spots/new'
+      preLoaderRoute: typeof SpotsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spots/$spotId': {
+      id: '/spots/$spotId'
+      path: '/spots/$spotId'
+      fullPath: '/spots/$spotId'
+      preLoaderRoute: typeof SpotsSpotIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/$username': {
       id: '/profile/$username'
       path: '/profile/$username'
@@ -128,6 +178,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProfileUsernameRoute: ProfileUsernameRoute,
+  SpotsSpotIdRoute: SpotsSpotIdRoute,
+  SpotsNewRoute: SpotsNewRoute,
   LoginIndexRoute: LoginIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
   SignupIndexRoute: SignupIndexRoute,

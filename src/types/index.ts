@@ -10,8 +10,23 @@ export interface UserProfile {
 
 export interface Spot {
     id: number;
-    latitude: number;
-    longitude: number;
     name: string;
     description: string;
+    created_by?: string;
+    difficulty?: 'beginner' | 'intermediate' | 'advanced';
+    is_lit?: boolean;
+    kickout_risk?: number;
+    latitude: number;
+    longitude: number;
+    location?: string;
+    address?: string;
+    city?: string;
+    country?: string;
+    created_at?: string;
+    updated_at?: string;
+    types?: string[];
+    spot_type?: string[];
+    postalCode?: string;
+    videoUrl?: string;
+    photoUrl?: string;
 }

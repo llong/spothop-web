@@ -7,3 +7,6 @@ export const getSpotsAtom = atom<((bounds: LatLngBounds) => void) | null>(null);
 getSpotsAtom.debugLabel = 'getSpots';
 export const boundsAtom = atom<LatLngBounds | null>(null);
 boundsAtom.debugLabel = 'bounds';
+
+export const viewAtom = atom<'map' | 'list'>('map');
+viewAtom.debugLabel = 'view';
