@@ -18,7 +18,23 @@ const loader = async ({ params }: { params: { username: string } }) => {
         throw new Error(error.message);
     }
 
-    return profile as UserProfile;
+    // Fetch follow counts
+    const [followersResult, followingResult] = await Promise.all([
+        supabase
+            .from("user_followers")
+            .select("*", { count: 'exact', head: true })
+            .eq("following_id", profile.id),
+        supabase
+            .from("user_followers")
+            .select("*", { count: 'exact', head: true })
+            .eq("follower_id", profile.id)
+    ]);
+
+    return {
+        ...profile,
+        followerCount: followersResult.count || 0,
+        followingCount: followingResult.count || 0
+    } as UserProfile;
 };
 
 const PublicProfileComponent = () => {
@@ -90,6 +106,17 @@ const PublicProfileComponent = () => {
                             <Avatar src={profile.avatarUrl || ""} sx={{ width: 120, height: 120, mb: 2 }} />
                             <Typography variant="h4">{profile.username}</Typography>
                             <Typography variant="body1" color="text.secondary">{profile.city}, {profile.country}</Typography>
+
+                            <Box sx={{ display: 'flex', gap: 4, my: 2 }}>
+                                <Box>
+                                    <Typography variant="h6">{profile.followerCount || 0}</Typography>
+                                    <Typography variant="caption" color="text.secondary">Followers</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="h6">{profile.followingCount || 0}</Typography>
+                                    <Typography variant="caption" color="text.secondary">Following</Typography>
+                                </Box>
+                            </Box>
 
                             {user?.user && !isOwnProfile && (
                                 <Box sx={{ mt: 2 }}>

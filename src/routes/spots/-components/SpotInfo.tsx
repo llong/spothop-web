@@ -2,8 +2,10 @@ import { Paper, Typography, Stack, Box, Divider, Chip } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Skateboarding } from '@mui/icons-material';
 import type { Spot } from 'src/types';
+import { Link as RouterLink } from '@tanstack/react-router';
 
 interface SpotInfoProps {
     spot: Spot;
@@ -76,6 +78,32 @@ export const SpotInfo = ({ spot }: SpotInfoProps) => {
             </Stack>
 
             <Divider sx={{ my: 3 }} />
+
+            {/* Favorites Info */}
+            {(spot.favoriteCount ?? 0) > 0 && (
+                <Box sx={{ mb: 3 }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <FavoriteIcon sx={{ color: 'error.main', fontSize: 20 }} />
+                        <Typography variant="body2">
+                            Saved by <strong>{spot.favoriteCount}</strong> {spot.favoriteCount === 1 ? 'user' : 'users'}
+                            {spot.favoritedBy && spot.favoritedBy.length > 0 && (
+                                <>: {spot.favoritedBy.map((username, idx) => (
+                                    <span key={username}>
+                                        <RouterLink
+                                            to="/profile/$username"
+                                            params={{ username }}
+                                            style={{ fontWeight: 600, color: 'inherit', textDecoration: 'none' }}
+                                        >
+                                            {username}
+                                        </RouterLink>
+                                        {idx < spot.favoritedBy!.length - 1 ? ', ' : ''}
+                                    </span>
+                                ))}</>
+                            )}
+                        </Typography>
+                    </Stack>
+                </Box>
+            )}
 
             {/* Spot Features/Metadata */}
             <Box sx={{ mb: 3 }}>

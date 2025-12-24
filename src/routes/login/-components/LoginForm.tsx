@@ -111,7 +111,10 @@ export function LoginForm() {
                             Sign In
                         </Button>
 
-                        <Box sx={{ textAlign: 'center', mt: 2 }}>
+                        <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <MuiLink component={Link} to="/forgot-password" variant="body2" underline="hover">
+                                Forgot password?
+                            </MuiLink>
                             <MuiLink component={Link} to="/signup" variant="body2" underline="hover">
                                 {"Don't have an account? Sign Up"}
                             </MuiLink>

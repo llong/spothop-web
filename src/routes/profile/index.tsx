@@ -82,6 +82,16 @@ const ProfileComponent: FC = () => {
                                 onUpload={(url) => updateProfile({ ...formData, avatarUrl: url })}
                             />
                             <Typography variant="h6">{formData.username || "Your Username"}</Typography>
+                            <Box sx={{ display: 'flex', gap: 2, my: 1, justifyContent: 'center' }}>
+                                <Box>
+                                    <Typography variant="h6">{profile?.followerCount || 0}</Typography>
+                                    <Typography variant="caption" color="text.secondary">Followers</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="h6">{profile?.followingCount || 0}</Typography>
+                                    <Typography variant="caption" color="text.secondary">Following</Typography>
+                                </Box>
+                            </Box>
                             <Link to="/profile/$username" params={{ username: formData.username! }}>
                                 <Button>View Public Profile</Button>
                             </Link>

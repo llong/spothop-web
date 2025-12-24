@@ -7,6 +7,8 @@ export interface UserProfile {
     riderType: string | null;
     bio: string | null;
     instagramHandle: string | null;
+    followerCount?: number;
+    followingCount?: number;
 }
 
 export interface Spot {
@@ -30,6 +32,8 @@ export interface Spot {
     postalCode?: string;
     videoUrl?: string;
     photoUrl?: string;
+    favoriteCount?: number;
+    favoritedBy?: string[];
 }
 
 export interface VideoAsset {

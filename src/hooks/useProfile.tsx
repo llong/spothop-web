@@ -20,17 +20,32 @@ export const useProfile = () => {
         try {
             if (!user) throw new Error("No user on the session!");
 
-            const { data, error, status } = await supabase
-                .from("profiles")
-                .select(`username, "avatarUrl", city, country, "riderType", bio, "instagramHandle"`)
-                .eq("id", user.user.id)
-                .single();
-            if (error && status !== 406) {
-                throw error;
+            const [profileResult, followersResult, followingResult] = await Promise.all([
+                supabase
+                    .from("profiles")
+                    .select(`username, "avatarUrl", city, country, "riderType", bio, "instagramHandle"`)
+                    .eq("id", user.user.id)
+                    .single(),
+                supabase
+                    .from("user_followers")
+                    .select("*", { count: 'exact', head: true })
+                    .eq("following_id", user.user.id),
+                supabase
+                    .from("user_followers")
+                    .select("*", { count: 'exact', head: true })
+                    .eq("follower_id", user.user.id)
+            ]);
+
+            if (profileResult.error && profileResult.status !== 406) {
+                throw profileResult.error;
             }
 
-            if (data) {
-                setProfile(data as UserProfile);
+            if (profileResult.data) {
+                setProfile({
+                    ...profileResult.data,
+                    followerCount: followersResult.count || 0,
+                    followingCount: followingResult.count || 0
+                } as UserProfile);
             }
         } catch (error) {
             if (error instanceof Error) {

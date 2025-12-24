@@ -22,8 +22,8 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
         .eq('id', params.spotId)
         .single();
 
-    // 3. Fetch Favorite Status (if user exists)
-    const favoritePromise = userId
+    // 3. Fetch Favorite Status and Total Count
+    const favoriteStatusPromise = userId
         ? supabase
             .from('user_favorite_spots')
             .select('*')
@@ -31,7 +31,16 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
             .eq('spot_id', params.spotId)
         : Promise.resolve({ data: null, error: null });
 
-    const [spotResult, favoriteResult] = await Promise.all([spotPromise, favoritePromise]);
+    const favoriteCountPromise = supabase
+        .from('user_favorite_spots')
+        .select('profiles(username)', { count: 'exact' })
+        .eq('spot_id', params.spotId);
+
+    const [spotResult, favoriteStatusResult, favoriteCountResult] = await Promise.all([
+        spotPromise,
+        favoriteStatusPromise,
+        favoriteCountPromise
+    ]);
 
     if (spotResult.error) {
         throw new Error(spotResult.error.message);
@@ -52,13 +61,20 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
         ...spotResult.data,
         photoUrl: spotResult.data.spot_photos?.[0]?.url || null,
         photos: spotResult.data.spot_photos?.map((p: any) => p.url) || [],
-        username: username
+        username: username,
+        favoriteCount: favoriteCountResult.count || 0,
+        favoritedBy: favoriteCountResult.data?.map((f: any) => f.profiles?.username).filter(Boolean) || []
     };
 
-    const isFavorited = !!(userId && favoriteResult.data && favoriteResult.data.length > 0);
+    const isFavorited = !!(userId && favoriteStatusResult.data && favoriteStatusResult.data.length > 0);
 
     return {
-        spot: spot as Spot & { photos: string[], username?: string },
+        spot: spot as Spot & {
+            photos: string[],
+            username?: string,
+            favoriteCount: number,
+            favoritedBy: string[]
+        },
         isFavoritedInitial: isFavorited
     };
 };

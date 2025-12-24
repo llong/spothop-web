@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UpdatePasswordIndexRouteImport } from './routes/update-password/index'
 import { Route as SignupIndexRouteImport } from './routes/signup/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as ForgotPasswordIndexRouteImport } from './routes/forgot-password/index'
 import { Route as SpotsNewRouteImport } from './routes/spots/new'
 import { Route as SpotsSpotIdRouteImport } from './routes/spots/$spotId'
 import { Route as ProfileUsernameRouteImport } from './routes/profile/$username'
@@ -20,6 +22,11 @@ import { Route as ProfileUsernameRouteImport } from './routes/profile/$username'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UpdatePasswordIndexRoute = UpdatePasswordIndexRouteImport.update({
+  id: '/update-password/',
+  path: '/update-password/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupIndexRoute = SignupIndexRouteImport.update({
@@ -35,6 +42,11 @@ const ProfileIndexRoute = ProfileIndexRouteImport.update({
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
   path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordIndexRoute = ForgotPasswordIndexRouteImport.update({
+  id: '/forgot-password/',
+  path: '/forgot-password/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SpotsNewRoute = SpotsNewRouteImport.update({
@@ -58,18 +70,22 @@ export interface FileRoutesByFullPath {
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/signup': typeof SignupIndexRoute
+  '/update-password': typeof UpdatePasswordIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/signup': typeof SignupIndexRoute
+  '/update-password': typeof UpdatePasswordIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +93,11 @@ export interface FileRoutesById {
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/forgot-password/': typeof ForgotPasswordIndexRoute
   '/login/': typeof LoginIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/signup/': typeof SignupIndexRoute
+  '/update-password/': typeof UpdatePasswordIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +106,33 @@ export interface FileRouteTypes {
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/forgot-password'
     | '/login'
     | '/profile'
     | '/signup'
+    | '/update-password'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/forgot-password'
     | '/login'
     | '/profile'
     | '/signup'
+    | '/update-password'
   id:
     | '__root__'
     | '/'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/forgot-password/'
     | '/login/'
     | '/profile/'
     | '/signup/'
+    | '/update-password/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,9 +140,11 @@ export interface RootRouteChildren {
   ProfileUsernameRoute: typeof ProfileUsernameRoute
   SpotsSpotIdRoute: typeof SpotsSpotIdRoute
   SpotsNewRoute: typeof SpotsNewRoute
+  ForgotPasswordIndexRoute: typeof ForgotPasswordIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
   SignupIndexRoute: typeof SignupIndexRoute
+  UpdatePasswordIndexRoute: typeof UpdatePasswordIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -128,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/update-password/': {
+      id: '/update-password/'
+      path: '/update-password'
+      fullPath: '/update-password'
+      preLoaderRoute: typeof UpdatePasswordIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup/': {
@@ -149,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password/': {
+      id: '/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/spots/new': {
@@ -180,9 +220,11 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileUsernameRoute: ProfileUsernameRoute,
   SpotsSpotIdRoute: SpotsSpotIdRoute,
   SpotsNewRoute: SpotsNewRoute,
+  ForgotPasswordIndexRoute: ForgotPasswordIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
   SignupIndexRoute: SignupIndexRoute,
+  UpdatePasswordIndexRoute: UpdatePasswordIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
