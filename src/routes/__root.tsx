@@ -14,6 +14,7 @@ export function RootComponent() {
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
     const setUser = useSetAtom(userAtom)
 
+
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session) {

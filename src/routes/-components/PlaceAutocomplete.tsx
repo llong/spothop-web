@@ -11,21 +11,17 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
         transition: theme.transitions.create('width'),
         width: '100%',
         flexGrow: 1,
-        [theme.breakpoints.up('sm')]: {
-            width: '12ch',
-            '&:focus': {
-                width: '20ch',
-            },
-        },
     },
+    width: '100%',
 }));
 
 interface PlaceAutocompleteProps {
     onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
     inputRef: React.RefObject<HTMLInputElement>;
+    endAdornment?: React.ReactNode;
 }
 
-export const PlaceAutocomplete = ({ onPlaceSelect, inputRef }: PlaceAutocompleteProps) => {
+export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment }: PlaceAutocompleteProps) => {
     useEffect(() => {
         if (inputRef.current) {
             const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
@@ -36,5 +32,5 @@ export const PlaceAutocomplete = ({ onPlaceSelect, inputRef }: PlaceAutocomplete
         }
     }, [onPlaceSelect, inputRef]);
 
-    return <StyledInputBase placeholder="Search…" inputProps={{ 'aria-label': 'search', ref: inputRef }} />;
+    return <StyledInputBase placeholder="Search…" fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'search', ref: inputRef }} />;
 }

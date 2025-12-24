@@ -2,7 +2,7 @@ import { atom } from 'jotai'
 import type { Session, User, WeakPassword } from '@supabase/supabase-js'
 import type { UserProfile } from '../types'
 
-type Auth = {
+export type Auth = {
     user: User;
     session: Session;
     weakPassword?: WeakPassword;

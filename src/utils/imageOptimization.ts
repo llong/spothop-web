@@ -121,7 +121,7 @@ export async function createThumbnail(
 
             // Calculate new dimensions maintaining aspect ratio
             const aspectRatio = width / height;
-            const newWidth = targetWidth;
+            const newWidth = Math.min(targetWidth, width);
             const newHeight = Math.round(newWidth / aspectRatio);
 
             // Set canvas dimensions

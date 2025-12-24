@@ -1,13 +1,17 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Box, Button, Grid, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { Box, Button, Grid, Typography, useTheme, useMediaQuery, Fab } from "@mui/material";
 import { z } from 'zod';
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import useSpots from 'src/hooks/useSpots';
 import SpotsListCard from './-components/SpotsListCard';
 import { Map as LeafletMap } from 'leaflet';
 import { useCallback, useEffect, useState } from 'react';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { boundsAtom, getSpotsAtom, mapAtom, viewAtom } from 'src/atoms/map';
+import { filtersAtom } from 'src/atoms/spots';
+import { MyLocation } from '@mui/icons-material';
+import { isLoggedInAtom } from 'src/atoms/auth';
+import { FilterBar } from './-components/FilterBar';
 
 const position = [3.1319, 101.6841] as [number, number]
 
@@ -46,6 +50,8 @@ function HomeComponent() {
     const setMapAtom = useSetAtom(mapAtom);
     const setGetSpotsAtom = useSetAtom(getSpotsAtom);
     const setBoundsAtom = useSetAtom(boundsAtom);
+    const isLoggedIn = useAtomValue(isLoggedInAtom)
+    const [filters, setFilters] = useAtom(filtersAtom);
 
     useEffect(() => {
         setMapAtom(map);
@@ -58,17 +64,25 @@ function HomeComponent() {
         setGetSpotsAtom(() => getSpots);
     }, [getSpots, setGetSpotsAtom]);
 
+    useEffect(() => {
+        if (!isLoggedIn) {
+            setNewSpot(null);
+        }
+    }, [isLoggedIn]);
+
     const onMove = useCallback(() => {
         setMoved(true);
     }, []);
 
     const onRightClick = useCallback(async (latlng: L.LatLng) => {
+        console.log(isLoggedIn)
+        if (!isLoggedIn) return;
         const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latlng.lat},${latlng.lng}&key=AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE`);
         const data = await response.json();
         if (data.results && data.results.length > 0) {
             setNewSpot({ latlng, address: data.results[0].formatted_address });
         }
-    }, []);
+    }, [isLoggedIn]);
 
     useEffect(() => {
         if (map && !lat && !lng) {
@@ -79,15 +93,17 @@ function HomeComponent() {
                 });
             });
         }
-    }, [map, getSpots, lat, lng]);
+    }, [map, lat, lng]); // Removed getSpots to avoid double fetch? No, getSpots not needed here directly.
 
+    // Effect to fetch spots when map is ready or getSpots changes (e.g. filters change)
     useEffect(() => {
-        if (map && !lat && !lng) {
-            map.whenReady(() => {
-                getSpots(map.getBounds());
-            });
+        if (map) {
+            // If lat/lng search params are present, we might want to wait for the moveEnd event from flyTo
+            // But re-fetching on filter change is needed.
+            // getSpots depends on filters, so this runs when filters change.
+            getSpots(map.getBounds());
         }
-    }, [map, getSpots, lat, lng]);
+    }, [map, getSpots]);
 
     useEffect(() => {
         if (lat && lng && map) {
@@ -106,13 +122,32 @@ function HomeComponent() {
     const mapVisible = !isMobile || view === 'map';
     const listVisible = !isMobile || view === 'list';
 
+    const centerMap = () => {
+        if (!navigator.geolocation) {
+            alert('Geolocation is not supported by this browser.');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                if (map) {
+                    map.flyTo([latitude, longitude], 12, { duration: 1 });
+                }
+            },
+            (error) => {
+                alert('Unable to retrieve your location.');
+                console.error(error);
+            }
+        );
+    };
+
     return (
         <Grid container spacing={0} sx={{ height: 'calc(100vh - 64px)' }}>
             {mapVisible && (
                 <Grid size={{ xs: 12, lg: 8 }} sx={{ height: '100%', p: 0, position: 'relative' }}>
                     {moved && (
                         <Box sx={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
-                            <Button variant="contained" onClick={() => {
+                            <Button variant="contained" color='secondary' onClick={() => {
                                 if (map) {
                                     getSpots(map.getBounds());
                                 }
@@ -122,6 +157,9 @@ function HomeComponent() {
                             </Button>
                         </Box>
                     )}
+
+                    <FilterBar filters={filters} onFiltersChange={setFilters} />
+
                     <MapContainer
                         center={lat && lng ? [lat, lng] : position}
                         zoom={12}
@@ -168,6 +206,14 @@ function HomeComponent() {
                                 </Box>
                             </Popup>
                         )}
+                        <Fab
+                            color="primary"
+                            aria-label="center map"
+                            onClick={centerMap}
+                            sx={{ position: 'absolute', bottom: { xs: 16 + 56, lg: 16 }, right: 16 }}
+                        >
+                            <MyLocation />
+                        </Fab>
                     </MapContainer>
                 </Grid>
             )}

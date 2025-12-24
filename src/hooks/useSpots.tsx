@@ -1,26 +1,41 @@
 import { useCallback, useState } from "react";
 import supabase from "src/supabase";
-import { useAtom } from "jotai";
-import { spotsAtom } from "src/atoms/spots";
+import { useAtom, useAtomValue } from "jotai";
+import { spotsAtom, filtersAtom } from "src/atoms/spots";
 import { LatLngBounds } from "leaflet";
 
 export default function () {
     const [spots, setSpots] = useAtom(spotsAtom);
+    const filters = useAtomValue(filtersAtom);
     const [error, setError] = useState<string | null>(null)
 
     const getSpots = useCallback(async (bounds: LatLngBounds) => {
         if (!bounds) return;
         try {
-            // Clear spots before fetching new ones
-            setSpots([]);
-
-            const { data, error } = await supabase
+            let query = supabase
                 .from('spots')
-                .select('*')
+                .select('*, spot_photos(url)')
                 .gte('latitude', bounds.getSouth())
                 .lte('latitude', bounds.getNorth())
                 .gte('longitude', bounds.getWest())
                 .lte('longitude', bounds.getEast());
+
+            if (filters) {
+                if (filters.difficulty && filters.difficulty !== 'all') {
+                    query = query.eq('difficulty', filters.difficulty);
+                }
+                if (filters.is_lit !== undefined) {
+                    query = query.eq('is_lit', filters.is_lit);
+                }
+                if (filters.kickout_risk !== undefined) {
+                    query = query.lte('kickout_risk', filters.kickout_risk);
+                }
+                if (filters.spot_type && filters.spot_type.length > 0) {
+                    query = query.overlaps('spot_type', filters.spot_type);
+                }
+            }
+
+            const { data, error } = await query;
 
             if (error) {
                 console.error("Error fetching spots:", error);
@@ -33,15 +48,21 @@ export default function () {
                 return;
             }
 
-            if (data && data.length > 0) {
-                console.log('Spot data:', data[0]);
+            if (data) {
+                const formattedSpots = data.map((spot: any) => ({
+                    ...spot,
+                    photoUrl: spot.spot_photos?.[0]?.url || null
+                }));
+
+                setSpots(formattedSpots);
+            } else {
+                setSpots([]);
             }
-            setSpots(data || []);
         } catch (error: any) {
             setError(error.message as string)
             console.error("Exception fetching spots:", error);
         }
-    }, [setSpots]);
+    }, [setSpots, filters]);
 
     return {
         spots,

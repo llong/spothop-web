@@ -2,7 +2,6 @@ import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import supabase from "../../supabase";
-import type { Spot } from "src/types";
 import {
     Container,
     Box,
@@ -22,6 +21,8 @@ import {
     ListItem,
     ListItemButton,
     ListItemText,
+    ListItemAvatar,
+    Avatar
 } from "@mui/material";
 import { useProfile } from "../../hooks/useProfile";
 import { useAtom } from "jotai";
@@ -31,26 +32,8 @@ import type { UserProfile } from "../../types";
 
 const ProfileComponent: FC = () => {
     const [user] = useAtom(userAtom);
-    const { profile, updateProfile } = useProfile();
+    const { profile, favoriteSpots, updateProfile } = useProfile();
     const [formData, setFormData] = useState<UserProfile | null>(null);
-    const [favoriteSpots, setFavoriteSpots] = useState<Spot[]>([]);
-
-    useEffect(() => {
-        const getFavoriteSpots = async () => {
-            if (user?.user.id) {
-                const { data } = await supabase
-                    .from('user_favorite_spots')
-                    .select('spots(*)')
-                    .eq('user_id', user.user.id);
-
-                if (data) {
-                    const spots: Spot[] = data.map((item: any) => item.spots).filter(Boolean);
-                    setFavoriteSpots(spots);
-                }
-            }
-        };
-        getFavoriteSpots();
-    }, [user]);
 
     useEffect(() => {
         if (profile) {
@@ -217,7 +200,18 @@ const ProfileComponent: FC = () => {
                                     <ListItem key={spot.id} disablePadding>
                                         <Link to="/spots/$spotId" params={{ spotId: spot.id.toString() }} style={{ textDecoration: 'none', width: '100%' }}>
                                             <ListItemButton>
-                                                <ListItemText primary={spot.name} />
+                                                <ListItemAvatar>
+                                                    <Avatar
+                                                        variant="rounded"
+                                                        src={spot.photoUrl || undefined}
+                                                        alt={spot.name}
+                                                        sx={{ width: 128, height: 96, mr: 2 }}
+                                                    />
+                                                </ListItemAvatar>
+                                                <ListItemText
+                                                    primary={spot.name}
+                                                    secondary={spot.address || 'No address'}
+                                                />
                                             </ListItemButton>
                                         </Link>
                                     </ListItem>

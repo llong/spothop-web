@@ -1,8 +1,9 @@
-import { Box, Card, CardActionArea, Chip, Stack, Typography } from "@mui/material"
+import { Box, Card, CardActionArea, CardContent, CardMedia, Chip, Stack, Typography } from "@mui/material"
 import { Link } from "@tanstack/react-router";
 import type { Spot } from "src/types";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 
 const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
     // Format difficulty with color coding
@@ -29,90 +30,106 @@ const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
     const getLocationString = () => {
         if (spot.address) return spot.address;
         const parts = [spot.city, spot.country].filter(Boolean);
-        return parts.length > 0 ? parts.join(', ') : null;
+        return parts.length > 0 ? parts.join(', ') : 'Unknown Location';
     };
 
     const locationString = getLocationString();
 
-    // Check if we have any metadata to show
-    const hasMetadata = spot.difficulty || kickoutRisk || (spot.spot_type && spot.spot_type.length > 0);
-
     return (
-        <Link to="/spots/$spotId" params={{ spotId: spot.id.toString() }} style={{ textDecoration: 'none', height: '100%' }}>
+        <Link to="/spots/$spotId" params={{ spotId: spot.id.toString() }} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <Card
+                elevation={1}
                 sx={{
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    transition: 'all 0.3s ease-in-out',
                     '&:hover': {
                         transform: 'translateY(-4px)',
-                        boxShadow: 4
+                        boxShadow: 6,
                     }
                 }}
             >
                 <CardActionArea sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}>
-                    {/* Image Section */}
-                    <Box
-                        sx={{
-                            width: '100%',
-                            height: 200,
-                            bgcolor: 'grey.300',
-                            backgroundImage: spot.photoUrl ? `url(${spot.photoUrl})` : 'none',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            position: 'relative',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                        }}
-                    >
-                        {!spot.photoUrl && (
-                            <Typography variant="body2" color="text.secondary">
-                                No Photo
-                            </Typography>
-                        )}
-                        {/* Top-right badges */}
-                        {spot.is_lit && (
-                            <Stack
-                                direction="row"
-                                spacing={0.5}
+                    <Box sx={{ position: 'relative', width: '100%', paddingTop: '56.25%' /* 16:9 Aspect Ratio */ }}>
+                        {spot.photoUrl ? (
+                            <CardMedia
+                                component="img"
+                                image={spot.photoUrl}
+                                alt={spot.name}
                                 sx={{
                                     position: 'absolute',
-                                    top: 8,
-                                    right: 8
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover'
+                                }}
+                            />
+                        ) : (
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    bgcolor: 'grey.200',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
                                 }}
                             >
+                                <Typography variant="caption" color="text.secondary">No Image</Typography>
+                            </Box>
+                        )}
+
+                        {/* Overlays */}
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                                position: 'absolute',
+                                top: 12,
+                                right: 12,
+                                zIndex: 1
+                            }}
+                        >
+                            {spot.is_lit && (
                                 <Chip
-                                    icon={<LightModeIcon />}
+                                    icon={<LightModeIcon style={{ fontSize: 16 }} />}
                                     label="Lit"
                                     size="small"
-                                    sx={{ bgcolor: 'rgba(255, 255, 255, 0.9)', fontWeight: 600 }}
+                                    sx={{
+                                        bgcolor: 'rgba(255, 255, 255, 0.9)',
+                                        fontWeight: 700,
+                                        fontSize: '0.7rem',
+                                        backdropFilter: 'blur(4px)'
+                                    }}
                                 />
-                            </Stack>
-                        )}
+                            )}
+                        </Stack>
                     </Box>
 
-                    {/* Content Section */}
-                    <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                        {/* Address */}
-                        {locationString && (
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ mb: 0.5 }}
-                            >
-                                {locationString}
-                            </Typography>
-                        )}
+                    <CardContent sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.5, fontWeight: 500 }}
+                        >
+                            <LocationOnIcon sx={{ fontSize: 14 }} />
+                            {locationString}
+                        </Typography>
 
-                        {/* Spot Name */}
                         <Typography
                             variant="h6"
-                            component="div"
+                            component="h3"
                             sx={{
-                                fontWeight: 600,
-                                mb: hasMetadata ? 1 : 0.5,
+                                fontWeight: 700,
+                                lineHeight: 1.2,
+                                mb: 1,
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 display: '-webkit-box',
@@ -123,41 +140,35 @@ const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
                             {spot.name}
                         </Typography>
 
-                        {/* Spot Details - Only show if we have data */}
-                        {(spot.difficulty || kickoutRisk) && (
-                            <Stack direction="row" spacing={1} flexWrap="wrap" gap={0.5} sx={{ mb: 1 }}>
-                                {spot.difficulty && (
-                                    <Chip
-                                        label={spot.difficulty.charAt(0).toUpperCase() + spot.difficulty.slice(1)}
-                                        size="small"
-                                        color={getDifficultyColor(spot.difficulty)}
-                                        sx={{ fontWeight: 500 }}
-                                    />
-                                )}
-                                {kickoutRisk && (
-                                    <Chip
-                                        icon={<WarningAmberIcon />}
-                                        label={kickoutRisk.label}
-                                        size="small"
-                                        color={kickoutRisk.color}
-                                        variant="outlined"
-                                    />
-                                )}
-                            </Stack>
-                        )}
+                        {/* Metadata Chips */}
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mb: 2 }}>
+                            {spot.difficulty && (
+                                <Chip
+                                    label={spot.difficulty.charAt(0).toUpperCase() + spot.difficulty.slice(1)}
+                                    size="small"
+                                    color={getDifficultyColor(spot.difficulty)}
+                                    variant="outlined"
+                                    sx={{ fontWeight: 600, height: 24, fontSize: '0.75rem' }}
+                                />
+                            )}
+                            {kickoutRisk && (
+                                <Chip
+                                    icon={<WarningAmberIcon style={{ fontSize: 14 }} />}
+                                    label={kickoutRisk.label}
+                                    size="small"
+                                    color={kickoutRisk.color}
+                                    variant="outlined"
+                                    sx={{ fontWeight: 600, height: 24, fontSize: '0.75rem' }}
+                                />
+                            )}
+                        </Stack>
 
-                        {/* Spot Types - Only show if we have data */}
                         {spot.spot_type && spot.spot_type.length > 0 && (
-                            <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                sx={{ mb: 1 }}
-                            >
-                                {spot.spot_type.join(' • ')}
+                            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem', mb: 1 }}>
+                                {spot.spot_type.map(t => t.replace('_', ' ')).join(' • ')}
                             </Typography>
                         )}
 
-                        {/* Description - Only show if we have data */}
                         {spot.description && (
                             <Typography
                                 variant="body2"
@@ -166,7 +177,7 @@ const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     display: '-webkit-box',
-                                    WebkitLineClamp: 2,
+                                    WebkitLineClamp: 3,
                                     WebkitBoxOrient: 'vertical',
                                     mt: 'auto'
                                 }}
@@ -174,7 +185,7 @@ const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
                                 {spot.description}
                             </Typography>
                         )}
-                    </Box>
+                    </CardContent>
                 </CardActionArea>
             </Card>
         </Link>
