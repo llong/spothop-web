@@ -24,9 +24,9 @@ This sprint focuses on completing the social and community interaction features 
 - [x] **Spot Flagging**
     - [x] Create `spot_flags` table in Supabase.
     - [x] Implement flagging UI with reason input field on spot details page.
-- [ ] **Media Liking**
-    - [ ] Create `media_likes` table in Supabase (for photos and videos).
-    - [ ] Add like toggle and count display to `SpotGallery` items.
+- [x] **Media Liking**
+    - [x] Create `media_likes` table in Supabase (for photos and videos).
+    - [x] Add like toggle and count display to `SpotGallery` items.
 - [ ] **Existing Spot Media Upload**
     - [ ] Add "Add Photo/Video" button to `SpotSidebar` for existing spots.
     - [ ] Integrate with `PhotoUpload` and `VideoUpload` components.

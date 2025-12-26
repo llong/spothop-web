@@ -4,7 +4,7 @@ import { Container, Box, Typography, Snackbar, Divider } from '@mui/material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { useState } from 'react';
-import type { Spot } from 'src/types';
+import type { Spot, MediaItem } from 'src/types';
 import { SpotGallery } from './-components/SpotGallery';
 import { SpotHeader } from './-components/SpotHeader';
 import { SpotInfo } from './-components/SpotInfo';
@@ -15,10 +15,27 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
     const { data: sessionData } = await supabase.auth.getSession();
     const userId = sessionData.session?.user.id;
 
-    // 2. Fetch Spot
+    // 2. Fetch Spot with Media and Likes
     const spotPromise = supabase
         .from('spots')
-        .select('*, spot_photos(url)')
+        .select(`
+            *,
+            spot_photos (
+                id,
+                url,
+                media_likes!photo_id (
+                    user_id
+                )
+            ),
+            spot_videos (
+                id,
+                url,
+                thumbnail_url,
+                media_likes!video_id (
+                    user_id
+                )
+            )
+        `)
         .eq('id', params.spotId)
         .single();
 
@@ -63,10 +80,27 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
         username = profile?.username;
     }
 
+    const photos: MediaItem[] = spotResult.data.spot_photos?.map((p: any) => ({
+        id: p.id,
+        url: p.url,
+        type: 'photo',
+        likeCount: p.media_likes?.length || 0,
+        isLiked: userId ? p.media_likes?.some((l: any) => l.user_id === userId) : false
+    })) || [];
+
+    const videos: MediaItem[] = spotResult.data.spot_videos?.map((v: any) => ({
+        id: v.id,
+        url: v.url,
+        thumbnailUrl: v.thumbnail_url,
+        type: 'video',
+        likeCount: v.media_likes?.length || 0,
+        isLiked: userId ? v.media_likes?.some((l: any) => l.user_id === userId) : false
+    })) || [];
+
     const spot = {
         ...spotResult.data,
-        photoUrl: spotResult.data.spot_photos?.[0]?.url || null,
-        photos: spotResult.data.spot_photos?.map((p: any) => p.url) || [],
+        photoUrl: photos[0]?.url || null,
+        media: [...photos, ...videos],
         username: username,
         favoriteCount: favoriteCountResult.count || 0,
         favoritedBy: favoriteCountResult.data?.map((f: any) => f.profiles?.username).filter(Boolean) || [],
@@ -77,7 +111,7 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
 
     return {
         spot: spot as Spot & {
-            photos: string[],
+            media: MediaItem[],
             username?: string,
             favoriteCount: number,
             favoritedBy: string[],
@@ -148,7 +182,7 @@ const SpotDetailsComponent = () => {
             />
 
             <Container maxWidth="lg" sx={{ mt: 3 }}>
-                <SpotGallery photos={spot.photos} videoUrl={spot.videoUrl} />
+                <SpotGallery media={spot.media} />
                 <SpotInfo spot={spot} />
 
                 <Divider sx={{ my: 3 }} />

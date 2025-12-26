@@ -2,17 +2,20 @@ import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { userAtom, profileAtom } from "../atoms/auth";
 import supabase from "../supabase";
-import type { UserProfile, Spot } from "../types";
+import type { UserProfile, Spot, LikedMediaItem } from "../types";
 
 export const useProfile = () => {
     const [user] = useAtom(userAtom);
     const [profile, setProfile] = useAtom(profileAtom);
     const [favoriteSpots, setFavoriteSpots] = useState<Spot[]>([]);
+    const [likedMedia, setLikedMedia] = useState<LikedMediaItem[]>([]);
+    const [loadingMedia, setLoadingMedia] = useState(false);
 
     useEffect(() => {
         if (user) {
             getProfile();
             getFavoriteSpots();
+            getLikedMedia();
         }
     }, [user]);
 
@@ -118,5 +121,101 @@ export const useProfile = () => {
         }
     };
 
-    return { profile, favoriteSpots, updateProfile, getProfile, getFavoriteSpots };
+    const getLikedMedia = async () => {
+        try {
+            if (!user) return;
+            setLoadingMedia(true);
+
+            // 1. Fetch liked media records
+            const { data: likes, error: likesError } = await supabase
+                .from('media_likes')
+                .select('*')
+                .eq('user_id', user.user.id)
+                .order('created_at', { ascending: false });
+
+            if (likesError) throw likesError;
+            if (!likes || likes.length === 0) {
+                setLikedMedia([]);
+                return;
+            }
+
+            // 2. Fetch photos and videos details
+            const photoIds = likes.filter(l => l.media_type === 'photo').map(l => l.photo_id);
+            const videoIds = likes.filter(l => l.media_type === 'video').map(l => l.video_id);
+
+            const [photosResult, videosResult] = await Promise.all([
+                photoIds.length > 0
+                    ? supabase.from('spot_photos').select('*, spot:spots(id, name)').in('id', photoIds)
+                    : Promise.resolve({ data: [], error: null }),
+                videoIds.length > 0
+                    ? supabase.from('spot_videos').select('*, spot:spots(id, name)').in('id', videoIds)
+                    : Promise.resolve({ data: [], error: null })
+            ]);
+
+            if (photosResult.error) throw photosResult.error;
+            if (videosResult.error) throw videosResult.error;
+
+            // 3. Fetch all unique authors profiles
+            const authorIds = [
+                ...(photosResult.data || []).map((p: any) => p.user_id),
+                ...(videosResult.data || []).map((v: any) => v.user_id)
+            ].filter((v, i, a) => v && a.indexOf(v) === i);
+
+            const { data: profiles, error: profilesError } = authorIds.length > 0
+                ? await supabase.from('profiles').select('id, username, avatarUrl').in('id', authorIds)
+                : { data: [], error: null };
+
+            if (profilesError) throw profilesError;
+
+            const profileMap = (profiles || []).reduce((acc: any, p: any) => {
+                acc[p.id] = p;
+                return acc;
+            }, {});
+
+            // 4. Format the final results
+            const formattedMedia: LikedMediaItem[] = likes.map(like => {
+                const mediaData = like.media_type === 'photo'
+                    ? photosResult.data?.find((p: any) => p.id === like.photo_id)
+                    : videosResult.data?.find((v: any) => v.id === like.video_id);
+
+                if (!mediaData) return null;
+
+                const authorProfile = profileMap[mediaData.user_id];
+
+                return {
+                    id: like.id,
+                    mediaId: mediaData.id,
+                    url: mediaData.url,
+                    thumbnailUrl: like.media_type === 'video' ? mediaData.thumbnail_url : undefined,
+                    type: like.media_type,
+                    spot: {
+                        id: mediaData.spot?.id,
+                        name: mediaData.spot?.name
+                    },
+                    author: {
+                        id: mediaData.user_id,
+                        username: authorProfile?.username || 'Unknown',
+                        avatarUrl: authorProfile?.avatarUrl || null
+                    }
+                };
+            }).filter(Boolean) as LikedMediaItem[];
+
+            setLikedMedia(formattedMedia);
+        } catch (error) {
+            console.error("Error fetching liked media:", error);
+        } finally {
+            setLoadingMedia(false);
+        }
+    };
+
+    return {
+        profile,
+        favoriteSpots,
+        likedMedia,
+        loadingMedia,
+        updateProfile,
+        getProfile,
+        getFavoriteSpots,
+        getLikedMedia
+    };
 };

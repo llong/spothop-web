@@ -72,3 +72,38 @@ export interface SpotFlag {
     details?: string;
     created_at: string;
 }
+
+export interface MediaLike {
+    id: string;
+    user_id: string;
+    photo_id?: string;
+    video_id?: string;
+    media_type: 'photo' | 'video';
+    created_at: string;
+}
+
+export interface MediaItem {
+    id: string;
+    url: string;
+    thumbnailUrl?: string;
+    type: 'photo' | 'video';
+    likeCount: number;
+    isLiked: boolean;
+}
+
+export interface LikedMediaItem {
+    id: string;
+    mediaId: string;
+    url: string;
+    thumbnailUrl?: string;
+    type: 'photo' | 'video';
+    spot: {
+        id: string;
+        name: string;
+    };
+    author: {
+        id: string;
+        username: string | null;
+        avatarUrl: string | null;
+    };
+}
