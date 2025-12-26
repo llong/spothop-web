@@ -175,9 +175,12 @@ function HomeComponent() {
                         />
                         {spots.map(spot => (
                             <Marker position={[spot.latitude, spot.longitude]} key={spot.id}>
-                                <Popup>
-                                    <Box>
-                                        {spot.photoUrl && <img src={spot.photoUrl} alt={spot.name} style={{ width: '100%', height: 'auto' }} />}
+                                <Popup closeButton={false}>
+                                    <Box
+                                        sx={{ cursor: 'pointer' }}
+                                        onClick={() => navigate({ to: '/spots/$spotId', params: { spotId: spot.id.toString() } })}
+                                    >
+                                        {spot.photoUrl && <img src={spot.photoUrl} alt={spot.name} style={{ width: '100%', height: 'auto', borderRadius: '4px' }} />}
                                         <Typography variant="h6">{spot.name}</Typography>
                                         <Typography variant="body2">{spot.address}</Typography>
                                         <Typography variant="caption">{spot.description}</Typography>

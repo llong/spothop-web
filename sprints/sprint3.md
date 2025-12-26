@@ -21,9 +21,9 @@ This sprint focuses on completing the social and community interaction features 
     - [x] Display count and clickable usernames in `SpotSidebar` or `SpotInfo`.
 
 ### 2. Spot Interactions (Medium Complexity)
-- [ ] **Spot Flagging**
-    - [ ] Create `spot_flags` table in Supabase.
-    - [ ] Implement flagging UI with reason input field on spot details page.
+- [x] **Spot Flagging**
+    - [x] Create `spot_flags` table in Supabase.
+    - [x] Implement flagging UI with reason input field on spot details page.
 - [ ] **Media Liking**
     - [ ] Create `media_likes` table in Supabase (for photos and videos).
     - [ ] Add like toggle and count display to `SpotGallery` items.

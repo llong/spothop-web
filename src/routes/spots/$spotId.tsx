@@ -36,10 +36,16 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
         .select('profiles(username)', { count: 'exact' })
         .eq('spot_id', params.spotId);
 
-    const [spotResult, favoriteStatusResult, favoriteCountResult] = await Promise.all([
+    const flagCountPromise = supabase
+        .from('spot_flags')
+        .select('*', { count: 'exact', head: true })
+        .eq('spot_id', params.spotId);
+
+    const [spotResult, favoriteStatusResult, favoriteCountResult, flagCountResult] = await Promise.all([
         spotPromise,
         favoriteStatusPromise,
-        favoriteCountPromise
+        favoriteCountPromise,
+        flagCountPromise
     ]);
 
     if (spotResult.error) {
@@ -63,7 +69,8 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
         photos: spotResult.data.spot_photos?.map((p: any) => p.url) || [],
         username: username,
         favoriteCount: favoriteCountResult.count || 0,
-        favoritedBy: favoriteCountResult.data?.map((f: any) => f.profiles?.username).filter(Boolean) || []
+        favoritedBy: favoriteCountResult.data?.map((f: any) => f.profiles?.username).filter(Boolean) || [],
+        flagCount: flagCountResult.count || 0,
     };
 
     const isFavorited = !!(userId && favoriteStatusResult.data && favoriteStatusResult.data.length > 0);
@@ -73,7 +80,8 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
             photos: string[],
             username?: string,
             favoriteCount: number,
-            favoritedBy: string[]
+            favoritedBy: string[],
+            flagCount: number,
         },
         isFavoritedInitial: isFavorited
     };
@@ -125,10 +133,18 @@ const SpotDetailsComponent = () => {
     return (
         <Box sx={{ bgcolor: 'grey.50', minHeight: '100vh', pb: 4 }}>
             <SpotHeader
+                spotId={spot.id}
+                spotName={spot.name}
                 onBack={() => router.history.back()}
                 isFavorited={isFavorited}
+                favoriteCount={spot.favoriteCount}
+                flagCount={spot.flagCount}
                 onToggleFavorite={toggleFavorite}
                 isLoggedIn={!!user?.user}
+                onReportSuccess={() => {
+                    setSnackbarMessage('Thank you for your report. Our moderators will review it.');
+                    setSnackbarOpen(true);
+                }}
             />
 
             <Container maxWidth="lg" sx={{ mt: 3 }}>
