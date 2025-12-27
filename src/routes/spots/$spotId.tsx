@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import supabase from 'src/supabase';
-import { Container, Box, Typography, Snackbar, Divider } from '@mui/material';
+import { Container, Box, Typography, Snackbar, Divider, Grid } from '@mui/material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { useState } from 'react';
@@ -9,6 +9,8 @@ import { SpotGallery } from './-components/SpotGallery';
 import { SpotHeader } from './-components/SpotHeader';
 import { SpotInfo } from './-components/SpotInfo';
 import { SpotCreatorInfo } from './-components/SpotCreatorInfo';
+import { AddMediaDialog } from './-components/AddMediaDialog';
+import { SpotSidebar } from './-components/SpotSidebar';
 
 const loader = async ({ params }: { params: { spotId: string } }) => {
     // 1. Get Session for server-side-like fetching
@@ -23,6 +25,8 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
             spot_photos (
                 id,
                 url,
+                created_at,
+                user_id,
                 media_likes!photo_id (
                     user_id
                 )
@@ -31,6 +35,8 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
                 id,
                 url,
                 thumbnail_url,
+                created_at,
+                user_id,
                 media_likes!video_id (
                     user_id
                 )
@@ -69,39 +75,66 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
         throw new Error(spotResult.error.message);
     }
 
-    // 4. Fetch Creator Profile manually
-    let username = undefined;
-    if (spotResult.data.created_by) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', spotResult.data.created_by)
-            .single();
-        username = profile?.username;
-    }
+    // 4. Fetch all unique authors profiles for the spot and its media
+    const mediaAuthorIds = [
+        ...(spotResult.data.spot_photos || []).map((p: any) => p.user_id),
+        ...(spotResult.data.spot_videos || []).map((v: any) => v.user_id),
+        spotResult.data.created_by
+    ].filter((v, i, a) => v && a.indexOf(v) === i);
 
-    const photos: MediaItem[] = spotResult.data.spot_photos?.map((p: any) => ({
-        id: p.id,
-        url: p.url,
-        type: 'photo',
-        likeCount: p.media_likes?.length || 0,
-        isLiked: userId ? p.media_likes?.some((l: any) => l.user_id === userId) : false
-    })) || [];
+    const { data: profiles, error: profilesError } = mediaAuthorIds.length > 0
+        ? await supabase.from('profiles').select('id, username, "avatarUrl"').in('id', mediaAuthorIds)
+        : { data: [], error: null };
 
-    const videos: MediaItem[] = spotResult.data.spot_videos?.map((v: any) => ({
-        id: v.id,
-        url: v.url,
-        thumbnailUrl: v.thumbnail_url,
-        type: 'video',
-        likeCount: v.media_likes?.length || 0,
-        isLiked: userId ? v.media_likes?.some((l: any) => l.user_id === userId) : false
-    })) || [];
+    if (profilesError) throw profilesError;
+
+    const profileMap = (profiles || []).reduce((acc: any, p: any) => {
+        acc[p.id] = p;
+        return acc;
+    }, {});
+
+    const creatorProfile = profileMap[spotResult.data.created_by];
+
+    const photos: MediaItem[] = spotResult.data.spot_photos?.map((p: any) => {
+        const author = profileMap[p.user_id];
+        return {
+            id: p.id,
+            url: p.url,
+            type: 'photo' as const,
+            createdAt: p.created_at,
+            author: {
+                id: p.user_id,
+                username: author?.username || 'unknown',
+                avatarUrl: author?.avatarUrl || null
+            },
+            likeCount: p.media_likes?.length || 0,
+            isLiked: userId ? p.media_likes?.some((l: any) => l.user_id === userId) : false
+        };
+    }) || [];
+
+    const videos: MediaItem[] = spotResult.data.spot_videos?.map((v: any) => {
+        const author = profileMap[v.user_id];
+        return {
+            id: v.id,
+            url: v.url,
+            thumbnailUrl: v.thumbnail_url,
+            type: 'video' as const,
+            createdAt: v.created_at,
+            author: {
+                id: v.user_id,
+                username: author?.username || 'unknown',
+                avatarUrl: author?.avatarUrl || null
+            },
+            likeCount: v.media_likes?.length || 0,
+            isLiked: userId ? v.media_likes?.some((l: any) => l.user_id === userId) : false
+        };
+    }) || [];
 
     const spot = {
         ...spotResult.data,
         photoUrl: photos[0]?.url || null,
         media: [...photos, ...videos],
-        username: username,
+        username: creatorProfile?.username,
         favoriteCount: favoriteCountResult.count || 0,
         favoritedBy: favoriteCountResult.data?.map((f: any) => f.profiles?.username).filter(Boolean) || [],
         flagCount: flagCountResult.count || 0,
@@ -129,6 +162,7 @@ const SpotDetailsComponent = () => {
     const [isFavorited, setIsFavorited] = useState(isFavoritedInitial);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [addMediaDialogOpen, setAddMediaDialogOpen] = useState(false);
 
     const toggleFavorite = async () => {
         if (!user?.user.id) return;
@@ -183,7 +217,20 @@ const SpotDetailsComponent = () => {
 
             <Container maxWidth="lg" sx={{ mt: 3 }}>
                 <SpotGallery media={spot.media} />
-                <SpotInfo spot={spot} />
+                <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 8 }}>
+                        <SpotInfo spot={spot} />
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                        <SpotSidebar
+                            spot={spot}
+                            isFavorited={isFavorited}
+                            onToggleFavorite={toggleFavorite}
+                            onAddMedia={() => setAddMediaDialogOpen(true)}
+                            isLoggedIn={!!user?.user}
+                        />
+                    </Grid>
+                </Grid>
 
                 <Divider sx={{ my: 3 }} />
 
@@ -192,6 +239,19 @@ const SpotDetailsComponent = () => {
                     username={spot.username}
                 />
             </Container>
+
+            <AddMediaDialog
+                spotId={spot.id}
+                spotName={spot.name}
+                open={addMediaDialogOpen}
+                onClose={() => setAddMediaDialogOpen(false)}
+                onSuccess={() => {
+                    setSnackbarMessage('Media uploaded successfully!');
+                    setSnackbarOpen(true);
+                    router.invalidate();
+                }}
+                user={user}
+            />
 
             <Snackbar
                 open={snackbarOpen}

@@ -22,6 +22,7 @@
     "@supabase/supabase-js": "^2.80.0",
     "@tanstack/react-router": "^1.134.18",
     "@types/uuid": "^11.0.0",
+    "date-fns": "^4.1.0",
     "jotai": "^2.15.1",
     "jotai-devtools": "^0.13.0",
     "leaflet": "^1.9.4",

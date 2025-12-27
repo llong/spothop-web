@@ -27,9 +27,9 @@ This sprint focuses on completing the social and community interaction features 
 - [x] **Media Liking**
     - [x] Create `media_likes` table in Supabase (for photos and videos).
     - [x] Add like toggle and count display to `SpotGallery` items.
-- [ ] **Existing Spot Media Upload**
-    - [ ] Add "Add Photo/Video" button to `SpotSidebar` for existing spots.
-    - [ ] Integrate with `PhotoUpload` and `VideoUpload` components.
+- [x] **Existing Spot Media Upload**
+    - [x] Add "Add Photo/Video" button to `SpotSidebar` for existing spots.
+    - [x] Integrate with `PhotoUpload` and `VideoUpload` components.
 
 ### 3. Profile Enhancement (Medium Complexity)
 - [ ] **User Content Gallery**

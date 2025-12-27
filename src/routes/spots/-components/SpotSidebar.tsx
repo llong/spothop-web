@@ -1,15 +1,16 @@
 import { Paper, Typography, Divider, Stack, Box, Button } from '@mui/material';
-import { Favorite, FavoriteBorder } from '@mui/icons-material';
+import { Favorite, FavoriteBorder, AddPhotoAlternate } from '@mui/icons-material';
 import type { Spot } from '../../../types'
 
 interface SpotSidebarProps {
     spot: Spot;
     isFavorited: boolean;
     onToggleFavorite: () => void;
+    onAddMedia: () => void;
     isLoggedIn: boolean;
 }
 
-export const SpotSidebar = ({ spot, isFavorited, onToggleFavorite, isLoggedIn }: SpotSidebarProps) => {
+export const SpotSidebar = ({ spot, isFavorited, onToggleFavorite, onAddMedia, isLoggedIn }: SpotSidebarProps) => {
     return (
         <Paper sx={{ p: 3, position: 'sticky', top: 80 }}>
             <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -67,15 +68,27 @@ export const SpotSidebar = ({ spot, isFavorited, onToggleFavorite, isLoggedIn }:
                 <>
                     <Divider sx={{ my: 2 }} />
 
-                    <Button
-                        variant="contained"
-                        fullWidth
-                        size="large"
-                        onClick={onToggleFavorite}
-                        startIcon={isFavorited ? <Favorite /> : <FavoriteBorder />}
-                    >
-                        {isFavorited ? 'Saved' : 'Save Spot'}
-                    </Button>
+                    <Stack spacing={1}>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            size="large"
+                            onClick={onToggleFavorite}
+                            startIcon={isFavorited ? <Favorite /> : <FavoriteBorder />}
+                        >
+                            {isFavorited ? 'Saved' : 'Save Spot'}
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            fullWidth
+                            size="large"
+                            onClick={onAddMedia}
+                            startIcon={<AddPhotoAlternate />}
+                        >
+                            Add Photo/Video
+                        </Button>
+                    </Stack>
                 </>
             )}
         </Paper>

@@ -87,6 +87,12 @@ export interface MediaItem {
     url: string;
     thumbnailUrl?: string;
     type: 'photo' | 'video';
+    createdAt: string;
+    author: {
+        id: string;
+        username: string | null;
+        avatarUrl: string | null;
+    };
     likeCount: number;
     isLiked: boolean;
 }

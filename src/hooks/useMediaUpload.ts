@@ -65,7 +65,11 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
                 const videoPath = `${spotId}/videos/originals/${videoFilename}`;
 
                 // Upload Video File
-                const { error: uploadError } = await supabase.storage.from('spot-media').upload(videoPath, videoFile);
+                const { error: uploadError } = await supabase.storage.from('spot-media').upload(videoPath, videoFile, {
+                    contentType: videoFile.type || 'video/mp4',
+                    cacheControl: '3600',
+                    upsert: false
+                });
                 if (uploadError) throw uploadError;
 
                 // Get Video Public URL
