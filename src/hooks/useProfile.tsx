@@ -1,42 +1,51 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAtom } from "jotai";
 import { userAtom, profileAtom } from "../atoms/auth";
 import supabase from "../supabase";
-import type { UserProfile, Spot, LikedMediaItem } from "../types";
+import type { UserProfile, Spot, LikedMediaItem, UserMediaItem } from "../types";
+import { reverseGeocode } from "../utils/geocoding";
 
-export const useProfile = () => {
+export const useProfile = (userId?: string) => {
     const [user] = useAtom(userAtom);
     const [profile, setProfile] = useAtom(profileAtom);
     const [favoriteSpots, setFavoriteSpots] = useState<Spot[]>([]);
     const [likedMedia, setLikedMedia] = useState<LikedMediaItem[]>([]);
     const [loadingMedia, setLoadingMedia] = useState(false);
 
+    // User Content Stats
+    const [createdSpots, setCreatedSpots] = useState<Spot[]>([]);
+    const [userMedia, setUserMedia] = useState<UserMediaItem[]>([]);
+    const [loadingContent, setLoadingContent] = useState(false);
+
+    const targetUserId = userId || user?.user.id;
+
     useEffect(() => {
-        if (user) {
+        if (targetUserId) {
             getProfile();
             getFavoriteSpots();
             getLikedMedia();
+            getUserContent();
         }
-    }, [user]);
+    }, [targetUserId, user]);
 
     const getProfile = async () => {
         try {
-            if (!user) throw new Error("No user on the session!");
+            if (!targetUserId) return;
 
             const [profileResult, followersResult, followingResult] = await Promise.all([
                 supabase
                     .from("profiles")
                     .select(`username, "avatarUrl", city, country, "riderType", bio, "instagramHandle"`)
-                    .eq("id", user.user.id)
+                    .eq("id", targetUserId)
                     .single(),
                 supabase
                     .from("user_followers")
                     .select("*", { count: 'exact', head: true })
-                    .eq("following_id", user.user.id),
+                    .eq("following_id", targetUserId),
                 supabase
                     .from("user_followers")
                     .select("*", { count: 'exact', head: true })
-                    .eq("follower_id", user.user.id)
+                    .eq("follower_id", targetUserId)
             ]);
 
             if (profileResult.error && profileResult.status !== 406) {
@@ -44,11 +53,18 @@ export const useProfile = () => {
             }
 
             if (profileResult.data) {
-                setProfile({
+                // Only update global profile atom if it's the current user's profile
+                const isOwnProfile = targetUserId === user?.user.id;
+                const formattedProfile = {
                     ...profileResult.data,
                     followerCount: followersResult.count || 0,
                     followingCount: followingResult.count || 0
-                } as UserProfile);
+                } as UserProfile;
+
+                if (isOwnProfile) {
+                    setProfile(formattedProfile);
+                }
+                return formattedProfile;
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -59,7 +75,7 @@ export const useProfile = () => {
 
     const getFavoriteSpots = async () => {
         try {
-            if (!user) return;
+            if (!targetUserId) return;
 
             const { data, error } = await supabase
                 .from('user_favorite_spots')
@@ -69,7 +85,7 @@ export const useProfile = () => {
                         spot_photos (url)
                     )
                 `)
-                .eq('user_id', user.user.id);
+                .eq('user_id', targetUserId);
 
             if (error) throw error;
 
@@ -121,16 +137,131 @@ export const useProfile = () => {
         }
     };
 
+    const getUserContent = useCallback(async () => {
+        if (!targetUserId) return;
+        setLoadingContent(true);
+        try {
+            // 1. Fetch Created Spots
+            const { data: spots, error: spotsError } = await supabase
+                .from('spots')
+                .select('id, name, description, latitude, longitude, address, city, country, created_at, difficulty, kickout_risk, spot_type, spot_photos(url)')
+                .eq('created_by', targetUserId)
+                .order('created_at', { ascending: false });
+
+            if (spotsError) throw spotsError;
+
+            const formattedSpots = await Promise.all(spots.map(async (spot: any) => {
+                let city = spot.city;
+                let state = spot.state;
+                let country = spot.country;
+
+                if (!city || !state || !country) {
+                    const info = await reverseGeocode(spot.latitude, spot.longitude);
+                    city = city || info.city;
+                    state = state || info.state;
+                    country = country || info.country;
+                }
+
+                return {
+                    ...spot,
+                    city,
+                    state,
+                    country,
+                    photoUrl: spot.spot_photos?.[0]?.url || null
+                };
+            })) as Spot[];
+            setCreatedSpots(formattedSpots);
+
+            // 2. Fetch User Media (Photos & Videos)
+            const [photosResult, videosResult] = await Promise.all([
+                supabase
+                    .from('spot_photos')
+                    .select('id, url, created_at, spots(id, name, city, country, latitude, longitude)')
+                    .eq('user_id', targetUserId)
+                    .order('created_at', { ascending: false }),
+                supabase
+                    .from('spot_videos')
+                    .select('id, url, thumbnail_url, created_at, spots(id, name, city, country, latitude, longitude)')
+                    .eq('user_id', targetUserId)
+                    .order('created_at', { ascending: false })
+            ]);
+
+            if (photosResult.error) throw photosResult.error;
+            if (videosResult.error) throw videosResult.error;
+
+            const photosWithFallback = await Promise.all((photosResult.data || []).map(async (p: any) => {
+                let city = p.spots?.city;
+                let state = p.spots?.state;
+                let country = p.spots?.country;
+                if (p.spots && (!city || !state || !country)) {
+                    const info = await reverseGeocode(p.spots.latitude, p.spots.longitude);
+                    city = city || info.city;
+                    state = state || info.state;
+                    country = country || info.country;
+                }
+                return {
+                    id: p.id,
+                    url: p.url,
+                    type: 'photo' as const,
+                    created_at: p.created_at,
+                    spot: {
+                        id: p.spots?.id,
+                        name: p.spots?.name,
+                        city: city || 'Unknown City',
+                        state,
+                        country: country || 'Unknown Country'
+                    }
+                };
+            }));
+
+            const videosWithFallback = await Promise.all((videosResult.data || []).map(async (v: any) => {
+                let city = v.spots?.city;
+                let state = v.spots?.state;
+                let country = v.spots?.country;
+                if (v.spots && (!city || !state || !country)) {
+                    const info = await reverseGeocode(v.spots.latitude, v.spots.longitude);
+                    city = city || info.city;
+                    state = state || info.state;
+                    country = country || info.country;
+                }
+                return {
+                    id: v.id,
+                    url: v.url,
+                    thumbnailUrl: v.thumbnail_url,
+                    type: 'video' as const,
+                    created_at: v.created_at,
+                    spot: {
+                        id: v.spots?.id,
+                        name: v.spots?.name,
+                        city: city || 'Unknown City',
+                        state,
+                        country: country || 'Unknown Country'
+                    }
+                };
+            }));
+
+            const allMedia: UserMediaItem[] = [...photosWithFallback, ...videosWithFallback]
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+            setUserMedia(allMedia);
+
+        } catch (error) {
+            console.error("Error fetching user content:", error);
+        } finally {
+            setLoadingContent(false);
+        }
+    }, [targetUserId]);
+
     const getLikedMedia = async () => {
         try {
-            if (!user) return;
+            if (!targetUserId) return;
             setLoadingMedia(true);
 
             // 1. Fetch liked media records
             const { data: likes, error: likesError } = await supabase
                 .from('media_likes')
                 .select('*')
-                .eq('user_id', user.user.id)
+                .eq('user_id', targetUserId)
                 .order('created_at', { ascending: false });
 
             if (likesError) throw likesError;
@@ -145,10 +276,10 @@ export const useProfile = () => {
 
             const [photosResult, videosResult] = await Promise.all([
                 photoIds.length > 0
-                    ? supabase.from('spot_photos').select('*, spot:spots(id, name)').in('id', photoIds)
+                    ? supabase.from('spot_photos').select('*, spot:spots(id, name, city, country, latitude, longitude)').in('id', photoIds)
                     : Promise.resolve({ data: [], error: null }),
                 videoIds.length > 0
-                    ? supabase.from('spot_videos').select('*, spot:spots(id, name)').in('id', videoIds)
+                    ? supabase.from('spot_videos').select('*, spot:spots(id, name, city, country, latitude, longitude)').in('id', videoIds)
                     : Promise.resolve({ data: [], error: null })
             ]);
 
@@ -173,7 +304,7 @@ export const useProfile = () => {
             }, {});
 
             // 4. Format the final results
-            const formattedMedia: LikedMediaItem[] = likes.map(like => {
+            const formattedMedia = await Promise.all(likes.map(async (like) => {
                 const mediaData = like.media_type === 'photo'
                     ? photosResult.data?.find((p: any) => p.id === like.photo_id)
                     : videosResult.data?.find((v: any) => v.id === like.video_id);
@@ -181,6 +312,19 @@ export const useProfile = () => {
                 if (!mediaData) return null;
 
                 const authorProfile = profileMap[mediaData.user_id];
+
+                let city = mediaData.spot?.city;
+                let state = mediaData.spot?.state;
+                let country = mediaData.spot?.country;
+
+                if (mediaData.spot && (!city || !state || !country)) {
+                    if (mediaData.spot.latitude && mediaData.spot.longitude) {
+                        const info = await reverseGeocode(mediaData.spot.latitude, mediaData.spot.longitude);
+                        city = city || info.city;
+                        state = state || info.state;
+                        country = country || info.country;
+                    }
+                }
 
                 return {
                     id: like.id,
@@ -190,7 +334,10 @@ export const useProfile = () => {
                     type: like.media_type,
                     spot: {
                         id: mediaData.spot?.id,
-                        name: mediaData.spot?.name
+                        name: mediaData.spot?.name,
+                        city,
+                        state,
+                        country
                     },
                     author: {
                         id: mediaData.user_id,
@@ -198,9 +345,9 @@ export const useProfile = () => {
                         avatarUrl: authorProfile?.avatarUrl || null
                     }
                 };
-            }).filter(Boolean) as LikedMediaItem[];
+            }));
 
-            setLikedMedia(formattedMedia);
+            setLikedMedia(formattedMedia.filter(Boolean) as LikedMediaItem[]);
         } catch (error) {
             console.error("Error fetching liked media:", error);
         } finally {
@@ -213,9 +360,13 @@ export const useProfile = () => {
         favoriteSpots,
         likedMedia,
         loadingMedia,
+        createdSpots,
+        userMedia,
+        loadingContent,
         updateProfile,
         getProfile,
         getFavoriteSpots,
-        getLikedMedia
+        getLikedMedia,
+        getUserContent
     };
 };

@@ -30,11 +30,12 @@ import { useProfile } from "../../hooks/useProfile";
 import { useAtom } from "jotai";
 import { userAtom } from "../../atoms/auth";
 import { AvatarUpload } from "./-components/AvatarUpload";
+import { UserContentGallery } from "./-components/UserContentGallery";
 import type { UserProfile } from "../../types";
 
 const ProfileComponent: FC = () => {
     const [user] = useAtom(userAtom);
-    const { profile, favoriteSpots, likedMedia, loadingMedia, updateProfile } = useProfile();
+    const { profile, favoriteSpots, likedMedia, loadingMedia, createdSpots, userMedia, loadingContent, updateProfile } = useProfile();
     const [formData, setFormData] = useState<UserProfile | null>(null);
 
     useEffect(() => {
@@ -232,6 +233,21 @@ const ProfileComponent: FC = () => {
                                     </ListItem>
                                 ))}
                             </List>
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                                Your Activity
+                            </Typography>
+                            <UserContentGallery
+                                createdSpots={createdSpots}
+                                uploadedMedia={userMedia}
+                                isLoading={loadingContent}
+                            />
                         </CardContent>
                     </Card>
                 </Grid>

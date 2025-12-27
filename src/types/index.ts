@@ -24,6 +24,7 @@ export interface Spot {
     location?: string;
     address?: string;
     city?: string;
+    state?: string;
     country?: string;
     created_at?: string;
     updated_at?: string;
@@ -111,5 +112,19 @@ export interface LikedMediaItem {
         id: string;
         username: string | null;
         avatarUrl: string | null;
+    };
+}
+
+export interface UserMediaItem {
+    id: string;
+    url: string;
+    thumbnailUrl?: string;
+    type: 'photo' | 'video';
+    created_at: string;
+    spot: {
+        id: string;
+        name: string;
+        city?: string;
+        country?: string;
     };
 }

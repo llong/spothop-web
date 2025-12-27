@@ -5,6 +5,7 @@ import type { UserProfile } from '../../types';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '../../atoms/auth';
 import { useState, useEffect } from 'react';
+import { UserContentGallery } from './-components/UserContentGallery';
 
 // Loader function to fetch profile data
 const loader = async ({ params }: { params: { username: string } }) => {
@@ -30,16 +31,68 @@ const loader = async ({ params }: { params: { username: string } }) => {
             .eq("follower_id", profile.id)
     ]);
 
+    // Fetch user content
+    const [spotsResult, photosResult, videosResult] = await Promise.all([
+        supabase
+            .from('spots')
+            .select('*, spot_photos(url)')
+            .eq('created_by', profile.id)
+            .order('created_at', { ascending: false }),
+        supabase
+            .from('spot_photos')
+            .select('id, url, created_at, spots(id, name)')
+            .eq('user_id', profile.id)
+            .order('created_at', { ascending: false }),
+        supabase
+            .from('spot_videos')
+            .select('id, url, thumbnail_url, created_at, spots(id, name)')
+            .eq('user_id', profile.id)
+            .order('created_at', { ascending: false })
+    ]);
+
+    const createdSpots = (spotsResult.data || []).map((spot: any) => ({
+        ...spot,
+        photoUrl: spot.spot_photos?.[0]?.url || null
+    }));
+
+    const uploadedMedia = [
+        ...(photosResult.data || []).map((p: any) => ({
+            id: p.id,
+            url: p.url,
+            type: 'photo' as const,
+            created_at: p.created_at,
+            spot: {
+                id: p.spots?.id,
+                name: p.spots?.name
+            }
+        })),
+        ...(videosResult.data || []).map((v: any) => ({
+            id: v.id,
+            url: v.url,
+            thumbnailUrl: v.thumbnail_url,
+            type: 'video' as const,
+            created_at: v.created_at,
+            spot: {
+                id: v.spots?.id,
+                name: v.spots?.name
+            }
+        }))
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
     return {
-        ...profile,
-        followerCount: followersResult.count || 0,
-        followingCount: followingResult.count || 0
-    } as UserProfile;
+        profile: {
+            ...profile,
+            followerCount: followersResult.count || 0,
+            followingCount: followingResult.count || 0
+        } as UserProfile,
+        createdSpots,
+        uploadedMedia
+    };
 };
 
 const PublicProfileComponent = () => {
     const navigate = useNavigate();
-    const profile = Route.useLoaderData();
+    const { profile, createdSpots, uploadedMedia } = Route.useLoaderData();
     const user = useAtomValue(userAtom);
     const [isFollowing, setIsFollowing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -144,6 +197,21 @@ const PublicProfileComponent = () => {
                                     <Typography variant="body1">@{profile.instagramHandle}</Typography>
                                 </Box>
                             )}
+                        </CardContent>
+                    </Card>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 8 }}>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                                {profile.username}'s Activity
+                            </Typography>
+                            <UserContentGallery
+                                createdSpots={createdSpots}
+                                uploadedMedia={uploadedMedia}
+                                isLoading={false}
+                            />
                         </CardContent>
                     </Card>
                 </Grid>

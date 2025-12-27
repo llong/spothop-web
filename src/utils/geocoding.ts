@@ -1,0 +1,54 @@
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE';
+
+export interface LocationInfo {
+    city?: string;
+    state?: string;
+    country?: string;
+}
+
+const cache: Record<string, LocationInfo> = {};
+
+export async function reverseGeocode(lat: number, lng: number): Promise<LocationInfo> {
+    const cacheKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+    if (cache[cacheKey]) return cache[cacheKey];
+
+    try {
+        const response = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`
+        );
+        const data = await response.json();
+
+        if (data.results && data.results.length > 0) {
+            const result = data.results[0];
+
+            const cityComponent = result.address_components.find((c: any) =>
+                c.types.includes('locality') || c.types.includes('administrative_area_level_2')
+            );
+
+            const stateComponent = result.address_components.find((c: any) =>
+                c.types.includes('administrative_area_level_1')
+            );
+
+            const countryComponent = result.address_components.find((c: any) =>
+                c.types.includes('country')
+            );
+
+            // For some regions, the locality might be missing, use administrative_area_level_1 or 2 as fallback
+            const city = cityComponent?.long_name ||
+                result.address_components.find((c: any) => c.types.includes('administrative_area_level_2'))?.long_name;
+
+            const info = {
+                city: city,
+                state: stateComponent?.short_name,
+                country: countryComponent?.long_name
+            };
+
+            cache[cacheKey] = info;
+            return info;
+        }
+    } catch (e) {
+        console.error("Reverse geocoding failed", e);
+    }
+
+    return {};
+}

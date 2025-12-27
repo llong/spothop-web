@@ -11,6 +11,7 @@ import { SpotInfo } from './-components/SpotInfo';
 import { SpotCreatorInfo } from './-components/SpotCreatorInfo';
 import { AddMediaDialog } from './-components/AddMediaDialog';
 import { SpotSidebar } from './-components/SpotSidebar';
+import { reverseGeocode } from 'src/utils/geocoding';
 
 const loader = async ({ params }: { params: { spotId: string } }) => {
     // 1. Get Session for server-side-like fetching
@@ -21,7 +22,7 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
     const spotPromise = supabase
         .from('spots')
         .select(`
-            *,
+            id, name, description, latitude, longitude, address, city, country, created_by, created_at, 
             spot_photos (
                 id,
                 url,
@@ -73,6 +74,13 @@ const loader = async ({ params }: { params: { spotId: string } }) => {
 
     if (spotResult.error) {
         throw new Error(spotResult.error.message);
+    }
+
+    // Fill in missing location info for existing spots
+    if (!spotResult.data.city || !spotResult.data.country) {
+        const info = await reverseGeocode(spotResult.data.latitude, spotResult.data.longitude);
+        spotResult.data.city = spotResult.data.city || info.city;
+        spotResult.data.country = spotResult.data.country || info.country;
     }
 
     // 4. Fetch all unique authors profiles for the spot and its media

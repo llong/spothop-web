@@ -32,10 +32,10 @@ This sprint focuses on completing the social and community interaction features 
     - [x] Integrate with `PhotoUpload` and `VideoUpload` components.
 
 ### 3. Profile Enhancement (Medium Complexity)
-- [ ] **User Content Gallery**
-    - [ ] Implement query to fetch all spots created by a specific user.
-    - [ ] Implement query to fetch all photos/videos uploaded by a specific user.
-    - [ ] Build a tabbed gallery view on the profile page showing "Created Spots" and "Uploaded Media".
+- [x] **User Content Gallery**
+    - [x] Implement query to fetch all spots created by a specific user.
+    - [x] Implement query to fetch all photos/videos uploaded by a specific user.
+    - [x] Build a tabbed gallery view on the profile page showing "Created Spots" and "Uploaded Media".
 
 ### 4. Discussion System (Medium Complexity)
 - [ ] **Spot Comments**

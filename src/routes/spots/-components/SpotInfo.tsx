@@ -39,7 +39,12 @@ export const SpotInfo = ({ spot }: SpotInfoProps) => {
             <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                 <LocationOnIcon color="action" />
                 <Typography variant="body1" color="text.secondary">
-                    {[spot.address, spot.city, spot.country, spot.postalCode].filter(Boolean).join(', ')}
+                    {[
+                        spot.address,
+                        [spot.city, spot.state].filter(Boolean).join(', '),
+                        spot.country,
+                        spot.postalCode || (spot as any).postal_code
+                    ].filter(Boolean).join(', ')}
                 </Typography>
             </Stack>
 
@@ -134,11 +139,10 @@ export const SpotInfo = ({ spot }: SpotInfoProps) => {
                 </Stack>
             </Box>
 
-            <Divider sx={{ my: 3 }} />
-
             {/* What's Special Section */}
             {spot.spot_type && spot.spot_type.length > 0 && (
                 <>
+                    <Divider sx={{ my: 3 }} />
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                         What's at this spot
                     </Typography>
@@ -152,19 +156,6 @@ export const SpotInfo = ({ spot }: SpotInfoProps) => {
                             />
                         ))}
                     </Stack>
-                    <Divider sx={{ my: 3 }} />
-                </>
-            )}
-
-            {/* Description */}
-            {spot.description && (
-                <>
-                    <Typography variant="h6" fontWeight={600} gutterBottom>
-                        About this spot
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" paragraph>
-                        {spot.description}
-                    </Typography>
                 </>
             )}
 

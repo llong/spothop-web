@@ -35,6 +35,9 @@ export const NewSpotComponent = () => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [postalCode, setPostalCode] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [country, setCountry] = useState('');
 
     // File selection state
     const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
@@ -66,9 +69,25 @@ export const NewSpotComponent = () => {
                 if (data.results && data.results.length > 0) {
                     const result = data.results[0];
                     setAddress(result.formatted_address);
+
                     const postalCodeComponent = result.address_components.find((c: any) => c.types.includes('postal_code'));
                     if (postalCodeComponent) {
                         setPostalCode(postalCodeComponent.long_name);
+                    }
+
+                    const cityComponent = result.address_components.find((c: any) => c.types.includes('locality') || c.types.includes('administrative_area_level_1') || c.types.includes('administrative_area_level_2'));
+                    if (cityComponent) {
+                        setCity(cityComponent.long_name);
+                    }
+
+                    const stateComponent = result.address_components.find((c: any) => c.types.includes('administrative_area_level_1'));
+                    if (stateComponent) {
+                        setState(stateComponent.short_name);
+                    }
+
+                    const countryComponent = result.address_components.find((c: any) => c.types.includes('country'));
+                    if (countryComponent) {
+                        setCountry(countryComponent.long_name);
                     }
                 }
             } catch (e) {
@@ -112,6 +131,10 @@ export const NewSpotComponent = () => {
                     id: spotId,
                     name,
                     description,
+                    address,
+                    city,
+                    state,
+                    country,
                     postal_code: postalCode,
                     latitude: lat,
                     longitude: lng,
