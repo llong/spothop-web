@@ -1,6 +1,7 @@
 export interface UserProfile {
     id: string;
     username: string | null;
+    displayName: string | null;
     avatarUrl: string | null;
     city: string | null;
     country: string | null;
@@ -126,5 +127,43 @@ export interface UserMediaItem {
         name: string;
         city?: string;
         country?: string;
+    };
+}
+
+export type RiderType = 'inline' | 'skateboard' | 'bmx' | 'scooter';
+
+export interface SpotComment {
+    id: string;
+    spot_id: string;
+    user_id: string;
+    parent_id: string | null;
+    content: string;
+    is_edited: boolean;
+    created_at: string;
+    updated_at: string;
+    author?: {
+        username: string | null;
+        avatarUrl: string | null;
+    };
+    replies?: SpotComment[];
+    reactions?: {
+        likes: number;
+        dislikes: number;
+        userReaction: 'like' | 'dislike' | null;
+    };
+}
+
+export interface AppNotification {
+    id: string;
+    user_id: string;
+    actor_id: string;
+    type: 'reply' | 'like_spot' | 'like_media';
+    entity_id: string;
+    entity_type: 'comment' | 'spot' | 'media';
+    is_read: boolean;
+    created_at: string;
+    actor?: {
+        username: string | null;
+        avatarUrl: string | null;
     };
 }

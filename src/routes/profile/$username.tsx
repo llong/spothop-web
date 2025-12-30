@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router';
 import supabase from '../../supabase';
 import { Container, Box, Typography, Avatar, Card, CardContent, Grid, Divider, Button } from '@mui/material';
 import type { UserProfile } from '../../types';
@@ -6,100 +6,66 @@ import { useAtomValue } from 'jotai';
 import { userAtom } from '../../atoms/auth';
 import { useState, useEffect } from 'react';
 import { UserContentGallery } from './-components/UserContentGallery';
+import { profileKeys, useProfileQuery, useSocialStatsQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
+import { profileService } from 'src/services/profileService';
 
 // Loader function to fetch profile data
-const loader = async ({ params }: { params: { username: string } }) => {
-    const { data: profile, error } = await supabase
+const loader = async ({ params, context }: { params: { username: string }, context: any }) => {
+    const { queryClient } = context;
+
+    // 1. Fetch profile ID by username first
+    const { data: profileRef, error } = await supabase
         .from('profiles')
-        .select(`id, username, "avatarUrl", city, country, "riderType", bio, "instagramHandle"`)
+        .select(`id`)
         .eq('username', params.username)
         .single();
 
-    if (error) {
-        throw new Error(error.message);
-    }
+    if (error) throw new Error(error.message);
+    const userId = profileRef.id;
 
-    // Fetch follow counts
-    const [followersResult, followingResult] = await Promise.all([
-        supabase
-            .from("user_followers")
-            .select("*", { count: 'exact', head: true })
-            .eq("following_id", profile.id),
-        supabase
-            .from("user_followers")
-            .select("*", { count: 'exact', head: true })
-            .eq("follower_id", profile.id)
+    // 2. Prefetch everything via QueryClient
+    await Promise.all([
+        queryClient.ensureQueryData({
+            queryKey: profileKeys.detail(userId),
+            queryFn: () => profileService.fetchIdentity(userId),
+        }),
+        queryClient.ensureQueryData({
+            queryKey: profileKeys.social(userId),
+            queryFn: async () => {
+                const [favorites, likes, stats] = await Promise.all([
+                    profileService.fetchFavoriteSpots(userId),
+                    profileService.fetchLikedMedia(userId),
+                    profileService.fetchFollowStats(userId)
+                ]);
+                return { favorites, likes, ...stats };
+            },
+        }),
+        queryClient.ensureQueryData({
+            queryKey: profileKeys.content(userId),
+            queryFn: () => profileService.fetchUserContent(userId),
+        })
     ]);
 
-    // Fetch user content
-    const [spotsResult, photosResult, videosResult] = await Promise.all([
-        supabase
-            .from('spots')
-            .select('*, spot_photos(url)')
-            .eq('created_by', profile.id)
-            .order('created_at', { ascending: false }),
-        supabase
-            .from('spot_photos')
-            .select('id, url, created_at, spots(id, name)')
-            .eq('user_id', profile.id)
-            .order('created_at', { ascending: false }),
-        supabase
-            .from('spot_videos')
-            .select('id, url, thumbnail_url, created_at, spots(id, name)')
-            .eq('user_id', profile.id)
-            .order('created_at', { ascending: false })
-    ]);
-
-    const createdSpots = (spotsResult.data || []).map((spot: any) => ({
-        ...spot,
-        photoUrl: spot.spot_photos?.[0]?.url || null
-    }));
-
-    const uploadedMedia = [
-        ...(photosResult.data || []).map((p: any) => ({
-            id: p.id,
-            url: p.url,
-            type: 'photo' as const,
-            created_at: p.created_at,
-            spot: {
-                id: p.spots?.id,
-                name: p.spots?.name
-            }
-        })),
-        ...(videosResult.data || []).map((v: any) => ({
-            id: v.id,
-            url: v.url,
-            thumbnailUrl: v.thumbnail_url,
-            type: 'video' as const,
-            created_at: v.created_at,
-            spot: {
-                id: v.spots?.id,
-                name: v.spots?.name
-            }
-        }))
-    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    return {
-        profile: {
-            ...profile,
-            followerCount: followersResult.count || 0,
-            followingCount: followingResult.count || 0
-        } as UserProfile,
-        createdSpots,
-        uploadedMedia
-    };
+    return { userId };
 };
 
 const PublicProfileComponent = () => {
     const navigate = useNavigate();
-    const { profile, createdSpots, uploadedMedia } = Route.useLoaderData();
+    const { userId } = Route.useLoaderData();
     const user = useAtomValue(userAtom);
+
+    // Use Query hooks (they will pull from cache populated by loader)
+    const { data: profile } = useProfileQuery(userId);
+    const { data: contentData } = useUserContentQuery(userId);
+
+    const createdSpots = contentData?.createdSpots || [];
+    const uploadedMedia = contentData?.userMedia || [];
     const [isFollowing, setIsFollowing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const checkFollowing = async () => {
-            if (user?.user.id && profile.id) {
+            if (user?.user.id && profile?.id) {
                 const { data } = await supabase
                     .from('user_followers')
                     .select('*')
@@ -110,10 +76,10 @@ const PublicProfileComponent = () => {
             }
         };
         checkFollowing();
-    }, [user, profile.id]);
+    }, [user, profile?.id]);
 
     const handleFollowToggle = async () => {
-        if (!user?.user.id) return;
+        if (!user?.user.id || !profile?.id) return;
         setIsLoading(true);
         try {
             if (isFollowing) {
@@ -157,7 +123,8 @@ const PublicProfileComponent = () => {
                     <Card>
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                             <Avatar src={profile.avatarUrl || ""} sx={{ width: 120, height: 120, mb: 2 }} />
-                            <Typography variant="h4">{profile.username}</Typography>
+                            <Typography variant="h4" fontWeight={800}>{profile.displayName || profile.username}</Typography>
+                            <Typography variant="subtitle1" color="text.secondary" gutterBottom>@{profile.username}</Typography>
                             <Typography variant="body1" color="text.secondary">{profile.city}, {profile.country}</Typography>
 
                             <Box sx={{ display: 'flex', gap: 4, my: 2 }}>
@@ -222,5 +189,11 @@ const PublicProfileComponent = () => {
 
 export const Route = createFileRoute('/profile/$username')({
     component: PublicProfileComponent,
+    beforeLoad: async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            throw redirect({ to: '/login' });
+        }
+    },
     loader,
 });

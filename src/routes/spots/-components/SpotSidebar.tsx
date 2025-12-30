@@ -1,4 +1,4 @@
-import { Paper, Typography, Divider, Stack, Box, Button } from '@mui/material';
+import { Paper, Typography, Divider, Stack, Button } from '@mui/material';
 import { Favorite, FavoriteBorder, AddPhotoAlternate } from '@mui/icons-material';
 import type { Spot } from '../../../types'
 

@@ -1,5 +1,7 @@
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createStore, Provider } from 'jotai'
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -28,7 +30,23 @@ Icon.Default.mergeOptions({
 import { routeTree } from './routeTree.gen'
 
 // Create a new router instance
-const router = createRouter({ routeTree })
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
+
+const router = createRouter({
+  routeTree,
+  context: {
+    queryClient,
+  },
+})
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -43,11 +61,14 @@ const customStore = createStore();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={customStore} >
-    {import.meta.env.MODE !== 'production' ? (
-
-      <DevTools store={customStore} />
-
-    ) : null}
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      {import.meta.env.MODE !== 'production' ? (
+        <>
+          <DevTools store={customStore} />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </>
+      ) : null}
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </Provider>,
 )

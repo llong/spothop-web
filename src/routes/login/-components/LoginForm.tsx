@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import {
     Container,
@@ -21,6 +21,7 @@ export function LoginForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string>('')
+    const { message } = useSearch({ from: '/login/' }) as any;
     const user = useAtomValue(userAtom)
     const navigate = useNavigate()
 
@@ -74,6 +75,11 @@ export function LoginForm() {
                     </Typography>
 
                     {error && <Alert severity="error" sx={{ width: "100%", mb: 2 }}>{error}</Alert>}
+                    {message === 'logged_out' && (
+                        <Alert severity="success" sx={{ width: "100%", mb: 2 }}>
+                            Successfully signed out.
+                        </Alert>
+                    )}
 
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%' }}>
                         <Stack spacing={2}>

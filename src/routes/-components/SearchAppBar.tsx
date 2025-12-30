@@ -8,12 +8,16 @@ import { useLoadScript } from '@react-google-maps/api';
 import { useRef } from 'react';
 import { PlaceAutocomplete } from './PlaceAutocomplete';
 import { NavigationItems } from './NavigationItems';
+import { NotificationBell } from './NotificationBell';
+import { userAtom } from 'src/atoms/auth';
+import { useProfile } from 'src/hooks/useProfile';
 import { getSpotsAtom, mapAtom } from 'src/atoms/map';
 import { useMediaQuery, Box, Badge } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { viewAtom } from 'src/atoms/map';
 import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
+import supabase from 'src/supabase';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -56,6 +60,9 @@ export default function SearchAppBar() {
     const inputRef = useRef<HTMLInputElement>(null!);
     const map = useAtomValue(mapAtom);
     const getSpots = useAtomValue(getSpotsAtom);
+    const user = useAtomValue(userAtom);
+    // AppBar only needs identity for avatar, NOT full social/content data.
+    const { profile } = useProfile(undefined, false);
     const [view, setView] = useAtom(viewAtom);
     const [isFiltersOpen, setIsFiltersOpen] = useAtom(isFiltersOpenAtom);
     const filters = useAtomValue(filtersAtom);
@@ -94,7 +101,7 @@ export default function SearchAppBar() {
                 variant="h6"
                 noWrap
                 component="div"
-                sx={{ mr: 2, cursor: 'pointer' }}
+                sx={{ mr: 2, cursor: 'pointer', flexShrink: 0 }}
                 onClick={() => navigate({ to: '/' })}
             >
                 SpotHop
@@ -123,7 +130,12 @@ export default function SearchAppBar() {
                         {view === 'map' ? <List /> : <Map />}
                     </IconButton>
                 )}
-                {!isMobile && <NavigationItems />}
+                {!isMobile && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {user && profile?.displayName && <NotificationBell />}
+                        <NavigationItems />
+                    </Box>
+                )}
             </Box>
         </Toolbar>
     );

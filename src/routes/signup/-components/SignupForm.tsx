@@ -9,8 +9,12 @@ import {
     Button,
     Typography,
     Stack,
+    Alert,
+    Snackbar,
     Link as MuiLink,
 } from '@mui/material';
+import supabase from 'src/supabase';
+import { useState } from 'react';
 
 const signupSchema = z.object({
     email: z.string().email({ message: 'Invalid email address' }).trim(),
@@ -24,17 +28,69 @@ const signupSchema = z.object({
 type SignupFormInputs = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
+
     const { register, handleSubmit, formState: { errors } } = useForm<SignupFormInputs>({
         resolver: zodResolver(signupSchema),
     });
 
-    const onSubmit = (data: SignupFormInputs) => {
-        // Handle signup logic here
-        console.log(data);
+    const onSubmit = async (data: SignupFormInputs) => {
+        try {
+            setIsLoading(true);
+            setError(null);
+
+            const { error: signupError } = await supabase.auth.signUp({
+                email: data.email,
+                password: data.password,
+                options: {
+                    // Using origin without /welcome to better match Supabase allowlist
+                    emailRedirectTo: window.location.origin,
+                },
+            });
+
+            if (signupError) throw signupError;
+
+            setSuccess(true);
+        } catch (err: any) {
+            console.error('Signup error:', err);
+            setError(err.message || 'An error occurred during signup.');
+        } finally {
+            setIsLoading(false);
+        }
     };
+
+    if (success) {
+        return (
+            <Container maxWidth="xs">
+                <Box sx={{ mt: 12, textAlign: 'center' }}>
+                    <Typography variant="h4" fontWeight={700} gutterBottom>
+                        Check your email!
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                        We've sent a verification link to your email address. Once you click the link, you'll be able to set up your profile name and riding style.
+                    </Typography>
+                    <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => setSuccess(false)}
+                    >
+                        Back to Sign Up
+                    </Button>
+                </Box>
+            </Container>
+        );
+    }
 
     return (
         <Container component="main" maxWidth="xs">
+            <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
+                <Alert onClose={() => setError(null)} severity="error" sx={{ width: '100%' }}>
+                    {error}
+                </Alert>
+            </Snackbar>
+
             <Box
                 sx={{
                     marginTop: 8,
@@ -82,9 +138,10 @@ export function SignupForm() {
                         type="submit"
                         fullWidth
                         variant="contained"
+                        disabled={isLoading}
                         sx={{ mt: 3, mb: 2 }}
                     >
-                        Sign Up
+                        {isLoading ? 'Creating account...' : 'Sign Up'}
                     </Button>
                     <Box sx={{ textAlign: 'right' }}>
                         <MuiLink component={Link} to="/login" variant="body2">

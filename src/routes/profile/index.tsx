@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import supabase from "../../supabase";
 import {
     Container,
@@ -26,31 +26,63 @@ import {
     Stack
 } from "@mui/material";
 import { Favorite, PlayCircleOutline } from "@mui/icons-material";
-import { useProfile } from "../../hooks/useProfile";
-import { useAtom } from "jotai";
+import { useProfileQuery, useSocialStatsQuery, useUserContentQuery, profileKeys } from "../../hooks/useProfileQueries";
+import { profileService } from "src/services/profileService";
+import { useAtom, useAtomValue } from "jotai";
 import { userAtom } from "../../atoms/auth";
 import { AvatarUpload } from "./-components/AvatarUpload";
 import { UserContentGallery } from "./-components/UserContentGallery";
 import type { UserProfile } from "../../types";
 
 const ProfileComponent: FC = () => {
-    const [user] = useAtom(userAtom);
-    const { profile, favoriteSpots, likedMedia, loadingMedia, createdSpots, userMedia, loadingContent, updateProfile } = useProfile();
+    const user = useAtomValue(userAtom);
+    const userId = user?.user.id;
+
+    // Use specialized queries
+    const { data: profile, isLoading: loadingProfile } = useProfileQuery(userId);
+    const { data: socialData, isLoading: loadingSocial } = useSocialStatsQuery(userId, !!profile?.displayName);
+    const { data: contentData, isLoading: loadingContent } = useUserContentQuery(userId, !!profile?.displayName);
+
     const [formData, setFormData] = useState<UserProfile | null>(null);
 
+    // Sync form data once when profile is loaded
     useEffect(() => {
-        if (profile) {
+        if (profile && !formData) {
             setFormData(profile);
         }
-    }, [profile]);
+    }, [profile, formData]);
 
-    if (!formData) {
+    const favoriteSpots = socialData?.favorites || [];
+    const likedMedia = socialData?.likes || [];
+    const createdSpots = contentData?.createdSpots || [];
+    const userMedia = contentData?.userMedia || [];
+    const loadingMedia = loadingSocial;
+
+    if (loadingProfile || !formData) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
                 <CircularProgress />
             </Box>
         );
     }
+
+    const updateProfile = async (updates: UserProfile) => {
+        try {
+            // Remove derived/virtual fields that aren't in the DB
+            const { followerCount, followingCount, ...dbUpdates } = updates as any;
+
+            const { error } = await supabase.from("profiles").upsert({
+                ...dbUpdates,
+                id: userId,
+                updatedAt: new Date()
+            });
+            if (error) throw error;
+            // Note: In a full refactor, we'd use useMutation here to invalidate queries
+            window.location.reload(); // Temporary simple refresh
+        } catch (err: any) {
+            alert(err.message);
+        }
+    };
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { target: { name: string; value: unknown } }) => {
         const { name, value } = e.target;
@@ -60,23 +92,13 @@ const ProfileComponent: FC = () => {
     return (
         <Container sx={{ mt: 5 }}>
             <Typography variant="h4" gutterBottom>
-                Account
+                Settings
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-                Manage your account settings.
+                Manage your personal information and profile settings.
             </Typography>
             <Divider sx={{ my: 3 }} />
             <Grid container spacing={3}>
-                <Grid size={{ xs: 12 }}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                                Account Details
-                            </Typography>
-                            <Typography variant="body1"><strong>Email:</strong> {user?.user.email}</Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
                 <Grid size={{ xs: 12, md: 4 }}>
                     <Card>
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
@@ -84,7 +106,8 @@ const ProfileComponent: FC = () => {
                                 avatarUrl={formData.avatarUrl}
                                 onUpload={(url) => updateProfile({ ...formData, avatarUrl: url })}
                             />
-                            <Typography variant="h6">{formData.username || "Your Username"}</Typography>
+                            <Typography variant="h6" fontWeight={700}>{formData.displayName || "Set Display Name"}</Typography>
+                            <Typography variant="body2" color="text.secondary">@{formData.username}</Typography>
                             <Box sx={{ display: 'flex', gap: 2, my: 1, justifyContent: 'center' }}>
                                 <Box>
                                     <Typography variant="h6">{profile?.followerCount || 0}</Typography>
@@ -116,7 +139,16 @@ const ProfileComponent: FC = () => {
                             }} noValidate sx={{ mt: 3 }}>
                                 <Grid container spacing={3}>
                                     <Grid size={{ xs: 12 }}>
-                                        <Typography variant="body1"><strong>Username:</strong> {formData.username}</Typography>
+                                        <TextField
+                                            id="displayName"
+                                            name="displayName"
+                                            label="Display Name"
+                                            type="text"
+                                            value={formData.displayName || ""}
+                                            onChange={handleFormChange}
+                                            fullWidth
+                                            helperText="This is how you will appear to other users."
+                                        />
                                     </Grid>
                                     <Grid size={{ xs: 12, sm: 6 }}>
                                         <TextField
@@ -187,7 +219,11 @@ const ProfileComponent: FC = () => {
                                         type="button"
                                         variant="contained"
                                         color="error"
-                                        onClick={() => supabase.auth.signOut()}
+                                        onClick={async () => {
+                                            await supabase.auth.signOut();
+                                            // Force a reload to clear all state and cache safely
+                                            window.location.href = '/';
+                                        }}
                                     >
                                         Sign Out
                                     </Button>
@@ -341,9 +377,44 @@ export const Route = createFileRoute("/profile/")({
     beforeLoad: async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-            throw redirect({
-                to: '/login',
-            });
+            throw redirect({ to: '/login' });
         }
+        return { userId: session.user.id };
     },
+    loader: async ({ context, cause }) => {
+        const { queryClient } = context as any;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const userId = session.user.id;
+
+        // Prefetch basic identity
+        await queryClient.ensureQueryData({
+            queryKey: profileKeys.detail(userId),
+            queryFn: () => profileService.fetchIdentity(userId),
+        });
+
+        const profile = queryClient.getQueryData(profileKeys.detail(userId)) as UserProfile | undefined;
+
+        // Prefetch social and content data if onboarding is complete
+        if (profile?.displayName) {
+            await Promise.all([
+                queryClient.ensureQueryData({
+                    queryKey: profileKeys.social(userId),
+                    queryFn: async () => {
+                        const [favorites, likes, stats] = await Promise.all([
+                            profileService.fetchFavoriteSpots(userId),
+                            profileService.fetchLikedMedia(userId),
+                            profileService.fetchFollowStats(userId)
+                        ]);
+                        return { favorites, likes, ...stats };
+                    },
+                }),
+                queryClient.ensureQueryData({
+                    queryKey: profileKeys.content(userId),
+                    queryFn: () => profileService.fetchUserContent(userId),
+                })
+            ]);
+        }
+    }
 });

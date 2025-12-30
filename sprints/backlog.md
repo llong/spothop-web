@@ -45,3 +45,8 @@
     *   **COOP/COEP Headers:** Requires specific server headers (`require-corp`, `same-origin`) to enable `SharedArrayBuffer` for multi-threaded FFmpeg.
     *   **Bundle Size:** FFmpeg.wasm is large (~30MB); should be lazy-loaded only when the user selects a video.
     *   **Performance:** Processing speed varies significantly based on the user's CPU; need to provide clear progress indicators.
+
+## Database & Query Optimizations (Deferred)
+
+### 1. Server-side Follower Stats (RPC)
+*   **Concept:** Move follower/following count logic from TypeScript to a server-side PostgreSQL function (RPC) to handle large-scale growth.

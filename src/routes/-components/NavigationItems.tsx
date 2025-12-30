@@ -21,7 +21,17 @@ export function NavigationItems() {
                     Login
                 </Button>
             ) : (
-                <Button color="inherit" onClick={() => supabase.auth.signOut()} startIcon={<Logout />}>
+                <Button
+                    color="inherit"
+                    onClick={async () => {
+                        try {
+                            await supabase.auth.signOut();
+                        } finally {
+                            window.location.href = '/login?message=logged_out';
+                        }
+                    }}
+                    startIcon={<Logout />}
+                >
                     Sign Out
                 </Button>
             )}

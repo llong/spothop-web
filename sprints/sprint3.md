@@ -38,12 +38,12 @@ This sprint focuses on completing the social and community interaction features 
     - [x] Build a tabbed gallery view on the profile page showing "Created Spots" and "Uploaded Media".
 
 ### 4. Discussion System (Medium Complexity)
-- [ ] **Spot Comments**
-    - [ ] Create `spot_comments` table in Supabase.
-    - [ ] Build comment section on spot details page with creation and listing.
-- [ ] **Comment Interactions**
-    - [ ] Create `comment_reactions` table.
-    - [ ] Implement like/dislike functionality for individual comments.
+- [x] **Spot Comments**
+    - [x] Create `spot_comments` table in Supabase.
+    - [x] Build comment section on spot details page with creation and listing.
+- [x] **Comment Interactions**
+    - [x] Create `comment_reactions` table.
+    - [x] Implement like/dislike functionality for individual comments.
 
 ### 5. Real-time Chat (High Complexity)
 - [ ] **Chat Infrastructure**
