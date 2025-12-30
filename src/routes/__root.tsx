@@ -1,13 +1,15 @@
 import { createRootRoute, Outlet, useLocation, useNavigate } from '@tanstack/react-router'
 import { AppBar, Box, CssBaseline, useMediaQuery, useTheme } from '@mui/material'
 import { useEffect } from 'react'
-import { useSetAtom, useAtomValue } from 'jotai'
-import { userAtom, profileAtom } from 'src/atoms/auth'
+import { useSetAtom, useAtomValue, useAtom } from 'jotai'
+import { userAtom } from 'src/atoms/auth'
 import supabase from 'src/supabase'
 import { useDevtools } from 'src/hooks/useDevTools'
 import SearchAppBar from './-components/SearchAppBar'
 import { BottomNav } from './-components/BottomNav'
 import { useProfileQuery } from 'src/hooks/useProfileQueries'
+import { globalToastAtom } from 'src/hooks/useNotifications'
+import { Snackbar, Alert } from '@mui/material'
 
 export function RootComponent() {
     useDevtools();
@@ -17,6 +19,7 @@ export function RootComponent() {
     const auth = useAtomValue(userAtom);
     const location = useLocation();
     const navigate = useNavigate();
+    const [toast, setToast] = useAtom(globalToastAtom);
 
     // 1. STABLE AUTH LISTENER
     useEffect(() => {
@@ -82,6 +85,28 @@ export function RootComponent() {
                 <Outlet />
             </Box>
             {isMobile && <BottomNav />}
+
+            <Snackbar
+                open={!!toast?.open}
+                autoHideDuration={6000}
+                onClose={() => setToast(null)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert
+                    onClose={() => setToast(null)}
+                    severity="info"
+                    variant="filled"
+                    sx={{ width: '100%', cursor: toast?.conversationId ? 'pointer' : 'default' }}
+                    onClick={() => {
+                        if (toast?.conversationId) {
+                            navigate({ to: '/chat/$conversationId', params: { conversationId: toast.conversationId } });
+                            setToast(null);
+                        }
+                    }}
+                >
+                    {toast?.message}
+                </Alert>
+            </Snackbar>
         </>
     )
 }

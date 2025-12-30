@@ -4,7 +4,6 @@ import { Container, Box, Typography, Snackbar, Divider, Grid, CircularProgress }
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { useState, useMemo } from 'react';
-import type { Spot, MediaItem } from 'src/types';
 import { SpotGallery } from './-components/SpotGallery';
 import { SpotHeader } from './-components/SpotHeader';
 import { SpotInfo } from './-components/SpotInfo';
@@ -128,6 +127,7 @@ const SpotDetailsComponent = () => {
                 <SpotCreatorInfo
                     createdAt={spot.created_at}
                     username={spot.username}
+                    createdBy={spot.created_by}
                 />
 
                 <Divider sx={{ my: 4 }} />

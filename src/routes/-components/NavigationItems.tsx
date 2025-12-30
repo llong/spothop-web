@@ -1,6 +1,6 @@
 import { Stack, Button } from '@mui/material';
 import { Link } from '@tanstack/react-router';
-import { Home, AccountCircle, Login, Logout } from '@mui/icons-material';
+import { Home, AccountCircle, Login, Logout, ChatBubble } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import supabase from 'src/supabase';
@@ -13,9 +13,17 @@ export function NavigationItems() {
             <Button color="inherit" component={Link} to="/" startIcon={<Home />}>
                 Spots
             </Button>
-            <Button color="inherit" component={Link} to="/profile" startIcon={<AccountCircle />}>
-                Profile
-            </Button>
+
+            {user?.user.aud && (
+                <>
+                    <Button color="inherit" component={Link} to="/profile" startIcon={<AccountCircle />}>
+                        Profile
+                    </Button>
+                    <Button color="inherit" component={Link} to="/chat" startIcon={<ChatBubble />}>
+                        Inbox
+                    </Button>
+                </>
+            )}
             {!user?.user.aud ? (
                 <Button color="inherit" component={Link} to="/login" startIcon={<Login />}>
                     Login

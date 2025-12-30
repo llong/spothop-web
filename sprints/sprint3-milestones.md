@@ -23,3 +23,9 @@
 - **Deduplicated Auth**: Refactored the authentication listener to prevent session "heartbeats" from triggering app-wide re-renders.
 - **Verified Sign Out**: Implemented a fail-safe logout process that completely purges local state and query caches.
 - **Optimized SQL**: Consolidated complex relationship checks into single network requests and provided a roadmap for future server-side optimizations in the backlog.
+
+## 5. Secure Real-time Messaging
+- **Unified Interaction**: Replaced disconnected chat experiments with a single, high-performance messaging engine supporting private DMs and named Group Chats.
+- **Privacy First**: Implemented a comprehensive blocking and permissions system. 1-on-1 chats are auto-accepted for speed, while group invitations remain opt-in.
+- **Frictionless UX**: Built intelligent search with 400ms debouncing and a persistent selection engine for multi-user thread creation.
+- **Live Sync**: Integrated global toasts and real-time inbox badges, ensuring users never miss an important message.

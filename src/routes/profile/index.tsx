@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import type { FC } from "react";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import supabase from "../../supabase";
 import {
     Container,
@@ -25,10 +25,10 @@ import {
     Avatar,
     Stack
 } from "@mui/material";
-import { Favorite, PlayCircleOutline } from "@mui/icons-material";
+import { Favorite, PlayCircleOutline, ChatBubble } from "@mui/icons-material";
 import { useProfileQuery, useSocialStatsQuery, useUserContentQuery, profileKeys } from "../../hooks/useProfileQueries";
 import { profileService } from "src/services/profileService";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue } from "jotai";
 import { userAtom } from "../../atoms/auth";
 import { AvatarUpload } from "./-components/AvatarUpload";
 import { UserContentGallery } from "./-components/UserContentGallery";
@@ -118,9 +118,14 @@ const ProfileComponent: FC = () => {
                                     <Typography variant="caption" color="text.secondary">Following</Typography>
                                 </Box>
                             </Box>
-                            <Link to="/profile/$username" params={{ username: formData.username! }}>
-                                <Button>View Public Profile</Button>
-                            </Link>
+                            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+                                <Link to="/profile/$username" params={{ username: formData.username! }} style={{ textDecoration: 'none' }}>
+                                    <Button variant="outlined" size="small">View Public Profile</Button>
+                                </Link>
+                                <Link to="/chat" style={{ textDecoration: 'none' }}>
+                                    <Button variant="contained" size="small" startIcon={<ChatBubble />}>Messages</Button>
+                                </Link>
+                            </Stack>
                         </CardContent>
                     </Card>
                 </Grid>
@@ -381,7 +386,7 @@ export const Route = createFileRoute("/profile/")({
         }
         return { userId: session.user.id };
     },
-    loader: async ({ context, cause }) => {
+    loader: async ({ context }) => {
         const { queryClient } = context as any;
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;

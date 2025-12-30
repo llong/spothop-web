@@ -1,5 +1,5 @@
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import { Home, AccountCircle } from '@mui/icons-material';
+import { Home, AccountCircle, ChatBubble, Notifications } from '@mui/icons-material';
 import { Link, useLocation } from '@tanstack/react-router';
 
 export const BottomNav = () => {
@@ -7,6 +7,8 @@ export const BottomNav = () => {
 
     const menuItems = [
         { label: 'Spots', to: '/', icon: <Home /> },
+        { label: 'Inbox', to: '/chat', icon: <ChatBubble /> },
+        { label: 'Alerts', to: '/notifications', icon: <Notifications /> },
         { label: 'Profile', to: '/profile', icon: <AccountCircle /> },
     ];
 

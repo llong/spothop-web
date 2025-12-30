@@ -1,11 +1,18 @@
 import { useEffect } from 'react';
 import supabase from 'src/supabase';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom, atom } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { useNotificationsQuery, profileKeys } from './useProfileQueries';
 import { useQueryClient } from '@tanstack/react-query';
 
+export const globalToastAtom = atom<{
+    message: string;
+    open: boolean;
+    conversationId?: string;
+} | null>(null);
+
 export function useNotifications() {
+    const setToast = useSetAtom(globalToastAtom);
     const user = useAtomValue(userAtom);
     const queryClient = useQueryClient();
 
@@ -72,7 +79,18 @@ export function useNotifications() {
                     table: 'notifications',
                     filter: `user_id=eq.${user.user.id}`
                 },
-                () => {
+                (payload) => {
+                    const notification = payload.new as any;
+
+                    // Show a toast for new messages specifically
+                    if (notification.type === 'new_message') {
+                        setToast({
+                            message: 'New message received!',
+                            open: true,
+                            conversationId: notification.context_id
+                        });
+                    }
+
                     queryClient.invalidateQueries({ queryKey: profileKeys.notifications(user.user.id) });
                 }
             )

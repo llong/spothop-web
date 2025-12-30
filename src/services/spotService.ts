@@ -1,5 +1,5 @@
 import supabase from "../supabase";
-import type { Spot, MediaItem } from "../types";
+import type { MediaItem } from "../types";
 import { reverseGeocode } from "../utils/geocoding";
 
 export const spotService = {
@@ -33,7 +33,7 @@ export const spotService = {
                 )
             `)
             .eq('id', spotId)
-            .single();
+            .maybeSingle();
 
         // 2. Fetch Social Stats
         const favoriteStatusPromise = userId
@@ -64,6 +64,8 @@ export const spotService = {
 
         if (spotResult.error) throw spotResult.error;
         const spotData = spotResult.data;
+
+        if (!spotData) return null;
 
         // 3. Location Enrichment (Only if missing)
         if (!spotData.city || !spotData.country) {

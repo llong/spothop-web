@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconButton, Badge, Menu, Typography, List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider, Box, Button, Tooltip, Stack } from '@mui/material';
+import { IconButton, Badge, Menu, Typography, List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider, Box, Button, Tooltip, Stack, ListItemButton } from '@mui/material';
 import {
     Notifications as NotificationsIcon,
     ChatBubbleOutline,
@@ -174,6 +174,3 @@ export const NotificationBell = () => {
         </>
     );
 };
-
-// We need to import ListItemButton from MUI
-import { ListItemButton } from '@mui/material';

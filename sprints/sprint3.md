@@ -46,13 +46,15 @@ This sprint focuses on completing the social and community interaction features 
     - [x] Implement like/dislike functionality for individual comments.
 
 ### 5. Real-time Chat (High Complexity)
-- [ ] **Chat Infrastructure**
-    - [ ] Design `conversations` and `messages` schema.
-    - [ ] Implement Supabase Realtime subscriptions for new messages.
-- [ ] **Chat UI**
-    - [ ] Create `ChatList` route/component to show active conversations.
-    - [ ] Create `ChatRoom` route/component for individual message history.
-    - [ ] Add "Message User" button to profile pages.
+- [x] **Chat Infrastructure**
+    - [x] Design `conversations` and `messages` schema with optimized RLS.
+    - [x] Implement loop-free participation checks using PostgreSQL security helpers.
+    - [x] Implement Supabase Realtime subscriptions for new messages.
+- [x] **Chat UI**
+    - [x] Create `ChatList` route/component with polished interaction states.
+    - [x] Create `ChatRoom` route/component with instant message delivery.
+    - [x] Build Group Management panel (Rename groups, invite/remove users).
+    - [x] Add "Message User" button to profiles and spot creator sections.
 
 ## Success Metrics
 - Users can see their community impact via stats.

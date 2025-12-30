@@ -17,9 +17,11 @@ import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as NotificationsIndexRouteImport } from './routes/notifications/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ForgotPasswordIndexRouteImport } from './routes/forgot-password/index'
+import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as SpotsNewRouteImport } from './routes/spots/new'
 import { Route as SpotsSpotIdRouteImport } from './routes/spots/$spotId'
 import { Route as ProfileUsernameRouteImport } from './routes/profile/$username'
+import { Route as ChatConversationIdRouteImport } from './routes/chat/$conversationId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -61,6 +63,11 @@ const ForgotPasswordIndexRoute = ForgotPasswordIndexRouteImport.update({
   path: '/forgot-password/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SpotsNewRoute = SpotsNewRouteImport.update({
   id: '/spots/new',
   path: '/spots/new',
@@ -76,12 +83,19 @@ const ProfileUsernameRoute = ProfileUsernameRouteImport.update({
   path: '/profile/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatConversationIdRoute = ChatConversationIdRouteImport.update({
+  id: '/chat/$conversationId',
+  path: '/chat/$conversationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/chat/$conversationId': typeof ChatConversationIdRoute
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/chat': typeof ChatIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
   '/notifications': typeof NotificationsIndexRoute
@@ -92,9 +106,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/chat/$conversationId': typeof ChatConversationIdRoute
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/chat': typeof ChatIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
   '/notifications': typeof NotificationsIndexRoute
@@ -106,9 +122,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/chat/$conversationId': typeof ChatConversationIdRoute
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/chat/': typeof ChatIndexRoute
   '/forgot-password/': typeof ForgotPasswordIndexRoute
   '/login/': typeof LoginIndexRoute
   '/notifications/': typeof NotificationsIndexRoute
@@ -121,9 +139,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/chat/$conversationId'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/chat'
     | '/forgot-password'
     | '/login'
     | '/notifications'
@@ -134,9 +154,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/chat/$conversationId'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/chat'
     | '/forgot-password'
     | '/login'
     | '/notifications'
@@ -147,9 +169,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/chat/$conversationId'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/chat/'
     | '/forgot-password/'
     | '/login/'
     | '/notifications/'
@@ -161,9 +185,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ChatConversationIdRoute: typeof ChatConversationIdRoute
   ProfileUsernameRoute: typeof ProfileUsernameRoute
   SpotsSpotIdRoute: typeof SpotsSpotIdRoute
   SpotsNewRoute: typeof SpotsNewRoute
+  ChatIndexRoute: typeof ChatIndexRoute
   ForgotPasswordIndexRoute: typeof ForgotPasswordIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   NotificationsIndexRoute: typeof NotificationsIndexRoute
@@ -231,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/': {
+      id: '/chat/'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/spots/new': {
       id: '/spots/new'
       path: '/spots/new'
@@ -252,14 +285,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat/$conversationId': {
+      id: '/chat/$conversationId'
+      path: '/chat/$conversationId'
+      fullPath: '/chat/$conversationId'
+      preLoaderRoute: typeof ChatConversationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ChatConversationIdRoute: ChatConversationIdRoute,
   ProfileUsernameRoute: ProfileUsernameRoute,
   SpotsSpotIdRoute: SpotsSpotIdRoute,
   SpotsNewRoute: SpotsNewRoute,
+  ChatIndexRoute: ChatIndexRoute,
   ForgotPasswordIndexRoute: ForgotPasswordIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   NotificationsIndexRoute: NotificationsIndexRoute,

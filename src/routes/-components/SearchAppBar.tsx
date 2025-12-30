@@ -14,10 +14,9 @@ import { useProfile } from 'src/hooks/useProfile';
 import { getSpotsAtom, mapAtom } from 'src/atoms/map';
 import { useMediaQuery, Box, Badge } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
-import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { viewAtom } from 'src/atoms/map';
 import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
-import supabase from 'src/supabase';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',

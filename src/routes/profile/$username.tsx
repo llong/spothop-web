@@ -1,13 +1,13 @@
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router';
 import supabase from '../../supabase';
-import { Container, Box, Typography, Avatar, Card, CardContent, Grid, Divider, Button } from '@mui/material';
-import type { UserProfile } from '../../types';
+import { Container, Box, Typography, Avatar, Card, CardContent, Grid, Divider, Button, Stack } from '@mui/material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '../../atoms/auth';
 import { useState, useEffect } from 'react';
 import { UserContentGallery } from './-components/UserContentGallery';
-import { profileKeys, useProfileQuery, useSocialStatsQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
+import { profileKeys, useProfileQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
 import { profileService } from 'src/services/profileService';
+import { chatService, blockService } from 'src/services/chatService';
 
 // Loader function to fetch profile data
 const loader = async ({ params, context }: { params: { username: string }, context: any }) => {
@@ -139,7 +139,7 @@ const PublicProfileComponent = () => {
                             </Box>
 
                             {user?.user && !isOwnProfile && (
-                                <Box sx={{ mt: 2 }}>
+                                <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
                                     <Button
                                         variant={isFollowing ? "outlined" : "contained"}
                                         onClick={handleFollowToggle}
@@ -147,7 +147,29 @@ const PublicProfileComponent = () => {
                                     >
                                         {isFollowing ? 'Unfollow' : 'Follow'}
                                     </Button>
-                                </Box>
+                                    <Button
+                                        variant="outlined"
+                                        onClick={async () => {
+                                            const chatId = await chatService.getOrCreate1on1(user.user.id, profile.id);
+                                            navigate({ to: '/chat/$conversationId', params: { conversationId: chatId } });
+                                        }}
+                                    >
+                                        Message
+                                    </Button>
+                                    <Button
+                                        variant="text"
+                                        color="error"
+                                        size="small"
+                                        onClick={async () => {
+                                            if (window.confirm(`Block @${profile.username}? They won't be able to message you.`)) {
+                                                await blockService.blockUser(user.user.id, profile.id);
+                                                navigate({ to: '/' });
+                                            }
+                                        }}
+                                    >
+                                        Block
+                                    </Button>
+                                </Stack>
                             )}
 
                             <Divider sx={{ my: 2, width: '100%' }} />
