@@ -1,6 +1,6 @@
 import supabase from "../supabase";
 import type { UserProfile, Spot, LikedMediaItem, UserMediaItem, AppNotification } from "../types";
-import { enrichLocation, getSpotThumbnail, formatMediaItem } from "../utils/media-utils";
+import { getSpotThumbnail } from "../utils/media-utils";
 
 export const PROFILE_SELECT = `id, username, "displayName", "avatarUrl", city, country, "riderType", bio, "instagramHandle"`;
 
