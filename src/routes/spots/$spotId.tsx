@@ -1,6 +1,6 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import supabase from 'src/supabase';
-import { Container, Box, Typography, Snackbar, Divider, Grid, CircularProgress } from '@mui/material';
+import { Container, Box, Typography, Snackbar, Divider, Grid } from '@mui/material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { useState, useMemo } from 'react';

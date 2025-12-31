@@ -264,8 +264,3 @@ ALTER FUNCTION public.spots_in_view SET search_path = public;
 ALTER FUNCTION public.spots_within_distance SET search_path = public;
 ALTER FUNCTION public.update_spot_location SET search_path = public;
 ALTER FUNCTION public.update_updated_at_column SET search_path = public;
-
-
--- 6. ENABLE RLS ON POSTGIS TABLES (Lint 0013)
-ALTER TABLE IF EXISTS public.spatial_ref_sys ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "allow_read_spatial_ref_sys" ON public.spatial_ref_sys FOR SELECT USING (true);
