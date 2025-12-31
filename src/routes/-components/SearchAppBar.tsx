@@ -15,6 +15,9 @@ import { getSpotsAtom, mapAtom } from 'src/atoms/map';
 import { useMediaQuery, Box, Badge } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useAtom, useAtomValue } from 'jotai';
+import { useState, useEffect } from 'react';
+import { CloudOff } from '@mui/icons-material';
+import { Tooltip, Chip } from '@mui/material';
 import { viewAtom } from 'src/atoms/map';
 import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
 
@@ -47,6 +50,21 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 const libraries: any = ["places"];
 
 export default function SearchAppBar() {
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+    useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, []);
+
     const navigate = useNavigate();
     const location = useLocation();
     const isRootPage = location.pathname === '/';
@@ -106,6 +124,18 @@ export default function SearchAppBar() {
                 SpotHop
             </Typography>
             <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+                {!isOnline && (
+                    <Tooltip title="You are currently offline. Some features may be limited.">
+                        <Chip
+                            icon={<CloudOff sx={{ fontSize: '1rem !important' }} />}
+                            label="Offline"
+                            size="small"
+                            color="error"
+                            variant="outlined"
+                            sx={{ borderRadius: 1, fontWeight: 700 }}
+                        />
+                    </Tooltip>
+                )}
                 {isRootPage &&
                     <Search onClick={() => inputRef.current?.focus()}>
                         <SearchIconWrapper>

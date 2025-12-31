@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Box, Button, Grid, Typography, useTheme, useMediaQuery, Fab } from "@mui/material";
 import { z } from 'zod';
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import useSpots from 'src/hooks/useSpots';
 import SpotsListCard from './-components/SpotsListCard';
 import { Map as LeafletMap } from 'leaflet';
@@ -12,6 +13,7 @@ import { filtersAtom } from 'src/atoms/spots';
 import { MyLocation } from '@mui/icons-material';
 import { isLoggedInAtom } from 'src/atoms/auth';
 import { FilterBar } from './-components/FilterBar';
+import { SpotListSkeleton } from './spots/-components/SpotCardSkeleton';
 
 const position = [3.1319, 101.6841] as [number, number]
 
@@ -46,7 +48,7 @@ function HomeComponent() {
     const [map, setMap] = useState<LeafletMap | null>(null);
     const [moved, setMoved] = useState(false);
     const [newSpot, setNewSpot] = useState<{ latlng: L.LatLng, address: string } | null>(null);
-    const { spots, getSpots } = useSpots()
+    const { spots, getSpots, isLoading } = useSpots()
     const setMapAtom = useSetAtom(mapAtom);
     const setGetSpotsAtom = useSetAtom(getSpotsAtom);
     const setBoundsAtom = useSetAtom(boundsAtom);
@@ -173,21 +175,26 @@ function HomeComponent() {
                             url={currentTheme.url}
                             attribution=''
                         />
-                        {spots.map(spot => (
-                            <Marker position={[spot.latitude, spot.longitude]} key={spot.id}>
-                                <Popup closeButton={false}>
-                                    <Box
-                                        sx={{ cursor: 'pointer' }}
-                                        onClick={() => navigate({ to: '/spots/$spotId', params: { spotId: spot.id.toString() } })}
-                                    >
-                                        {spot.photoUrl && <img src={spot.photoUrl} alt={spot.name} style={{ width: '100%', height: 'auto', borderRadius: '4px' }} />}
-                                        <Typography variant="h6">{spot.name}</Typography>
-                                        <Typography variant="body2">{spot.address}</Typography>
-                                        <Typography variant="caption">{spot.description}</Typography>
-                                    </Box>
-                                </Popup>
-                            </Marker>
-                        ))}
+                        <MarkerClusterGroup
+                            chunkedLoading
+                            maxClusterRadius={50}
+                        >
+                            {spots.map(spot => (
+                                <Marker position={[spot.latitude, spot.longitude]} key={spot.id}>
+                                    <Popup closeButton={false}>
+                                        <Box
+                                            sx={{ cursor: 'pointer' }}
+                                            onClick={() => navigate({ to: '/spots/$spotId', params: { spotId: spot.id.toString() } })}
+                                        >
+                                            {spot.photoUrl && <img src={spot.photoUrl} alt={spot.name} style={{ width: '100%', height: 'auto', borderRadius: '4px' }} />}
+                                            <Typography variant="h6" sx={{ color: 'text.primary' }}>{spot.name}</Typography>
+                                            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{spot.address}</Typography>
+                                            <Typography variant="caption" display="block" sx={{ color: 'text.secondary', mt: 0.5 }}>{spot.description}</Typography>
+                                        </Box>
+                                    </Popup>
+                                </Marker>
+                            ))}
+                        </MarkerClusterGroup>
                         {newSpot && (
                             <Popup position={newSpot.latlng}>
                                 <Box>
@@ -223,13 +230,25 @@ function HomeComponent() {
             {listVisible && (
                 <Grid size={{ xs: 12, lg: 4 }} sx={{ height: '100%', overflowY: 'auto', p: 2, bgcolor: 'grey.100' }}>
                     <Typography variant="h5" sx={{ mb: 2 }}>Spots</Typography>
-                    <Grid container spacing={2}>
-                        {spots.length > 0 && spots.map(spot => (
-                            <Grid size={{ xs: 12, lg: 6 }} key={spot.id}>
-                                <SpotsListCard spot={spot} />
-                            </Grid>
-                        ))}
-                    </Grid>
+                    {isLoading ? (
+                        <SpotListSkeleton />
+                    ) : (
+                        <Grid container spacing={2}>
+                            {spots.length > 0 ? (
+                                spots.map(spot => (
+                                    <Grid size={{ xs: 12, lg: 6 }} key={spot.id}>
+                                        <SpotsListCard spot={spot} />
+                                    </Grid>
+                                ))
+                            ) : (
+                                <Grid size={12}>
+                                    <Typography color="text.secondary" sx={{ textAlign: 'center', mt: 4 }}>
+                                        No spots found in this area.
+                                    </Typography>
+                                </Grid>
+                            )}
+                        </Grid>
+                    )}
                 </Grid>
             )}
         </Grid>

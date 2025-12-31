@@ -8,9 +8,11 @@ export default function () {
     const [spots, setSpots] = useAtom(spotsAtom);
     const filters = useAtomValue(filtersAtom);
     const [error, setError] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState(false)
 
     const getSpots = useCallback(async (bounds: LatLngBounds) => {
         if (!bounds) return;
+        setIsLoading(true);
         try {
             let query = supabase
                 .from('spots')
@@ -61,12 +63,15 @@ export default function () {
         } catch (error: any) {
             setError(error.message as string)
             console.error("Exception fetching spots:", error);
+        } finally {
+            setIsLoading(false);
         }
     }, [setSpots, filters]);
 
     return {
         spots,
         error,
+        isLoading,
         getSpots
     }
 }

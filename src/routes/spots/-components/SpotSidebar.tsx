@@ -1,5 +1,5 @@
 import { Paper, Typography, Divider, Stack, Button } from '@mui/material';
-import { Favorite, FavoriteBorder, AddPhotoAlternate } from '@mui/icons-material';
+import { Favorite, FavoriteBorder, AddPhotoAlternate, Directions } from '@mui/icons-material';
 import type { Spot } from '../../../types'
 
 interface SpotSidebarProps {
@@ -11,6 +11,19 @@ interface SpotSidebarProps {
 }
 
 export const SpotSidebar = ({ spot, isFavorited, onToggleFavorite, onAddMedia, isLoggedIn }: SpotSidebarProps) => {
+    const handleOpenInMaps = () => {
+        const { latitude, longitude, name, address } = spot;
+        const query = encodeURIComponent(`${name || 'Spot'} ${address || ''}`);
+
+        // Use apple maps on iOS devices if possible, otherwise google maps
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const url = isIOS
+            ? `maps://?q=${query}&ll=${latitude},${longitude}`
+            : `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+
+        window.open(url, '_blank');
+    };
+
     return (
         <Paper sx={{ p: 3, position: 'sticky', top: 80 }}>
 
@@ -25,11 +38,23 @@ export const SpotSidebar = ({ spot, isFavorited, onToggleFavorite, onAddMedia, i
                 </>
             )}
 
-            {isLoggedIn && (
-                <>
-                    <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2 }} />
 
-                    <Stack spacing={1}>
+            <Stack spacing={1}>
+                <Button
+                    variant="contained"
+                    fullWidth
+                    color="secondary"
+                    size="large"
+                    onClick={handleOpenInMaps}
+                    startIcon={<Directions />}
+                    sx={{ mb: 1 }}
+                >
+                    Get Directions
+                </Button>
+
+                {isLoggedIn && (
+                    <>
                         <Button
                             variant="contained"
                             fullWidth
@@ -49,9 +74,9 @@ export const SpotSidebar = ({ spot, isFavorited, onToggleFavorite, onAddMedia, i
                         >
                             Add Photo/Video
                         </Button>
-                    </Stack>
-                </>
-            )}
+                    </>
+                )}
+            </Stack>
         </Paper>
     );
 };

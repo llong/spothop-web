@@ -81,7 +81,14 @@ export function RootComponent() {
             <AppBar position="sticky" sx={{ backgroundColor: 'white', color: 'black' }}>
                 <SearchAppBar />
             </AppBar>
-            <Box sx={{ pb: isMobile ? 9 : 0 }}>
+            <Box sx={{
+                pb: isMobile ? 9 : 0,
+                animation: 'fade-in 0.3s ease-out',
+                '@keyframes fade-in': {
+                    '0%': { opacity: 0, transform: 'translateY(5px)' },
+                    '100%': { opacity: 1, transform: 'translateY(0)' }
+                }
+            }}>
                 <Outlet />
             </Box>
             {isMobile && <BottomNav />}

@@ -11,6 +11,7 @@ import { SpotCreatorInfo } from './-components/SpotCreatorInfo';
 import { AddMediaDialog } from './-components/AddMediaDialog';
 import { SpotSidebar } from './-components/SpotSidebar';
 import { CommentSection } from './-components/CommentSection';
+import { SpotDetailSkeleton } from './-components/SpotCardSkeleton';
 import { spotKeys, useSpotQuery } from 'src/hooks/useSpotQueries';
 import { spotService } from 'src/services/spotService';
 
@@ -46,6 +47,18 @@ const SpotDetailsComponent = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [addMediaDialogOpen, setAddMediaDialogOpen] = useState(false);
 
+    if (loadingSpot) {
+        return <SpotDetailSkeleton />;
+    }
+
+    if (!spot) {
+        return (
+            <Container sx={{ mt: 5 }}>
+                <Typography variant="h4">Spot not found</Typography>
+            </Container>
+        );
+    }
+
     const toggleFavorite = async () => {
         if (!user?.user.id || !spot) return;
 
@@ -71,22 +84,6 @@ const SpotDetailsComponent = () => {
             setSnackbarOpen(true);
         }
     };
-
-    if (loadingSpot) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
-                <CircularProgress />
-            </Box>
-        );
-    }
-
-    if (!spot) {
-        return (
-            <Container sx={{ mt: 5 }}>
-                <Typography variant="h4">Spot not found</Typography>
-            </Container>
-        );
-    }
 
     return (
         <Box sx={{ bgcolor: 'grey.50', minHeight: '100vh', pb: 4 }}>

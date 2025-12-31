@@ -28,6 +28,9 @@ Icon.Default.mergeOptions({
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
+import { persistQueryClient } from '@tanstack/react-query-persist-client'
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
+import { get, set, del } from 'idb-keyval'
 
 // Create a new router instance
 const queryClient = new QueryClient({
@@ -57,7 +60,20 @@ declare module '@tanstack/react-router' {
 
 const customStore = createStore();
 
+// Configure IndexedDB persister for TanStack Query
+const persister = createAsyncStoragePersister({
+  storage: {
+    getItem: (key) => get(key),
+    setItem: (key, value) => set(key, value),
+    removeItem: (key) => del(key),
+  },
+})
 
+persistQueryClient({
+  queryClient,
+  persister,
+  maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+})
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={customStore} >
