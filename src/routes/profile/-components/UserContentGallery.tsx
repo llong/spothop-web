@@ -134,7 +134,12 @@ export const UserContentGallery = ({ createdSpots, uploadedMedia, isLoading }: U
                                                                 label={spot.difficulty.charAt(0).toUpperCase() + spot.difficulty.slice(1)}
                                                                 size="small"
                                                                 color={spot.difficulty === 'advanced' ? 'error' : spot.difficulty === 'intermediate' ? 'warning' : 'success'}
-                                                                sx={{ height: 20, fontSize: '0.65rem' }}
+                                                                sx={{
+                                                                    height: 20,
+                                                                    fontSize: '0.65rem',
+                                                                    fontWeight: 700,
+                                                                    color: spot.difficulty === 'intermediate' ? 'rgba(0,0,0,0.87)' : 'white'
+                                                                }}
                                                             />
                                                         )}
                                                         {spot.kickout_risk !== undefined && (

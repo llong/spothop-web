@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://spothop-web.vercel.app/sitemap.xml

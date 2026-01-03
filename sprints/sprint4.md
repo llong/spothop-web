@@ -44,6 +44,13 @@ This sprint focuses on the final "hardening" of the application to move from fea
 - [x] **Native Feel**
     - [x] Add route transitions for smoother navigation.
     - [x] Polish spacing and typography consistency across the app.
+- [x] **Performance Optimization**
+    - [x] Identified and removed 1MB of dev-only CSS from production build.
+    - [x] Optimized LCP by implementing priority loading for the first card in the spots list.
+    - [x] Reduced image payloads by implementing automatic WebP conversion and resizing via Supabase Storage.
+    - [x] Refactored Leaflet CSS to use on-demand dynamic imports, reducing the initial load size.
+    - [x] Added network preconnect hints to speed up critical resource discovery.
+    - [x] Optimized offline experience by hiding expensive map components when disconnected.
 
 ## Success Metrics
 - 0 performance warnings in Supabase.

@@ -1,7 +1,32 @@
 {
+    "cleanUrls": true,
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/robots.txt",
+            "destination": "/robots.txt"
+        },
+        {
+            "source": "/manifest.webmanifest",
+            "destination": "/manifest.webmanifest"
+        },
+        {
+            "source": "/favicon.ico",
+            "destination": "/favicon.ico"
+        },
+        {
+            "source": "/registerSW.js",
+            "destination": "/registerSW.js"
+        },
+        {
+            "source": "/sw.js",
+            "destination": "/sw.js"
+        },
+        {
+            "source": "/assets/(.*)",
+            "destination": "/assets/$1"
+        },
+        {
+            "source": "/((?!api/).*)",
             "destination": "/index.html"
         }
     ]

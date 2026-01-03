@@ -15,11 +15,11 @@ import { getSpotsAtom, mapAtom } from 'src/atoms/map';
 import { useMediaQuery, Box, Badge } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useAtom, useAtomValue } from 'jotai';
-import { useState, useEffect } from 'react';
 import { CloudOff } from '@mui/icons-material';
 import { Tooltip, Chip } from '@mui/material';
 import { viewAtom } from 'src/atoms/map';
 import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
+import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -50,21 +50,7 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 const libraries: any = ["places"];
 
 export default function SearchAppBar() {
-    const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-    useEffect(() => {
-        const handleOnline = () => setIsOnline(true);
-        const handleOffline = () => setIsOnline(false);
-
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-
-        return () => {
-            window.removeEventListener('online', handleOnline);
-            window.removeEventListener('offline', handleOffline);
-        };
-    }, []);
-
+    const isOnline = useOnlineStatus();
     const navigate = useNavigate();
     const location = useLocation();
     const isRootPage = location.pathname === '/';
@@ -136,16 +122,20 @@ export default function SearchAppBar() {
                         />
                     </Tooltip>
                 )}
-                {isRootPage &&
+                {isOnline && isRootPage &&
                     <Search onClick={() => inputRef.current?.focus()}>
-                        <SearchIconWrapper>
+                        <SearchIconWrapper aria-label="Search icon">
                             <SearchIcon />
                         </SearchIconWrapper>
                         <PlaceAutocomplete
                             onPlaceSelect={onPlaceSelect}
                             inputRef={inputRef}
                             endAdornment={
-                                <IconButton size="small" onClick={() => setIsFiltersOpen(!isFiltersOpen)}>
+                                <IconButton
+                                    size="small"
+                                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                                    aria-label="Toggle filters"
+                                >
                                     <Badge badgeContent={activeFilterCount} color="primary">
                                         <FilterList />
                                     </Badge>
@@ -154,8 +144,12 @@ export default function SearchAppBar() {
                         />
                     </Search>
                 }
-                {isMobile && isRootPage && (
-                    <IconButton color="inherit" onClick={() => setView(view === 'map' ? 'list' : 'map')}>
+                {isOnline && isMobile && isRootPage && (
+                    <IconButton
+                        color="inherit"
+                        onClick={() => setView(view === 'map' ? 'list' : 'map')}
+                        aria-label={view === 'map' ? 'Switch to list view' : 'Switch to map view'}
+                    >
                         {view === 'map' ? <List /> : <Map />}
                     </IconButton>
                 )}

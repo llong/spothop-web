@@ -25,8 +25,10 @@ import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { useMediaUpload } from 'src/hooks/useMediaUpload';
 import type { VideoAsset } from 'src/types';
+import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
 
 export const NewSpotComponent = () => {
+    const isOnline = useOnlineStatus();
     const { lat, lng } = Route.useSearch();
     const navigate = useNavigate();
 
@@ -248,10 +250,10 @@ export const NewSpotComponent = () => {
                                         fullWidth
                                         variant="contained"
                                         size="large"
-                                        disabled={isSubmitting}
+                                        disabled={isSubmitting || !isOnline}
                                         sx={{ py: 1.5, mt: 2, fontWeight: 'bold', fontSize: '1.1rem' }}
                                     >
-                                        {isSubmitting ? (
+                                        {!isOnline ? 'Offline' : isSubmitting ? (
                                             <Stack direction="row" gap={2} alignItems="center">
                                                 <CircularProgress size={20} color="inherit" />
                                                 {statusMessage}

@@ -5,6 +5,7 @@ import { useMediaLikes } from 'src/hooks/useMediaLikes';
 import type { MediaItem } from 'src/types';
 import { format } from 'date-fns';
 import { Link } from '@tanstack/react-router';
+import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 
 interface SpotGalleryProps {
     media: MediaItem[];
@@ -70,8 +71,10 @@ export const SpotGallery = ({ media: initialMedia }: SpotGalleryProps) => {
             >
                 {currentItem.type === 'photo' ? (
                     <img
-                        src={currentItem.url}
-                        alt="Spot view"
+                        src={getOptimizedImageUrl(currentItem.url, { width: 1200, quality: 85 })}
+                        alt={`Spot photo ${activeIndex + 1} of ${mediaItems.length}`}
+                        loading="eager"
+                        decoding="async"
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     />
                 ) : (
@@ -93,12 +96,14 @@ export const SpotGallery = ({ media: initialMedia }: SpotGalleryProps) => {
                     <>
                         <IconButton
                             onClick={prevSlide}
+                            aria-label="Previous slide"
                             sx={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', bgcolor: 'rgba(0,0,0,0.3)', color: 'white', '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' } }}
                         >
                             <ChevronLeft />
                         </IconButton>
                         <IconButton
                             onClick={nextSlide}
+                            aria-label="Next slide"
                             sx={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', bgcolor: 'rgba(0,0,0,0.3)', color: 'white', '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' } }}
                         >
                             <ChevronRight />
@@ -135,6 +140,7 @@ export const SpotGallery = ({ media: initialMedia }: SpotGalleryProps) => {
                             size="small"
                             onClick={() => handleToggleLike(currentItem)}
                             disabled={loading[currentItem.id]}
+                            aria-label={currentItem.isLiked ? "Unlike" : "Like"}
                             sx={{ color: currentItem.isLiked ? 'error.main' : 'white' }}
                         >
                             {currentItem.isLiked ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
@@ -153,7 +159,7 @@ export const SpotGallery = ({ media: initialMedia }: SpotGalleryProps) => {
             >
                 <DialogTitle sx={{ m: 0, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     All Media ({mediaItems.length})
-                    <IconButton onClick={() => setFullGalleryOpen(false)}>
+                    <IconButton onClick={() => setFullGalleryOpen(false)} aria-label="Close gallery">
                         <Close />
                     </IconButton>
                 </DialogTitle>
@@ -177,7 +183,10 @@ const CardWithMeta = ({ item, onToggleLike, isLoading }: { item: MediaItem, onTo
             {item.type === 'photo' ? (
                 <Box
                     component="img"
-                    src={item.url}
+                    src={getOptimizedImageUrl(item.url, { width: 600, quality: 75 })}
+                    alt={`Photo by ${item.author.username || 'unknown'}`}
+                    loading="lazy"
+                    decoding="async"
                     sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                 />
             ) : (
@@ -185,7 +194,10 @@ const CardWithMeta = ({ item, onToggleLike, isLoading }: { item: MediaItem, onTo
                     {item.thumbnailUrl && (
                         <Box
                             component="img"
-                            src={item.thumbnailUrl}
+                            src={getOptimizedImageUrl(item.thumbnailUrl, { width: 600, quality: 75 })}
+                            alt={`Video thumbnail by ${item.author.username || 'unknown'}`}
+                            loading="lazy"
+                            decoding="async"
                             sx={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
                         />
                     )}
@@ -202,13 +214,23 @@ const CardWithMeta = ({ item, onToggleLike, isLoading }: { item: MediaItem, onTo
                         style={{ textDecoration: 'none', color: 'inherit', pointerEvents: item.author.username ? 'auto' : 'none' }}
                     >
                         <Stack direction="row" spacing={1} alignItems="center">
-                            <Avatar src={item.author.avatarUrl || undefined} sx={{ width: 24, height: 24 }} />
+                            <Avatar
+                                src={item.author.avatarUrl || undefined}
+                                sx={{ width: 24, height: 24 }}
+                                alt={`@${item.author.username || 'unknown'}`}
+                            />
                             <Typography variant="body2" fontWeight={600}>@{item.author.username || 'unknown'}</Typography>
                         </Stack>
                     </Link>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                         <Typography variant="body2" fontWeight={600}>{item.likeCount}</Typography>
-                        <IconButton size="small" onClick={onToggleLike} disabled={isLoading} sx={{ color: item.isLiked ? 'error.main' : 'text.secondary' }}>
+                        <IconButton
+                            size="small"
+                            onClick={onToggleLike}
+                            disabled={isLoading}
+                            aria-label={item.isLiked ? "Unlike" : "Like"}
+                            sx={{ color: item.isLiked ? 'error.main' : 'text.secondary' }}
+                        >
                             {item.isLiked ? <Favorite fontSize="small" /> : <FavoriteBorder fontSize="small" />}
                         </IconButton>
                     </Stack>

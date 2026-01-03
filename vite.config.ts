@@ -16,7 +16,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      devOptions: {
+        enabled: true
+      },
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'robots.txt'],
       manifest: {
         name: 'SpotHop',
         short_name: 'SpotHop',
@@ -43,7 +46,12 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/maps\.googleapis\.com\/maps\/api\/mapsjs\/gen_204.*/i,
+            handler: 'NetworkOnly',
+          },
           {
             urlPattern: /^https:\/\/maps\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
@@ -87,6 +95,19 @@ export default defineConfig({
   server: {
     port: 5000,
     host: true
+  },
+  build: {
+    assetsInlineLimit: 0, // Prevent inlining assets to keep CSS small
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-mui': ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          'vendor-tanstack': ['@tanstack/react-router', '@tanstack/react-query'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-leaflet': ['leaflet', 'react-leaflet', 'leaflet.markercluster'],
+        }
+      }
+    }
   },
   test: {
     globals: true,

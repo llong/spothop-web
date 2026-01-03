@@ -1,5 +1,5 @@
 import { atom } from 'jotai';
-import { LatLngBounds, Map } from 'leaflet';
+import type { LatLngBounds, Map } from 'leaflet';
 
 export const mapAtom = atom<Map | null>(null);
 mapAtom.debugLabel = 'map';

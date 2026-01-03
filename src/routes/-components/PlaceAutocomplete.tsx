@@ -32,5 +32,5 @@ export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment }: Pla
         }
     }, [onPlaceSelect, inputRef]);
 
-    return <StyledInputBase placeholder="Search…" fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'search', ref: inputRef }} />;
+    return <StyledInputBase placeholder="Search…" fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'Search spots', ref: inputRef }} />;
 }

@@ -36,6 +36,8 @@ export interface Spot {
     photoUrl?: string;
     favoriteCount?: number;
     favoritedBy?: string[];
+    thumbnail_small_url?: string;
+    thumbnail_large_url?: string;
 }
 
 export interface VideoAsset {

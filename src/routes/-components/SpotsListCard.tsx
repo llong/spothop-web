@@ -5,12 +5,12 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 
-const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
+const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = ({ spot, priority }) => {
     // Format difficulty with color coding
     const getDifficultyColor = (difficulty?: string) => {
         switch (difficulty) {
             case 'beginner': return 'success';
-            case 'intermediate': return 'warning';
+            case 'intermediate': return 'warning'; // Note: theme needs darker warning text for contrast
             case 'advanced': return 'error';
             default: return 'default';
         }
@@ -35,6 +35,13 @@ const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
 
     const locationString = getLocationString();
 
+    const getOptimizedImageUrl = (url: string) => {
+        if (!url || !url.includes('supabase.co/storage/v1/object/public/')) return url;
+        // Add Supabase image transformation parameters
+        // width=400 is usually enough for these cards
+        return `${url}?width=400&format=webp&quality=80`;
+    };
+
     return (
         <Link to="/spots/$spotId" params={{ spotId: spot.id.toString() }} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
             <Card
@@ -57,8 +64,11 @@ const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
                         {spot.photoUrl ? (
                             <CardMedia
                                 component="img"
-                                image={spot.photoUrl}
+                                image={getOptimizedImageUrl(spot.thumbnail_small_url || spot.thumbnail_large_url || spot.photoUrl || '')}
                                 alt={spot.name}
+                                loading={priority ? "eager" : "lazy"}
+                                decoding="async"
+                                {...(priority ? { fetchpriority: "high" } : {})}
                                 sx={{
                                     position: 'absolute',
                                     top: 0,
@@ -147,8 +157,14 @@ const SpotsListCard: React.FC<{ spot: Spot }> = ({ spot }) => {
                                     label={spot.difficulty.charAt(0).toUpperCase() + spot.difficulty.slice(1)}
                                     size="small"
                                     color={getDifficultyColor(spot.difficulty)}
-                                    variant="outlined"
-                                    sx={{ fontWeight: 600, height: 24, fontSize: '0.75rem' }}
+                                    variant="filled"
+                                    sx={{
+                                        fontWeight: 700,
+                                        height: 24,
+                                        fontSize: '0.75rem',
+                                        // Improve contrast for warning/success colors
+                                        color: spot.difficulty === 'intermediate' ? 'rgba(0,0,0,0.87)' : 'white'
+                                    }}
                                 />
                             )}
                             {kickoutRisk && (

@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import supabase from "src/supabase";
 import { useAtom, useAtomValue } from "jotai";
 import { spotsAtom, filtersAtom } from "src/atoms/spots";
-import { LatLngBounds } from "leaflet";
+import type { LatLngBounds } from "leaflet";
 
 export default function () {
     const [spots, setSpots] = useAtom(spotsAtom);

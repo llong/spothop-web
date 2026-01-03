@@ -14,6 +14,7 @@ import type { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useAtom } from "jotai";
 import { userAtom } from "../../../atoms/auth";
+import { getOptimizedImageUrl } from "src/utils/imageOptimization";
 
 interface AvatarUploadProps {
     avatarUrl: string | null;
@@ -163,13 +164,14 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
             </Modal>
             <Box sx={{ position: 'relative', display: 'inline-block' }}>
                 <Avatar
-                    src={avatarUrl || ""}
+                    src={avatarUrl ? getOptimizedImageUrl(avatarUrl, { width: 160, quality: 80 }) : ""}
+                    alt="User profile picture"
                     sx={{ width: 80, height: 80, mb: 2 }}
                 />
                 <IconButton
                     color="primary"
-                    aria-label="upload picture"
-                    component="label"
+                    aria-label="upload profile picture"
+                    onClick={() => fileInputRef.current?.click()}
                     sx={{
                         position: 'absolute',
                         bottom: 0,
@@ -180,13 +182,20 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
                         },
                     }}
                 >
-                    <input hidden accept="image/*" type="file" ref={fileInputRef} onChange={onSelectFile} onClick={() => {
+                    <PhotoCamera />
+                </IconButton>
+                <input
+                    hidden
+                    accept="image/*"
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={onSelectFile}
+                    onClick={() => {
                         if (fileInputRef.current) {
                             fileInputRef.current.value = "";
                         }
-                    }} />
-                    <PhotoCamera />
-                </IconButton>
+                    }}
+                />
             </Box>
         </>
     );

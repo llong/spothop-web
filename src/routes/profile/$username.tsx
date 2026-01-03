@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { UserContentGallery } from './-components/UserContentGallery';
 import { profileKeys, useProfileQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
 import { profileService } from 'src/services/profileService';
+import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 import { chatService, blockService } from 'src/services/chatService';
 
 // Loader function to fetch profile data
@@ -122,18 +123,22 @@ const PublicProfileComponent = () => {
                 <Grid size={{ xs: 12, md: 8 }}>
                     <Card>
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-                            <Avatar src={profile.avatarUrl || ""} sx={{ width: 120, height: 120, mb: 2 }} />
-                            <Typography variant="h4" fontWeight={800}>{profile.displayName || profile.username}</Typography>
-                            <Typography variant="subtitle1" color="text.secondary" gutterBottom>@{profile.username}</Typography>
-                            <Typography variant="body1" color="text.secondary">{profile.city}, {profile.country}</Typography>
+                            <Avatar
+                                src={profile.avatarUrl ? getOptimizedImageUrl(profile.avatarUrl, { width: 240, quality: 80 }) : ""}
+                                alt={`${profile.displayName || profile.username}'s avatar`}
+                                sx={{ width: 120, height: 120, mb: 2 }}
+                            />
+                            <Typography variant="h4" component="h1" fontWeight={800}>{profile.displayName || profile.username}</Typography>
+                            <Typography variant="subtitle1" component="p" color="text.secondary" gutterBottom>@{profile.username}</Typography>
+                            <Typography variant="body1" component="p" color="text.secondary">{profile.city}, {profile.country}</Typography>
 
                             <Box sx={{ display: 'flex', gap: 4, my: 2 }}>
                                 <Box>
-                                    <Typography variant="h6">{profile.followerCount || 0}</Typography>
+                                    <Typography variant="h5" fontWeight={700}>{profile.followerCount || 0}</Typography>
                                     <Typography variant="caption" color="text.secondary">Followers</Typography>
                                 </Box>
                                 <Box>
-                                    <Typography variant="h6">{profile.followingCount || 0}</Typography>
+                                    <Typography variant="h5" fontWeight={700}>{profile.followingCount || 0}</Typography>
                                     <Typography variant="caption" color="text.secondary">Following</Typography>
                                 </Box>
                             </Box>
@@ -173,16 +178,16 @@ const PublicProfileComponent = () => {
                             )}
 
                             <Divider sx={{ my: 2, width: '100%' }} />
-                            <Typography variant="h6">Bio</Typography>
+                            <Typography variant="h6" component="h2" fontWeight={700}>Bio</Typography>
                             <Typography variant="body1" sx={{ mt: 1 }}>{profile.bio}</Typography>
                             <Divider sx={{ my: 2, width: '100%' }} />
                             <Box>
-                                <Typography variant="h6">Rider Type</Typography>
-                                <Typography variant="body1">{profile.riderType}</Typography>
+                                <Typography variant="h6" component="h2" fontWeight={700}>Rider Type</Typography>
+                                <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>{profile.riderType}</Typography>
                             </Box>
                             {profile.instagramHandle && (
                                 <Box sx={{ mt: 2 }}>
-                                    <Typography variant="h6">Instagram</Typography>
+                                    <Typography variant="h6" component="h2" fontWeight={700}>Instagram</Typography>
                                     <Typography variant="body1">@{profile.instagramHandle}</Typography>
                                 </Box>
                             )}
@@ -193,7 +198,7 @@ const PublicProfileComponent = () => {
                 <Grid size={{ xs: 12, md: 8 }}>
                     <Card>
                         <CardContent>
-                            <Typography variant="h6" gutterBottom>
+                            <Typography variant="h6" component="h2" gutterBottom fontWeight={700}>
                                 {profile.username}'s Activity
                             </Typography>
                             <UserContentGallery

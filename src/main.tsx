@@ -7,25 +7,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import 'leaflet/dist/leaflet.css'
 import './index.css'
-import { DevTools } from 'jotai-devtools';
-import 'jotai-devtools/styles.css';
-import { Icon } from 'leaflet';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// @ts-ignore
-delete Icon.Default.prototype._getIconUrl;
-
-Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-});
-
-
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
@@ -75,16 +57,25 @@ persistQueryClient({
   maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 })
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <Provider store={customStore} >
-    <QueryClientProvider client={queryClient}>
-      {import.meta.env.MODE !== 'production' ? (
-        <>
-          <DevTools store={customStore} />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </>
-      ) : null}
-      <RouterProvider router={router} />
-    </QueryClientProvider>
-  </Provider>,
-)
+// For now, let's just use a more robust way to exclude it from production
+const renderApp = async () => {
+  let DevToolsComponent = null;
+
+  if (import.meta.env.MODE !== 'production') {
+    const { DevTools } = await import('jotai-devtools');
+    await import('jotai-devtools/styles.css');
+    DevToolsComponent = DevTools;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <Provider store={customStore} >
+      <QueryClientProvider client={queryClient}>
+        {DevToolsComponent && <DevToolsComponent store={customStore} />}
+        {import.meta.env.MODE !== 'production' && <ReactQueryDevtools initialIsOpen={false} />}
+        <RouterProvider router={router} />
+      </QueryClientProvider>
+    </Provider>,
+  )
+};
+
+renderApp();
