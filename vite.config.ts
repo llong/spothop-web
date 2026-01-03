@@ -114,7 +114,16 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
     coverage: {
-      provider: 'v8'
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'json-summary'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/**/*.test.{ts,tsx}',
+        'src/**/__tests__/**',
+        'src/routeTree.gen.ts',
+        'src/main.tsx',
+        'src/supabase.ts'
+      ]
     },
   }
 })

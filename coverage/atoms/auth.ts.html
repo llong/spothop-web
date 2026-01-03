@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">85.71% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>6/7</span>
+                <span class='fraction'>21/21</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>1/1</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>20/20</span>
             </div>
         
             
@@ -80,7 +80,31 @@
 <a name='L15'></a><a href='#L15'>15</a>
 <a name='L16'></a><a href='#L16'>16</a>
 <a name='L17'></a><a href='#L17'>17</a>
-<a name='L18'></a><a href='#L18'>18</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -90,18 +114,42 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { atom } from 'jotai'
 import type { Session, User, WeakPassword } from '@supabase/supabase-js'
-import type { UserProfile } from '../types'
+import type { UserProfile, Spot, LikedMediaItem, UserMediaItem, AppNotification } from '../types'
 &nbsp;
-type Auth = {
+export type Auth = {
     user: User;
     session: Session;
     weakPassword?: WeakPassword;
@@ -109,11 +157,35 @@ type Auth = {
 &nbsp;
 export const userAtom = atom&lt;Auth | null&gt;(null)
 userAtom.debugLabel = 'user';
-export const isLoggedInAtom = atom(<span class="fstat-no" title="function not covered" >(g</span>et) =&gt; <span class="cstat-no" title="statement not covered" >get(userAtom) !== null)</span>
+export const isLoggedInAtom = atom((get) =&gt; get(userAtom) !== null)
 isLoggedInAtom.debugLabel = 'isLoggedIn';
 &nbsp;
 export const profileAtom = atom&lt;UserProfile | null&gt;(null);
 profileAtom.debugLabel = 'profile';
+&nbsp;
+// Social Data Atoms
+export const favoriteSpotsAtom = atom&lt;Spot[]&gt;([]);
+export const likedMediaAtom = atom&lt;LikedMediaItem[]&gt;([]);
+export const followersCountAtom = atom&lt;number&gt;(0);
+export const followingCountAtom = atom&lt;number&gt;(0);
+&nbsp;
+// Content Data Atoms
+export const createdSpotsAtom = atom&lt;Spot[]&gt;([]);
+export const userMediaAtom = atom&lt;UserMediaItem[]&gt;([]);
+&nbsp;
+// Loading States
+export const profileLoadingAtom = atom&lt;boolean&gt;(false);
+export const socialLoadingAtom = atom&lt;boolean&gt;(false);
+export const contentLoadingAtom = atom&lt;boolean&gt;(false);
+&nbsp;
+// Global Fetch Tracking to prevent redundant requests across component instances
+export const fetchedUserIdsAtom = atom&lt;Set&lt;string&gt;&gt;(new Set&lt;string&gt;());
+&nbsp;
+// Notifications Data Atoms
+export const notificationsAtom = atom&lt;AppNotification[]&gt;([]);
+export const unreadNotificationsCountAtom = atom&lt;number&gt;(0);
+export const notificationsLoadingAtom = atom&lt;boolean&gt;(false);
+export const fetchedNotificationsUserIdAtom = atom&lt;string | null&gt;(null);
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -121,7 +193,7 @@ profileAtom.debugLabel = 'profile';
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-19T03:44:44.508Z
+                at 2026-01-03T10:48:14.436Z
             </div>
         <script src="../prettify.js"></script>
         <script>

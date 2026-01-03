@@ -4,12 +4,17 @@ import { RootComponent, Route } from "./__root";
 import { createRouter, RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import "@testing-library/jest-dom";
 import { Provider, createStore } from "jotai";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { userAtom } from "src/atoms/auth";
 
 // Mock dependencies
 vi.mock("src/hooks/useDevTools", () => ({
   useDevtools: vi.fn(),
+}));
+
+vi.mock("src/hooks/useProfileQueries", () => ({
+  useProfileQuery: vi.fn(() => ({ data: null, isLoading: false })),
 }));
 
 let authStateChangeCallback: any;
@@ -50,6 +55,13 @@ vi.mock("@mui/material", async (importOriginal) => {
 import { useMediaQuery } from "@mui/material";
 
 const theme = createTheme();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
 const createTestRouter = () => {
   const history = createMemoryHistory();
@@ -71,11 +83,13 @@ describe("Root Route", () => {
 
     const router = createTestRouter();
     render(
-      <Provider>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <Provider>
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </Provider>
+      </QueryClientProvider>
     );
 
     expect(await screen.findByTestId("search-app-bar")).toBeInTheDocument();
@@ -87,11 +101,13 @@ describe("Root Route", () => {
 
     const router = createTestRouter();
     render(
-      <Provider>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <Provider>
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </Provider>
+      </QueryClientProvider>
     );
 
     expect(await screen.findByTestId("bottom-nav")).toBeInTheDocument();
@@ -103,11 +119,13 @@ describe("Root Route", () => {
 
     const router = createTestRouter();
     render(
-      <Provider>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <Provider>
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </Provider>
+      </QueryClientProvider>
     );
 
     // Ensure SearchAppBar is present to confirm render happened
@@ -122,17 +140,19 @@ describe("Root Route", () => {
     const router = createTestRouter();
 
     render(
-      <Provider store={store}>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <Provider store={store}>
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </Provider>
+      </QueryClientProvider>
     );
 
     // Wait for component to mount and effect to run
     await screen.findByTestId("search-app-bar");
 
-    const mockSession = { user: { id: "123" } };
+    const mockSession = { user: { id: "123" }, access_token: "test-token" };
 
     expect(authStateChangeCallback).toBeDefined();
 
@@ -151,16 +171,18 @@ describe("Root Route", () => {
     (useMediaQuery as any).mockReturnValue(false);
     const store = createStore();
     // Set initial user
-    store.set(userAtom, { user: { id: "123" } as any, session: {} as any });
+    store.set(userAtom, { user: { id: "123" } as any, session: { access_token: 'old-token' } as any });
 
     const router = createTestRouter();
 
     render(
-      <Provider store={store}>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <Provider store={store}>
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </Provider>
+      </QueryClientProvider>
     );
 
     await screen.findByTestId("search-app-bar");
@@ -179,11 +201,13 @@ describe("Root Route", () => {
     (useMediaQuery as any).mockReturnValue(false);
     const router = createTestRouter();
     const { unmount } = render(
-      <Provider>
-        <ThemeProvider theme={theme}>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </Provider>
+      <QueryClientProvider client={queryClient}>
+        <Provider>
+          <ThemeProvider theme={theme}>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </Provider>
+      </QueryClientProvider>
     );
 
     await screen.findByTestId("search-app-bar");
