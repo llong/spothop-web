@@ -11,8 +11,6 @@ import {
     Switch,
     FormControlLabel,
     Stack,
-    Collapse,
-    Paper,
     Button,
     Popover
 } from '@mui/material';

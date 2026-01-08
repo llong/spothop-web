@@ -1,6 +1,5 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
 import { SpotGallery } from './-components/SpotGallery'
-import { SpotHeader } from './-components/SpotHeader'
 import { SpotInfo } from './-components/SpotInfo'
 import { SpotSidebar } from './-components/SpotSidebar'
 import { SpotCreatorInfo } from './-components/SpotCreatorInfo'
