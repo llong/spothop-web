@@ -20,6 +20,6 @@ describe('imageOptimization', () => {
 
     it('handles empty or null URLs', () => {
         expect(getOptimizedImageUrl('')).toBe('');
-        expect(getOptimizedImageUrl(null)).toBe(null);
+        expect(getOptimizedImageUrl(null as any)).toBe('');
     });
 });

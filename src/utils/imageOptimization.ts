@@ -5,8 +5,7 @@
  * @param url The image URL
  * @returns The image URL
  */
-export function getOptimizedImageUrl(url: string | null | undefined): string | null {
-    if (url === null) return null;
+export function getOptimizedImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     return url;
 }
