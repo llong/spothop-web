@@ -63,23 +63,34 @@ ALTER TABLE content_reports ENABLE ROW LEVEL SECURITY;
 -- 7. RLS Policies
 
 -- Spot Comments
+DROP POLICY IF EXISTS "Anyone can view spot comments" ON spot_comments;
+DROP POLICY IF EXISTS "Users can insert their own comments" ON spot_comments;
+DROP POLICY IF EXISTS "Users can update their own comments" ON spot_comments;
+DROP POLICY IF EXISTS "Users can delete their own comments" ON spot_comments;
 CREATE POLICY "Anyone can view spot comments" ON spot_comments FOR SELECT USING (true);
 CREATE POLICY "Users can insert their own comments" ON spot_comments FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can update their own comments" ON spot_comments FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete their own comments" ON spot_comments FOR DELETE USING (auth.uid() = user_id);
 
 -- Comment Reactions
+DROP POLICY IF EXISTS "Anyone can view comment reactions" ON comment_reactions;
+DROP POLICY IF EXISTS "Users can manage their own reactions" ON comment_reactions;
 CREATE POLICY "Anyone can view comment reactions" ON comment_reactions FOR SELECT USING (true);
 CREATE POLICY "Users can manage their own reactions" ON comment_reactions FOR ALL USING (auth.uid() = user_id);
 
 -- Notifications
+DROP POLICY IF EXISTS "Users can view their own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can update their own notifications" ON notifications;
+DROP POLICY IF EXISTS "Users can delete their own notifications" ON notifications;
 CREATE POLICY "Users can view their own notifications" ON notifications FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update their own notifications" ON notifications FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can delete their own notifications" ON notifications FOR DELETE USING (auth.uid() = user_id);
 
 -- Content Reports
+DROP POLICY IF EXISTS "Users can create reports" ON content_reports;
+DROP POLICY IF EXISTS "Anyone can view report counts" ON content_reports;
 CREATE POLICY "Users can create reports" ON content_reports FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Anyone can view report counts" ON content_reports FOR SELECT USING (true);
+CREATE POLICY "Anyone can view report counts" ON content_reports FOR SELECT USING (auth.role() = 'authenticated');
 -- Admin only policies would go here for DELETE
 
 -- 8. Trigger for Reply Notifications
@@ -101,6 +112,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_comment_reply ON spot_comments;
 CREATE TRIGGER on_comment_reply
     AFTER INSERT ON spot_comments
     FOR EACH ROW EXECUTE FUNCTION handle_comment_reply_notification();
@@ -114,6 +126,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_spot_comments_updated_at ON spot_comments;
 CREATE TRIGGER update_spot_comments_updated_at
     BEFORE UPDATE ON spot_comments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
