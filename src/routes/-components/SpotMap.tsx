@@ -1,4 +1,4 @@
-import { Box, Button, Typography, Fab } from "@mui/material";
+import { Box, Button, Typography, Fab, CircularProgress } from "@mui/material";
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { MyLocation } from '@mui/icons-material';
@@ -26,7 +26,8 @@ Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-const position = [3.1319, 101.6841] as [number, number]
+// Default center if geolocation fails
+const DEFAULT_CENTER = [3.1319, 101.6841] as [number, number];
 
 const currentTheme = {
     name: 'Positron (Light)',
@@ -62,6 +63,8 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
     const [map, setMap] = useState<LeafletMap | null>(null);
     const [moved, setMoved] = useState(false);
     const [newSpot, setNewSpot] = useState<{ latlng: L.LatLng, address: string } | null>(null);
+    const [initialCenterFound, setInitialCenterFound] = useState(false);
+    const [locating, setLocating] = useState(false);
 
     const setMapAtom = useSetAtom(mapAtom);
     const setBoundsAtom = useSetAtom(boundsAtom);
@@ -105,15 +108,31 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
     }, [isLoggedIn]);
 
     useEffect(() => {
-        if (map && !lat && !lng) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const { latitude, longitude } = position.coords;
-                map.flyTo([latitude, longitude], 12, {
-                    duration: 1
-                });
-            });
+        if (map && !lat && !lng && !initialCenterFound && !locating) {
+            console.log('Attempting initial geolocation...');
+            setLocating(true);
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    console.log('Initial geolocation successful:', latitude, longitude);
+                    map.setView([latitude, longitude], 12);
+                    setInitialCenterFound(true);
+                    setLocating(false);
+                },
+                (error) => {
+                    console.error('Initial geolocation failed:', error);
+                    setInitialCenterFound(true); // Stop trying even on error
+                    setLocating(false);
+
+                    // Fallback: If geolocation fails, try to at least zoom out or show a message
+                    if (error.code === error.PERMISSION_DENIED) {
+                        console.warn('Location permission denied by user.');
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
         }
-    }, [map, lat, lng]);
+    }, [map, lat, lng, initialCenterFound, locating]);
 
     useEffect(() => {
         if (lat && lng && map) {
@@ -142,9 +161,16 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
                 }
             },
             (error) => {
-                alert('Unable to retrieve your location.');
+                let message = 'Unable to retrieve your location.';
+                if (error.code === error.PERMISSION_DENIED) {
+                    message = 'Location access was denied. Please check your browser permissions.';
+                } else if (error.code === error.TIMEOUT) {
+                    message = 'Location request timed out. Please try again.';
+                }
+                alert(message);
                 console.error(error);
-            }
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
         );
     };
 
@@ -164,8 +190,8 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
             )}
 
             <MapContainer
-                center={lat && lng ? [lat, lng] : position}
-                zoom={12}
+                center={lat && lng ? [lat, lng] : DEFAULT_CENTER}
+                zoom={lat && lng ? 17 : 12}
                 scrollWheelZoom={true}
                 style={{ height: '100%', width: '100%' }}
                 attributionControl={false}
@@ -224,15 +250,52 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
                         </Box>
                     </Popup>
                 )}
-                <Fab
-                    color="primary"
-                    aria-label="center map"
-                    onClick={centerMap}
-                    sx={{ position: 'absolute', bottom: { xs: 16 + 56, lg: 16 }, right: 16 }}
-                >
-                    <MyLocation />
-                </Fab>
             </MapContainer>
+
+            {locating && (
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 20,
+                        right: 20,
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        p: 1,
+                        borderRadius: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        zIndex: 1100,
+                        boxShadow: 2
+                    }}
+                >
+                    <CircularProgress size={20} />
+                    <Typography variant="caption">Finding you...</Typography>
+                </Box>
+            )}
+
+            <Fab
+                aria-label="center map"
+                onClick={centerMap}
+                disabled={locating}
+                size="small"
+                sx={{
+                    position: 'absolute',
+                    bottom: {
+                        xs: 'calc(16px + 56px + env(safe-area-inset-bottom, 0px))',
+                        lg: 24
+                    },
+                    right: 16,
+                    zIndex: 1000,
+                    bgcolor: 'white',
+                    color: 'text.primary',
+                    '&:hover': {
+                        bgcolor: 'grey.100',
+                    },
+                    boxShadow: 3
+                }}
+            >
+                {locating ? <CircularProgress size={20} color="inherit" /> : <MyLocation fontSize="small" />}
+            </Fab>
         </Box>
     );
 };

@@ -124,7 +124,7 @@ const PublicProfileComponent = () => {
                     <Card>
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                             <Avatar
-                                src={profile.avatarUrl ? getOptimizedImageUrl(profile.avatarUrl, { width: 240, quality: 80 }) : ""}
+                                src={profile.avatarUrl ? getOptimizedImageUrl(profile.avatarUrl) : ""}
                                 alt={`${profile.displayName || profile.username}'s avatar`}
                                 sx={{ width: 120, height: 120, mb: 2 }}
                             />

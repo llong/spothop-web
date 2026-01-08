@@ -4,6 +4,9 @@ export interface LocationInfo {
     city?: string;
     state?: string;
     country?: string;
+    streetNumber?: string;
+    street?: string;
+    formattedAddress?: string;
 }
 
 const cache: Record<string, LocationInfo> = {};
@@ -33,6 +36,14 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
                 c.types.includes('country')
             );
 
+            const streetNumber = result.address_components.find((c: any) =>
+                c.types.includes('street_number')
+            )?.long_name;
+
+            const route = result.address_components.find((c: any) =>
+                c.types.includes('route')
+            )?.long_name;
+
             // For some regions, the locality might be missing, use administrative_area_level_1 or 2 as fallback
             const city = cityComponent?.long_name ||
                 result.address_components.find((c: any) => c.types.includes('administrative_area_level_2'))?.long_name;
@@ -40,7 +51,10 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
             const info = {
                 city: city,
                 state: stateComponent?.short_name,
-                country: countryComponent?.long_name
+                country: countryComponent?.long_name,
+                streetNumber,
+                street: route,
+                formattedAddress: result.formatted_address
             };
 
             cache[cacheKey] = info;

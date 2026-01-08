@@ -90,7 +90,7 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
         );
 
         const blob = await new Promise<Blob | null>((resolve) => {
-            canvas.toBlob(resolve, 'image/jpeg', 0.9);
+            canvas.toBlob(resolve, 'image/webp', 0.9);
         });
 
         if (!blob) {
@@ -105,10 +105,9 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
             if (!file) {
                 throw new Error("No file selected.");
             }
-            const fileExt = file.name.split('.').pop();
-            const filePath = `${user?.user.id}.${fileExt}`;
+            const filePath = `${user?.user.id}.webp`;
 
-            const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, blob, { upsert: true, cacheControl: '0' });
+            const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, blob, { contentType: 'image/webp', upsert: true, cacheControl: '0' });
 
             if (uploadError) {
                 throw uploadError;
@@ -164,9 +163,9 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
             </Modal>
             <Box sx={{ position: 'relative', display: 'inline-block' }}>
                 <Avatar
-                    src={avatarUrl ? getOptimizedImageUrl(avatarUrl, { width: 160, quality: 80 }) : ""}
+                    src={avatarUrl ? getOptimizedImageUrl(avatarUrl) : ""}
                     alt="User profile picture"
-                    sx={{ width: 80, height: 80, mb: 2 }}
+                    sx={{ width: 160, height: 160, mb: 2, border: 2, borderColor: 'primary.main' }}
                 />
                 <IconButton
                     color="primary"

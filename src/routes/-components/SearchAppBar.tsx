@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import SearchIcon from '@mui/icons-material/Search';
 import { Map, List, FilterList } from '@mui/icons-material';
 import { useLoadScript } from '@react-google-maps/api';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { PlaceAutocomplete } from './PlaceAutocomplete';
 import { NavigationItems } from './NavigationItems';
 import { NotificationBell } from './NotificationBell';
@@ -20,6 +20,7 @@ import { Tooltip, Chip } from '@mui/material';
 import { viewAtom } from 'src/atoms/map';
 import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
 import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
+import { FilterBar } from './FilterBar';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -68,7 +69,8 @@ export default function SearchAppBar() {
     const { profile } = useProfile(undefined, false);
     const [view, setView] = useAtom(viewAtom);
     const [isFiltersOpen, setIsFiltersOpen] = useAtom(isFiltersOpenAtom);
-    const filters = useAtomValue(filtersAtom);
+    const [filters, setFilters] = useAtom(filtersAtom);
+    const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
 
     const activeFilterCount = [
         filters.difficulty && filters.difficulty !== 'all',
@@ -131,15 +133,25 @@ export default function SearchAppBar() {
                             onPlaceSelect={onPlaceSelect}
                             inputRef={inputRef}
                             endAdornment={
-                                <IconButton
-                                    size="small"
-                                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                                    aria-label="Toggle filters"
-                                >
-                                    <Badge badgeContent={activeFilterCount} color="primary">
-                                        <FilterList />
-                                    </Badge>
-                                </IconButton>
+                                <>
+                                    <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                            setFilterAnchorEl(e.currentTarget);
+                                            setIsFiltersOpen(!isFiltersOpen);
+                                        }}
+                                        aria-label="Toggle filters"
+                                    >
+                                        <Badge badgeContent={activeFilterCount} color="primary">
+                                            <FilterList />
+                                        </Badge>
+                                    </IconButton>
+                                    <FilterBar
+                                        anchorEl={filterAnchorEl}
+                                        filters={filters}
+                                        onFiltersChange={setFilters}
+                                    />
+                                </>
                             }
                         />
                     </Search>

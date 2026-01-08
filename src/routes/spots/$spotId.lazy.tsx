@@ -76,26 +76,20 @@ function SpotDetailsComponent() {
 
     return (
         <Box sx={{ bgcolor: 'grey.50', minHeight: '100vh', pb: 4 }}>
-            <SpotHeader
-                spotId={spot.id}
-                spotName={spot.name}
-                onBack={() => router.history.back()}
-                isFavorited={isFavorited}
-                favoriteCount={spot.favoriteCount}
-                flagCount={spot.flagCount}
-                onToggleFavorite={toggleFavorite}
-                isLoggedIn={!!user?.user}
-                onReportSuccess={() => {
-                    setSnackbarMessage('Thank you for your report. Our moderators will review it.');
-                    setSnackbarOpen(true);
-                }}
-            />
-
             <Container maxWidth="lg" sx={{ mt: 3 }}>
                 <SpotGallery media={spot.media} />
                 <Grid container spacing={3}>
                     <Grid size={{ xs: 12, md: 8 }}>
-                        <SpotInfo spot={spot} />
+                        <SpotInfo
+                            spot={spot}
+                            isFavorited={isFavorited}
+                            onToggleFavorite={toggleFavorite}
+                            isLoggedIn={!!user?.user}
+                            onReportSuccess={() => {
+                                setSnackbarMessage('Thank you for your report. Our moderators will review it.');
+                                setSnackbarOpen(true);
+                            }}
+                        />
                     </Grid>
                     <Grid size={{ xs: 12, md: 4 }}>
                         <SpotSidebar

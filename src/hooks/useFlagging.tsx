@@ -25,9 +25,10 @@ export function useFlagging() {
 
         try {
             const { error: insertError } = await supabase
-                .from('spot_flags')
+                .from('content_reports')
                 .insert({
-                    spot_id: spotId,
+                    target_id: spotId,
+                    target_type: 'spot',
                     user_id: user.user.id,
                     reason,
                     details: details?.trim() || null

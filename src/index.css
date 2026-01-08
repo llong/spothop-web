@@ -3,3 +3,44 @@ body {
   padding: 0;
   font-family: 'Roboto', sans-serif;
 }
+
+/* DevTools adjustments */
+
+/* TanStack Query DevTools Button Container */
+.tsqd-open-btn-container {
+  bottom: 100px !important;
+  left: 12px !important;
+  width: 24px !important;
+  height: 24px !important;
+  transform: none !important;
+}
+
+.tsqd-open-btn-container button {
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  min-width: unset !important;
+}
+
+/* Jotai DevTools Button (Aggressive Overrides for Mantine-based styles) */
+button.jotai-devtools-trigger-button {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  left: 12px !important;
+  bottom: 140px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  position: fixed !important;
+  z-index: 99999 !important;
+}
+
+/* Handle icon/image sizes within the shrunken buttons */
+.tsqd-open-btn-container svg,
+button.jotai-devtools-trigger-button svg,
+button.jotai-devtools-trigger-button img {
+  width: 16px !important;
+  height: 16px !important;
+  margin: 0 !important;
+}

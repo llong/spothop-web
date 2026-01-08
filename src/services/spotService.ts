@@ -51,7 +51,7 @@ export const spotService = {
 
         const flagCountPromise = supabase
             .from('content_reports')
-            .select('*', { count: 'exact', head: true })
+            .select('*', { count: 'exact' })
             .eq('target_id', spotId)
             .eq('target_type', 'spot');
 
@@ -61,6 +61,8 @@ export const spotService = {
             favoriteCountPromise,
             flagCountPromise
         ]);
+
+        console.log(`[spotService] Fetching details for ${spotId}. Flags found: ${flagCountResult.count}`);
 
         if (spotResult.error) throw spotResult.error;
         const spotData = spotResult.data;

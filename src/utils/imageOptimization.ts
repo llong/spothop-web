@@ -1,53 +1,14 @@
 /**
- * Generates a Supabase transformation URL for an image.
- * Uses Supabase's built-in image optimization.
- * https://supabase.com/docs/guides/storage/image-transformations
+ * Returns the image URL.
+ * (Supabase Image Transformation removed as it is a paid feature)
  * 
- * @param url The original image URL from Supabase storage
- * @param options Transformation options (width, height, quality, format)
- * @returns The optimized image URL
+ * @param url The image URL
+ * @returns The image URL
  */
-export function getOptimizedImageUrl(
-    url: string,
-    options: {
-        width?: number;
-        height?: number;
-        quality?: number;
-        format?: 'origin' | 'webp' | 'avif';
-        resize?: 'cover' | 'contain' | 'fill';
-    } = {}
-): string {
-    if (!url) return url;
-
-    // Check if it's a Supabase URL
-    if (!url.includes('.supabase.co/storage/v1/object/public/')) {
-        return url;
-    }
-
-    const {
-        width,
-        height,
-        quality = 80,
-        format = 'webp',
-        resize = 'cover'
-    } = options;
-
-    // Supabase transformation URL format:
-    // https://[PROJECT_ID].supabase.co/storage/v1/render/image/public/[BUCKET]/[PATH]?width=500&height=500&quality=80&format=webp&resize=cover
-
-    // Convert object/public to render/image/public
-    const transformedBaseUrl = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-
-    const separator = transformedBaseUrl.includes('?') ? '&' : '?';
-
-    const params = new URLSearchParams();
-    if (width) params.append('width', width.toString());
-    if (height) params.append('height', height.toString());
-    params.append('quality', quality.toString());
-    params.append('format', format);
-    params.append('resize', resize);
-
-    return `${transformedBaseUrl}${separator}${params.toString()}`;
+export function getOptimizedImageUrl(url: string | null | undefined): string | null {
+    if (url === null) return null;
+    if (!url) return '';
+    return url;
 }
 
 /**
@@ -98,7 +59,7 @@ async function resizeImage(file: File, maxWidth: number, maxHeight: number): Pro
                 } else {
                     reject(new Error('Canvas to Blob failed'));
                 }
-            }, 'image/jpeg', 0.85);
+            }, 'image/webp', 0.85);
         };
         img.onerror = reject;
     });

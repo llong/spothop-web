@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { VitePWA } from 'vite-plugin-pwa'
+import mkcert from 'vite-plugin-mkcert'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -90,7 +91,8 @@ export default defineConfig({
           }
         ]
       }
-    })
+    }),
+    mkcert(),
   ],
   server: {
     port: 5000,
@@ -125,5 +127,5 @@ export default defineConfig({
         'src/supabase.ts'
       ]
     },
-  }
+  },
 })

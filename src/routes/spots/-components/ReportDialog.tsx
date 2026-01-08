@@ -49,7 +49,7 @@ export const ReportDialog = ({ open, onClose, targetId, targetType, targetName, 
                     target_id: targetId,
                     target_type: targetType,
                     reason,
-                    details: reason === 'other' ? details : undefined
+                    details: details?.trim() || null
                 });
 
             if (reportError) throw reportError;

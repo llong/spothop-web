@@ -40,7 +40,8 @@ describe('useFlagging hook', () => {
 
         expect(success).toBe(true);
         expect(mockInsert).toHaveBeenCalledWith({
-            spot_id: '123',
+            target_id: '123',
+            target_type: 'spot',
             user_id: 'test-user-id',
             reason: 'inappropriate_content',
             details: 'details'

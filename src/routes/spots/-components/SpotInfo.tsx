@@ -1,14 +1,21 @@
-import { Paper, Typography, Stack, Box, Divider, Chip } from '@mui/material';
+import { Paper, Typography, Stack, Box, Divider, Chip, IconButton, Tooltip } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { Skateboarding } from '@mui/icons-material';
+import { Skateboarding, FavoriteBorder, Favorite, FlagOutlined, Share } from '@mui/icons-material';
 import type { Spot } from 'src/types';
 import { Link as RouterLink } from '@tanstack/react-router';
+import { useState, useEffect } from 'react';
+import { FlagSpotDialog } from './FlagSpotDialog';
+import { reverseGeocode } from 'src/utils/geocoding';
 
 interface SpotInfoProps {
     spot: Spot;
+    isFavorited: boolean;
+    onToggleFavorite: () => void;
+    isLoggedIn: boolean;
+    onReportSuccess: () => void;
 }
 
 export const getDifficultyColor = (difficulty?: string) => {
@@ -27,8 +34,96 @@ export const getKickoutRiskLabel = (risk?: number) => {
     return { label: 'High Risk', color: 'error' as const };
 };
 
-export const SpotInfo = ({ spot }: SpotInfoProps) => {
+export const SpotInfo = ({ spot, isFavorited, onToggleFavorite, isLoggedIn, onReportSuccess }: SpotInfoProps) => {
+    const [reportDialogOpen, setReportDialogOpen] = useState(false);
+    const [displayAddress, setDisplayAddress] = useState<string | null>(null);
     const kickoutRisk = getKickoutRiskLabel(spot.kickout_risk);
+
+    useEffect(() => {
+        const buildAddress = async () => {
+
+            // Priority 1: Use reverse geocoding if lat/lng available to get the most accurate address
+            if (spot.latitude && spot.longitude) {
+                const info = await reverseGeocode(spot.latitude, spot.longitude);
+
+                // Build a clean address: "123 Street Name, City, State"
+                const streetInfo = spot.address || [info.streetNumber, info.street].filter(Boolean).join(' ');
+                const city = spot.city || info.city;
+                const state = spot.state || info.state;
+                const country = spot.country || info.country;
+
+                const locationParts = [city, state].filter(Boolean).join(', ');
+                const cleanAddress = [streetInfo, locationParts, country].filter(Boolean).join(', ');
+
+                if (cleanAddress) {
+                    setDisplayAddress(cleanAddress);
+                    return;
+                }
+            }
+
+            // Fallback: Use existing fields if available
+            if (spot.address) {
+                setDisplayAddress([
+                    spot.address,
+                    [spot.city, spot.state].filter(Boolean).join(', '),
+                    spot.country
+                ].filter(Boolean).join(', '));
+                return;
+            }
+
+            // Priority 2: Use reverse geocoding if lat/lng available
+            if (spot.latitude && spot.longitude) {
+                const info = await reverseGeocode(spot.latitude, spot.longitude);
+
+                // Build a clean address: "123 Street Name, City, State"
+                const streetInfo = [info.streetNumber, info.street].filter(Boolean).join(' ');
+                const locationParts = [info.city, info.state].filter(Boolean).join(', ');
+
+                const cleanAddress = [streetInfo, locationParts, info.country].filter(Boolean).join(', ');
+
+                if (cleanAddress) {
+                    setDisplayAddress(cleanAddress);
+                    return;
+                }
+
+                if (info.formattedAddress) {
+                    setDisplayAddress(info.formattedAddress);
+                    return;
+                }
+            }
+
+            // Fallback: Just city/state/country from DB
+            const locationParts = [spot.city, spot.state].filter(Boolean).join(', ');
+            setDisplayAddress([
+                locationParts,
+                spot.country
+            ].filter(Boolean).join(', ') || 'Unknown Location');
+        };
+
+        buildAddress();
+    }, [spot.id, spot.address, spot.city, spot.state, spot.country, spot.latitude, spot.longitude]);
+
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `SpotHop - ${spot.name}`,
+                    text: `Check out this spot: ${spot.name}`,
+                    url: window.location.href,
+                });
+            } catch (err) {
+                console.error('Error sharing:', err);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                alert('Link copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+    };
 
     return (
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -36,17 +131,60 @@ export const SpotInfo = ({ spot }: SpotInfoProps) => {
             <Typography variant="h4" fontWeight={700} gutterBottom>
                 {spot.name}
             </Typography>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                <LocationOnIcon color="action" />
-                <Typography variant="body1" color="text.secondary">
-                    {[
-                        spot.address,
-                        [spot.city, spot.state].filter(Boolean).join(', '),
-                        spot.country,
-                        spot.postalCode || (spot as any).postal_code
-                    ].filter(Boolean).join(', ')}
-                </Typography>
-            </Stack>
+            <Box sx={{ mb: 2 }}>
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                    <LocationOnIcon color="action" />
+                    <Typography variant="body1" color="text.secondary">
+                        {displayAddress || 'Loading location...'}
+                    </Typography>
+                </Stack>
+
+                {/* Social Actions Below Address */}
+                <Stack direction="row" spacing={1} alignItems="center">
+                    {isLoggedIn && (
+                        <>
+                            <Stack direction="row" alignItems="center">
+                                <Tooltip title={isFavorited ? "Remove from favorites" : "Add to favorites"}>
+                                    <IconButton onClick={onToggleFavorite} size="small">
+                                        {isFavorited ? <Favorite color="error" /> : <FavoriteBorder />}
+                                    </IconButton>
+                                </Tooltip>
+                                {(spot.favoriteCount ?? 0) > 0 && (
+                                    <Typography variant="body2" sx={{ ml: 0.5, fontWeight: 600, color: 'error.main' }}>
+                                        {spot.favoriteCount}
+                                    </Typography>
+                                )}
+                            </Stack>
+
+                            <Stack direction="row" alignItems="center">
+                                <Tooltip title="Report this spot">
+                                    <IconButton onClick={() => setReportDialogOpen(true)} size="small">
+                                        <FlagOutlined color={(spot.flagCount ?? 0) > 0 ? "error" : "action"} />
+                                    </IconButton>
+                                </Tooltip>
+                                {(spot.flagCount ?? 0) > 0 && (
+                                    <Typography variant="body2" sx={{ ml: 0.5, fontWeight: 600, color: 'error.main' }}>
+                                        {spot.flagCount}
+                                    </Typography>
+                                )}
+                            </Stack>
+                        </>
+                    )}
+                    <Tooltip title="Share spot">
+                        <IconButton onClick={handleShare} size="small">
+                            <Share />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+            </Box>
+
+            <FlagSpotDialog
+                spotId={spot.id}
+                spotName={spot.name}
+                open={reportDialogOpen}
+                onClose={() => setReportDialogOpen(false)}
+                onSuccess={onReportSuccess}
+            />
 
             {/* Key Stats */}
             <Stack direction="row" spacing={3} sx={{ mb: 3 }}>
@@ -81,8 +219,6 @@ export const SpotInfo = ({ spot }: SpotInfoProps) => {
                     </Box>
                 )}
             </Stack>
-
-            <Divider sx={{ my: 3 }} />
 
             {/* Favorites Info */}
             {(spot.favoriteCount ?? 0) > 0 && (

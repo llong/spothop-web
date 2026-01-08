@@ -24,15 +24,16 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
                 const { original, thumbnailSmall, thumbnailLarge } = await optimizePhoto(photo);
                 const filename = generateImageFilename(user.user.id);
 
-                const originalPath = `${spotId}/photos/originals/${filename}`;
-                const thumbnailSmallPath = `${spotId}/photos/thumbnails/small/${filename}`;
-                const thumbnailLargePath = `${spotId}/photos/thumbnails/large/${filename}`;
+                const webpFilename = filename.replace(/\.[^/.]+$/, "") + ".webp";
+                const originalPath = `spots/${spotId}/photos/originals/${webpFilename}`;
+                const thumbnailSmallPath = `spots/${spotId}/photos/thumbnails/small/${webpFilename}`;
+                const thumbnailLargePath = `spots/${spotId}/photos/thumbnails/large/${webpFilename}`;
 
                 // Parallel uploads for this photo
                 await Promise.all([
-                    supabase.storage.from('spot-media').upload(originalPath, original.blob, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false }),
-                    supabase.storage.from('spot-media').upload(thumbnailSmallPath, thumbnailSmall.blob, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false }),
-                    supabase.storage.from('spot-media').upload(thumbnailLargePath, thumbnailLarge.blob, { contentType: 'image/jpeg', cacheControl: '3600', upsert: false }),
+                    supabase.storage.from('spot-media').upload(originalPath, original.blob, { contentType: 'image/webp', cacheControl: '3600', upsert: false }),
+                    supabase.storage.from('spot-media').upload(thumbnailSmallPath, thumbnailSmall.blob, { contentType: 'image/webp', cacheControl: '3600', upsert: false }),
+                    supabase.storage.from('spot-media').upload(thumbnailLargePath, thumbnailLarge.blob, { contentType: 'image/webp', cacheControl: '3600', upsert: false }),
                 ]);
 
                 // Get Public URLs
@@ -62,7 +63,7 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
                 const videoFile = videoAsset.file;
                 const fileExt = videoFile.name.split('.').pop();
                 const videoFilename = `${Math.random()}.${fileExt}`;
-                const videoPath = `${spotId}/videos/originals/${videoFilename}`;
+                const videoPath = `spots/${spotId}/videos/originals/${videoFilename}`;
 
                 // Upload Video File
                 const { error: uploadError } = await supabase.storage.from('spot-media').upload(videoPath, videoFile, {
@@ -76,11 +77,12 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
                 const { data: { publicUrl: videoUrl } } = supabase.storage.from('spot-media').getPublicUrl(videoPath);
 
                 // Upload Thumbnail if exists
+                // Upload Thumbnail if exists
                 let thumbnailUrl = '';
                 if (videoAsset.thumbnail) {
-                    const thumbFilename = `thumb_${videoFilename.replace(/\.[^/.]+$/, "")}.jpg`;
-                    const thumbPath = `${spotId}/videos/thumbnails/${thumbFilename}`;
-                    const { error: thumbUploadError } = await supabase.storage.from('spot-media').upload(thumbPath, videoAsset.thumbnail, { contentType: 'image/jpeg' });
+                    const thumbFilename = `thumb_${videoFilename.replace(/\.[^/.]+$/, "")}.webp`;
+                    const thumbPath = `spots/${spotId}/videos/thumbnails/${thumbFilename}`;
+                    const { error: thumbUploadError } = await supabase.storage.from('spot-media').upload(thumbPath, videoAsset.thumbnail, { contentType: 'image/webp' });
 
                     if (!thumbUploadError) {
                         const { data: thumbData } = supabase.storage.from('spot-media').getPublicUrl(thumbPath);

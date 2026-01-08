@@ -4,8 +4,11 @@ import type { Spot } from "src/types";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { useState, useEffect } from "react";
+import { reverseGeocode } from "src/utils/geocoding";
 
 const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = ({ spot, priority }) => {
+    const [locationString, setLocationString] = useState<string>('Loading location...');
     // Format difficulty with color coding
     const getDifficultyColor = (difficulty?: string) => {
         switch (difficulty) {
@@ -27,20 +30,36 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = ({ spot, pri
     const kickoutRisk = getKickoutRiskLabel(spot.kickout_risk);
 
     // Build location string
-    const getLocationString = () => {
-        if (spot.address) return spot.address;
-        const parts = [spot.city, spot.country].filter(Boolean);
-        return parts.length > 0 ? parts.join(', ') : 'Unknown Location';
-    };
+    useEffect(() => {
+        const buildLocation = async () => {
+            if (spot.address) {
+                setLocationString(spot.address);
+                return;
+            }
 
-    const locationString = getLocationString();
+            if (spot.latitude && spot.longitude) {
+                const info = await reverseGeocode(spot.latitude, spot.longitude);
 
-    const getOptimizedImageUrl = (url: string) => {
-        if (!url || !url.includes('supabase.co/storage/v1/object/public/')) return url;
-        // Add Supabase image transformation parameters
-        // width=400 is usually enough for these cards
-        return `${url}?width=400&format=webp&quality=80`;
-    };
+                const streetInfo = spot.address || [info.streetNumber, info.street].filter(Boolean).join(' ');
+                const city = spot.city || info.city;
+                const state = spot.state || info.state;
+                const country = spot.country || info.country;
+
+                const locationParts = [city, state].filter(Boolean).join(', ');
+                const cleanAddress = [streetInfo, locationParts, country].filter(Boolean).join(', ');
+
+                if (cleanAddress) {
+                    setLocationString(cleanAddress);
+                    return;
+                }
+            }
+
+            const parts = [spot.city, spot.country].filter(Boolean);
+            setLocationString(parts.length > 0 ? parts.join(', ') : 'Unknown Location');
+        };
+
+        buildLocation();
+    }, [spot.id, spot.address, spot.city, spot.country, spot.latitude, spot.longitude]);
 
     return (
         <Link to="/spots/$spotId" params={{ spotId: spot.id.toString() }} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
@@ -64,7 +83,7 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = ({ spot, pri
                         {spot.photoUrl ? (
                             <CardMedia
                                 component="img"
-                                image={getOptimizedImageUrl(spot.thumbnail_small_url || spot.thumbnail_large_url || spot.photoUrl || '')}
+                                image={spot.thumbnail_small_url || spot.thumbnail_large_url || spot.photoUrl || ''}
                                 alt={spot.name}
                                 loading={priority ? "eager" : "lazy"}
                                 decoding="async"

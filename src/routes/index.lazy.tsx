@@ -5,6 +5,7 @@ import SpotsListCard from './-components/SpotsListCard';
 import { useEffect, lazy, Suspense } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
 import { getSpotsAtom, viewAtom } from 'src/atoms/map';
+import { filtersAtom } from 'src/atoms/spots';
 import { SpotListSkeleton } from './spots/-components/SpotCardSkeleton';
 import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
 
@@ -22,6 +23,7 @@ function HomeComponent() {
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
     const [view] = useAtom(viewAtom);
     const { spots, getSpots, isLoading } = useSpots()
+    const [filters, setFilters] = useAtom(filtersAtom);
     const setGetSpotsAtom = useSetAtom(getSpotsAtom);
 
     useEffect(() => {
@@ -50,7 +52,7 @@ function HomeComponent() {
                 </Grid>
             )}
             {listVisible && (
-                <Grid size={{ xs: 12, lg: listGridSize }} sx={{ height: '100%', overflowY: 'auto', p: 2, bgcolor: 'grey.100' }}>
+                <Grid size={{ xs: 12, lg: listGridSize }} sx={{ height: '100%', overflowY: 'auto', p: 2, bgcolor: 'grey.100', position: 'relative' }}>
                     <Typography variant="h4" component="h1" sx={{ mb: 2, fontWeight: 800 }}>Spots</Typography>
                     {isLoading ? (
                         <SpotListSkeleton />

@@ -1,6 +1,23 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { FlagSpotDialog } from '../FlagSpotDialog';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+});
+
+const renderWithClient = (ui: React.ReactElement) => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            {ui}
+        </QueryClientProvider>
+    );
+};
 
 // Mock useFlagging hook
 const mockFlagSpot = vi.fn();
@@ -28,13 +45,13 @@ describe('FlagSpotDialog', () => {
     });
 
     it('renders correctly with spot name', () => {
-        render(<FlagSpotDialog {...defaultProps} />);
+        renderWithClient(<FlagSpotDialog {...defaultProps} />);
         expect(screen.getByText(/Report Spot: Test Spot/i)).toBeInTheDocument();
     });
 
     it('submits successfully with happy path', async () => {
         mockFlagSpot.mockResolvedValue(true);
-        render(<FlagSpotDialog {...defaultProps} />);
+        renderWithClient(<FlagSpotDialog {...defaultProps} />);
 
         // Default reason is inappropriate_content
         const submitBtn = screen.getByText(/Submit Report/i);
@@ -48,7 +65,7 @@ describe('FlagSpotDialog', () => {
     });
 
     it('requires details when "Other" is selected', async () => {
-        render(<FlagSpotDialog {...defaultProps} />);
+        renderWithClient(<FlagSpotDialog {...defaultProps} />);
 
         const otherRadio = screen.getByLabelText(/Other/i);
         fireEvent.click(otherRadio);
@@ -76,7 +93,7 @@ describe('FlagSpotDialog', () => {
         // Since we mocked useFlagging at the top, we need to adjust the mock for this test
         vi.mocked(mockFlagSpot).mockResolvedValue(false);
 
-        render(<FlagSpotDialog {...defaultProps} />);
+        renderWithClient(<FlagSpotDialog {...defaultProps} />);
 
         const submitBtn = screen.getByText(/Submit Report/i);
         fireEvent.click(submitBtn);
@@ -89,14 +106,14 @@ describe('FlagSpotDialog', () => {
     });
 
     it('calls onClose when Cancel is clicked', () => {
-        render(<FlagSpotDialog {...defaultProps} />);
+        renderWithClient(<FlagSpotDialog {...defaultProps} />);
         const cancelBtn = screen.getByText(/Cancel/i);
         fireEvent.click(cancelBtn);
         expect(defaultProps.onClose).toHaveBeenCalled();
     });
 
     it('clears details when reason changes', () => {
-        render(<FlagSpotDialog {...defaultProps} />);
+        renderWithClient(<FlagSpotDialog {...defaultProps} />);
 
         const otherRadio = screen.getByLabelText(/Other/i);
         fireEvent.click(otherRadio);

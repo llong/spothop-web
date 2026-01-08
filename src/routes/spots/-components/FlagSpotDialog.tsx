@@ -17,6 +17,8 @@ import {
 } from '@mui/material';
 import { useFlagging } from 'src/hooks/useFlagging';
 import { SPOT_FLAG_REASONS, type SpotFlagReason } from 'src/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { spotKeys } from 'src/hooks/useSpotQueries';
 
 interface FlagSpotDialogProps {
     spotId: string;
@@ -30,14 +32,25 @@ export const FlagSpotDialog = ({ spotId, spotName, open, onClose, onSuccess }: F
     const [reason, setReason] = useState<SpotFlagReason>('inappropriate_content');
     const [details, setDetails] = useState('');
     const { flagSpot, loading, error, setError } = useFlagging();
+    const queryClient = useQueryClient();
 
     const handleSubmit = async () => {
+        console.log('Submitting report for spot:', spotId, reason, details);
         const success = await flagSpot(spotId, reason, details);
         if (success) {
+            console.log('Report submitted successfully');
+
+            // Add a small delay to ensure DB consistency before refetch
+            setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: spotKeys.details(spotId) });
+            }, 500);
+
             setDetails('');
             setReason('inappropriate_content');
             onSuccess();
             onClose();
+        } else {
+            console.error('Report submission failed');
         }
     };
 

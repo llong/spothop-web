@@ -79,7 +79,8 @@ CREATE POLICY "Users can delete their own notifications" ON notifications FOR DE
 
 -- Content Reports
 CREATE POLICY "Users can create reports" ON content_reports FOR INSERT WITH CHECK (auth.uid() = user_id);
--- Admin only policies would go here for SELECT/DELETE
+CREATE POLICY "Anyone can view report counts" ON content_reports FOR SELECT USING (true);
+-- Admin only policies would go here for DELETE
 
 -- 8. Trigger for Reply Notifications
 CREATE OR REPLACE FUNCTION handle_comment_reply_notification()
