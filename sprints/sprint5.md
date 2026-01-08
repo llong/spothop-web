@@ -25,6 +25,10 @@ This sprint focuses on establishing a robust testing framework for SpotHop, cove
     - [x] Implement `src/utils/imageOptimization.test.ts` with 100% coverage for URL generation and fallbacks.
 - [x] **Integration Testing (Components)**
     - [x] Implement `src/routes/-components/SpotsListCard.test.tsx` to verify correct rendering of spot data and images.
+- [x] **Bug Fixes (Regressions)**
+    - [x] Fixed `FlagSpotDialog` tests (QueryClient requirement).
+    - [x] Fixed `useFlagging` hook tests (Property mismatch).
+    - [x] Fixed `imageOptimization` logic and tests (Null handling).
 
 ## Success Metrics
 - 100% pass rate for new automated tests.
