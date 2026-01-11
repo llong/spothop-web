@@ -10,8 +10,21 @@ import { BottomNav } from './-components/BottomNav'
 import { useProfileQuery } from 'src/hooks/useProfileQueries'
 import { globalToastAtom } from 'src/hooks/useNotifications'
 import { Snackbar, Alert } from '@mui/material'
+import { useLoadScript } from '@react-google-maps/api'
+import { isGoogleMapsLoadedAtom } from 'src/atoms/map'
+import { useMemo } from 'react'
 
 export function RootComponent() {
+    const setIsGoogleMapsLoaded = useSetAtom(isGoogleMapsLoadedAtom);
+    const libraries = useMemo(() => ["places"], []);
+    const { isLoaded } = useLoadScript({
+        googleMapsApiKey: "AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE",
+        libraries: libraries as any,
+    });
+
+    useEffect(() => {
+        setIsGoogleMapsLoaded(isLoaded);
+    }, [isLoaded, setIsGoogleMapsLoaded]);
     useDevtools();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));

@@ -4,14 +4,13 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import SearchIcon from '@mui/icons-material/Search';
 import { Map, List, FilterList } from '@mui/icons-material';
-import { useLoadScript } from '@react-google-maps/api';
 import { useRef, useState } from 'react';
 import { PlaceAutocomplete } from './PlaceAutocomplete';
 import { NavigationItems } from './NavigationItems';
 import { NotificationBell } from './NotificationBell';
 import { userAtom } from 'src/atoms/auth';
 import { useProfile } from 'src/hooks/useProfile';
-import { getSpotsAtom, mapAtom } from 'src/atoms/map';
+import { getSpotsAtom, mapAtom, isGoogleMapsLoadedAtom } from 'src/atoms/map';
 import { useMediaQuery, Box, Badge } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useAtom, useAtomValue } from 'jotai';
@@ -48,19 +47,14 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
     justifyContent: 'center',
 }));
 
-const libraries: any = ["places"];
-
 export default function SearchAppBar() {
     const isOnline = useOnlineStatus();
+    const isLoaded = useAtomValue(isGoogleMapsLoadedAtom);
     const navigate = useNavigate();
     const location = useLocation();
     const isRootPage = location.pathname === '/';
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-    const { isLoaded } = useLoadScript({
-        googleMapsApiKey: "AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE",
-        libraries,
-    });
     const inputRef = useRef<HTMLInputElement>(null!);
     const map = useAtomValue(mapAtom);
     const getSpots = useAtomValue(getSpotsAtom);
@@ -80,14 +74,18 @@ export default function SearchAppBar() {
     ].filter(Boolean).length;
 
     const onPlaceSelect = (place: google.maps.places.PlaceResult) => {
+        console.log('Place selected:', place);
         const lat = place.geometry?.location?.lat();
         const lng = place.geometry?.location?.lng();
+        console.log('Lat/Lng:', lat, lng);
         if (lat && lng) {
-            if (map && getSpots) {
+            if (map) {
                 map.flyTo([lat, lng], 12, {
                     duration: 1
                 });
-                map.once('moveend', () => getSpots(map.getBounds()));
+                if (getSpots) {
+                    map.once('moveend', () => getSpots(map.getBounds()));
+                }
             }
             navigate({ to: '/', search: { lat, lng } });
         }

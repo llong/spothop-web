@@ -39,18 +39,37 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
                     console.error("Error checking video duration", e);
                     alert(`Could not verify the duration of "${file.name}". Please try another file.`);
                 }
+        }
+        
+        if (validFiles.length === 0 && newFiles.length > 0) {
+            return;
+        }
+
+        // Generate thumbnails for all valid files
+        const newAssets: VideoAsset[] = [];
+        
+        for (const file of validFiles) {
+            try {
+                console.log('Generating thumbnail for:', file.name);
+                const thumbnail = await generateVideoThumbnail(file);
+                console.log('Thumbnail generated successfully for:', file.name);
+                
+                newAssets.push({
+                    id: uuidv4(),
+                    file,
+                    thumbnail,
+                });
+            } catch (error) {
+                console.error('Failed to generate thumbnail for', file.name, error);
+                // Still add the video without thumbnail rather than failing completely
+                newAssets.push({
+                    id: uuidv4(),
+                    file,
+                });
             }
+        }
 
-            if (validFiles.length === 0 && newFiles.length > 0) {
-                return;
-            }
-
-            const newAssets: VideoAsset[] = validFiles.map(file => ({
-                id: uuidv4(),
-                file,
-            }));
-
-            const updatedVideos = [...selectedVideos, ...newAssets];
+        const updatedVideos = [...selectedVideos, ...newAssets];
             setSelectedVideos(updatedVideos);
             onFilesSelect(updatedVideos);
         }
@@ -68,6 +87,85 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
                 reject("Error loading video metadata");
             };
             video.src = URL.createObjectURL(file);
+        });
+    };
+
+    const generateVideoThumbnail = async (file: File): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const video = document.createElement('video');
+            const canvas = document.createElement('canvas');
+            let hasSeeked = false;
+            
+            const handleLoadedMetadata = () => {
+                console.log('Video metadata loaded, duration:', video.duration);
+                if (video.duration > 0) {
+                    // Seek to 50% mark
+                    video.currentTime = video.duration / 2;
+                }
+            };
+            
+            const handleSeeked = () => {
+                if (!hasSeeked && video.videoWidth > 0 && video.videoHeight > 0) {
+                    hasSeeked = true;
+                    console.log('Video seeked, capturing frame...');
+                    
+                    try {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            // Clear canvas first
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            
+                            // Draw the video frame
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            
+                            canvas.toBlob((blob) => {
+                                if (blob) {
+                                    const fileName = `thumb_${file.name.split('.')[0]}.jpg`;
+                                    const thumbnailFile = new File([blob], fileName, { type: 'image/jpeg' });
+                                    console.log('Thumbnail generated successfully for:', file.name);
+                                    
+                                    // Cleanup
+                                    window.URL.revokeObjectURL(video.src);
+                                    resolve(thumbnailFile);
+                                } else {
+                                    reject(new Error('Failed to generate thumbnail blob'));
+                                }
+                            }, 'image/jpeg', 0.8);
+                        } else {
+                            reject(new Error('Failed to get canvas context'));
+                        }
+                    } catch (error) {
+                        reject(error);
+                    }
+                }
+            };
+            
+            // Event handlers
+            video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
+            video.addEventListener('seeked', handleSeeked);
+            video.onerror = () => {
+                window.URL.revokeObjectURL(video.src);
+                reject(new Error('Failed to load video for thumbnail generation'));
+            };
+            
+            // Start loading
+            video.src = URL.createObjectURL(file);
+            
+            // Fallback timeout in case seeking doesn't work
+            setTimeout(() => {
+                if (!hasSeeked) {
+                    console.log('Seek timeout, attempting fallback...');
+                    if (video.videoWidth > 0 && video.videoHeight > 0) {
+                        handleSeeked();
+                    } else {
+                        window.URL.revokeObjectURL(video.src);
+                        reject(new Error('Video loading timeout'));
+                    }
+                }
+            }, 3000);
         });
     };
 
@@ -149,15 +247,16 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
                                         </Box>
                                     )}
                                     <Typography variant="caption" color="text.secondary">
-                                        {asset.thumbnail ? 'Thumbnail set' : 'No thumbnail'}
+                                        {asset.thumbnail ? 'Thumbnail generated' : 'Generating thumbnail...'}
                                     </Typography>
                                 </Box>
                                 <Button
                                     size="small"
                                     variant="outlined"
                                     onClick={() => handleOpenThumbnailSelector(asset.id)}
+                                    disabled={!asset.thumbnail} // Disable if thumbnail is still generating
                                 >
-                                    {asset.thumbnail ? 'Change Thumbnail' : 'Set Thumbnail'}
+                                    {asset.thumbnail ? 'Change Thumbnail' : 'Generating...'}
                                 </Button>
                             </Box>
                         </Card>

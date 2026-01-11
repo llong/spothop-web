@@ -34,7 +34,17 @@ export const VideoThumbnailSelector = ({ videoFile, open, onClose, onSelectThumb
 
     const handleLoadedMetadata = () => {
         if (videoRef.current) {
-            setDuration(videoRef.current.duration);
+            const videoDuration = videoRef.current.duration;
+            setDuration(videoDuration);
+            // Default to 50% mark
+            const defaultTime = videoDuration / 2;
+            setCurrentTime(defaultTime);
+            // Small delay to ensure video is ready before setting currentTime
+            setTimeout(() => {
+                if (videoRef.current) {
+                    videoRef.current.currentTime = defaultTime;
+                }
+            }, 100);
         }
     };
 
@@ -87,7 +97,7 @@ export const VideoThumbnailSelector = ({ videoFile, open, onClose, onSelectThumb
 
                     <Box sx={{ px: 2 }}>
                         <Typography variant="caption" color="text.secondary">
-                            Scrub to select a frame
+                            Choose the frame to use as the video thumbnail
                         </Typography>
                         <Slider
                             value={currentTime}

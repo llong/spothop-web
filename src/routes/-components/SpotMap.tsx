@@ -1,9 +1,9 @@
 import { Box, Button, Typography, Fab, CircularProgress } from "@mui/material";
-import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { MyLocation } from '@mui/icons-material';
 import { Map as LeafletMap } from 'leaflet';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, memo, lazy, Suspense } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { boundsAtom, mapAtom } from 'src/atoms/map';
 import { filtersAtom } from 'src/atoms/spots';
@@ -11,7 +11,8 @@ import { isLoggedInAtom } from 'src/atoms/auth';
 import { useNavigate } from '@tanstack/react-router';
 import type { Spot } from 'src/types';
 import L, { Icon } from 'leaflet';
-import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
+import { useGeolocation } from 'src/hooks/useGeolocation';
+import { MapSearchAreaButton } from './MapSearchAreaButton';
 
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -26,7 +27,6 @@ Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-// Default center if geolocation fails
 const DEFAULT_CENTER = [3.1319, 101.6841] as [number, number];
 
 const currentTheme = {
@@ -34,8 +34,10 @@ const currentTheme = {
     url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
 }
 
+const Marker = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Marker })));
+const Popup = lazy(() => import('react-leaflet').then(mod => ({ default: mod.Popup })));
+
 function MapEvents({ onMove, onRightClick }: { onMove: () => void, onRightClick: (latlng: L.LatLng) => void }) {
-    const isOnline = useOnlineStatus();
     const setBoundsAtom = useSetAtom(boundsAtom);
     const map = useMapEvents({
         move: onMove,
@@ -43,9 +45,7 @@ function MapEvents({ onMove, onRightClick }: { onMove: () => void, onRightClick:
             setBoundsAtom(map.getBounds());
         },
         contextmenu: (e) => {
-            if (isOnline) {
-                onRightClick(e.latlng);
-            }
+            onRightClick(e.latlng);
         },
     });
     return null;
@@ -58,20 +58,19 @@ interface SpotMapProps {
     lng?: number;
 }
 
-export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
+const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
     const navigate = useNavigate();
     const [map, setMap] = useState<LeafletMap | null>(null);
     const [moved, setMoved] = useState(false);
     const [newSpot, setNewSpot] = useState<{ latlng: L.LatLng, address: string } | null>(null);
     const [initialCenterFound, setInitialCenterFound] = useState(false);
-    const [locating, setLocating] = useState(false);
 
     const setMapAtom = useSetAtom(mapAtom);
     const setBoundsAtom = useSetAtom(boundsAtom);
-    const isLoggedIn = useAtomValue(isLoggedInAtom)
+    const isLoggedIn = useAtomValue(isLoggedInAtom);
     const filters = useAtomValue(filtersAtom);
+    const { locating, centerMapOnUser, getCurrentPosition } = useGeolocation(map);
 
-    // Lazy load the CSS only when the map component mounts
     useEffect(() => {
         import('leaflet/dist/leaflet.css');
         import('leaflet.markercluster/dist/MarkerCluster.css');
@@ -83,7 +82,6 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
         if (map) {
             const bounds = map.getBounds();
             setBoundsAtom(bounds);
-            // Trigger initial fetch when map is ready
             getSpots(bounds);
         }
     }, [map, setMapAtom, setBoundsAtom, getSpots]);
@@ -109,30 +107,19 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
 
     useEffect(() => {
         if (map && !lat && !lng && !initialCenterFound && !locating) {
-            console.log('Attempting initial geolocation...');
-            setLocating(true);
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const { latitude, longitude } = pos.coords;
-                    console.log('Initial geolocation successful:', latitude, longitude);
-                    map.setView([latitude, longitude], 12);
-                    setInitialCenterFound(true);
-                    setLocating(false);
-                },
-                (error) => {
+            const setInitialView = async () => {
+                try {
+                    const pos = await getCurrentPosition();
+                    map.setView([pos.latitude, pos.longitude], 12);
+                } catch (error) {
                     console.error('Initial geolocation failed:', error);
-                    setInitialCenterFound(true); // Stop trying even on error
-                    setLocating(false);
-
-                    // Fallback: If geolocation fails, try to at least zoom out or show a message
-                    if (error.code === error.PERMISSION_DENIED) {
-                        console.warn('Location permission denied by user.');
-                    }
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-            );
+                } finally {
+                    setInitialCenterFound(true);
+                }
+            };
+            setInitialView();
         }
-    }, [map, lat, lng, initialCenterFound, locating]);
+    }, [map, lat, lng, initialCenterFound, locating, getCurrentPosition]);
 
     useEffect(() => {
         if (lat && lng && map) {
@@ -141,53 +128,21 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
                 map.off('moveend', onMoveEnd);
             };
             map.on('moveend', onMoveEnd);
-            map.flyTo([lat, lng], 12, {
-                duration: 1
-            });
+            map.flyTo([lat, lng], 12, { duration: 1 });
             setMoved(false);
         }
     }, [lat, lng, map, getSpots]);
 
-    const centerMap = () => {
-        if (!navigator.geolocation) {
-            alert('Geolocation is not supported by this browser.');
-            return;
+    const handleSearchArea = () => {
+        if (map) {
+            getSpots(map.getBounds());
         }
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                if (map) {
-                    map.flyTo([latitude, longitude], 12, { duration: 1 });
-                }
-            },
-            (error) => {
-                let message = 'Unable to retrieve your location.';
-                if (error.code === error.PERMISSION_DENIED) {
-                    message = 'Location access was denied. Please check your browser permissions.';
-                } else if (error.code === error.TIMEOUT) {
-                    message = 'Location request timed out. Please try again.';
-                }
-                alert(message);
-                console.error(error);
-            },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-        );
+        setMoved(false);
     };
 
     return (
         <Box sx={{ height: '100%', p: 0, position: 'relative' }}>
-            {moved && (
-                <Box sx={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
-                    <Button variant="contained" color='secondary' onClick={() => {
-                        if (map) {
-                            getSpots(map.getBounds());
-                        }
-                        setMoved(false);
-                    }}>
-                        Search this area
-                    </Button>
-                </Box>
-            )}
+            <MapSearchAreaButton visible={moved} onClick={handleSearchArea} />
 
             <MapContainer
                 center={lat && lng ? [lat, lng] : DEFAULT_CENTER}
@@ -198,57 +153,58 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
                 ref={setMap}
             >
                 <MapEvents onMove={onMove} onRightClick={onRightClick} />
-                <TileLayer
-                    url={currentTheme.url}
-                    attribution=''
-                />
+                <TileLayer url={currentTheme.url} attribution='' />
                 <MarkerClusterGroup
                     key={`cluster-${spots.length}-${JSON.stringify(filters)}`}
                     chunkedLoading
                     maxClusterRadius={50}
                 >
                     {spots.map(spot => (
-                        <Marker position={[spot.latitude, spot.longitude]} key={spot.id}>
-                            <Popup closeButton={false}>
-                                <Box
-                                    sx={{ cursor: 'pointer' }}
-                                    onClick={() => navigate({ to: '/spots/$spotId', params: { spotId: spot.id.toString() } })}
-                                >
-                                    {spot.photoUrl && (
-                                        <img
-                                            src={spot.photoUrl}
-                                            alt={spot.name}
-                                            style={{ width: '100%', height: 'auto', borderRadius: '4px' }}
-                                        />
-                                    )}
-                                    <Typography variant="h6" sx={{ color: 'text.primary' }}>{spot.name}</Typography>
-                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>{spot.address}</Typography>
-                                    <Typography variant="caption" display="block" sx={{ color: 'text.secondary', mt: 0.5 }}>{spot.description}</Typography>
-                                </Box>
-                            </Popup>
-                        </Marker>
+                        <Suspense key={spot.id} fallback={null}>
+                            <Marker position={[spot.latitude, spot.longitude]}>
+                                <Popup closeButton={false}>
+                                    <Box
+                                        sx={{ cursor: 'pointer' }}
+                                        onClick={() => navigate({ to: '/spots/$spotId', params: { spotId: spot.id.toString() } })}
+                                    >
+                                        {spot.photoUrl && (
+                                            <img
+                                                src={spot.photoUrl}
+                                                alt={spot.name}
+                                                style={{ width: '100%', height: 'auto', borderRadius: '4px' }}
+                                            />
+                                        )}
+                                        <Typography variant="h6" sx={{ color: 'text.primary' }}>{spot.name}</Typography>
+                                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>{spot.address}</Typography>
+                                        <Typography variant="caption" display="block" sx={{ color: 'text.secondary', mt: 0.5 }}>{spot.description}</Typography>
+                                    </Box>
+                                </Popup>
+                            </Marker>
+                        </Suspense>
                     ))}
                 </MarkerClusterGroup>
                 {newSpot && (
-                    <Popup position={newSpot.latlng}>
-                        <Box>
-                            <Typography variant="body2">{newSpot.address}</Typography>
-                            <Button
-                                variant="contained"
-                                size="small"
-                                sx={{ mt: 1 }}
-                                onClick={() => navigate({
-                                    to: '/spots/new',
-                                    search: {
-                                        lat: newSpot.latlng.lat,
-                                        lng: newSpot.latlng.lng,
-                                    },
-                                })}
-                            >
-                                Add Spot Here
-                            </Button>
-                        </Box>
-                    </Popup>
+                    <Suspense fallback={null}>
+                        <Popup position={newSpot.latlng}>
+                            <Box>
+                                <Typography variant="body2">{newSpot.address}</Typography>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    sx={{ mt: 1 }}
+                                    onClick={() => navigate({
+                                        to: '/spots/new',
+                                        search: {
+                                            lat: newSpot.latlng.lat,
+                                            lng: newSpot.latlng.lng,
+                                        },
+                                    })}
+                                >
+                                    Add Spot Here
+                                </Button>
+                            </Box>
+                        </Popup>
+                    </Suspense>
                 )}
             </MapContainer>
 
@@ -275,7 +231,7 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
 
             <Fab
                 aria-label="center map"
-                onClick={centerMap}
+                onClick={centerMapOnUser}
                 disabled={locating}
                 size="small"
                 sx={{
@@ -300,4 +256,5 @@ export const SpotMap = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
     );
 };
 
+export const SpotMap = memo(SpotMapComponent);
 export default SpotMap;

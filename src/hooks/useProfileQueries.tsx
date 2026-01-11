@@ -17,7 +17,7 @@ export function useProfileQuery(userId?: string) {
         queryKey: userId ? profileKeys.detail(userId) : ['profile', 'none'],
         queryFn: () => userId ? profileService.fetchIdentity(userId) : null,
         enabled: !!userId,
-        staleTime: Infinity, // Prevent background refetches
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 }
 
@@ -37,7 +37,7 @@ export function useSocialStatsQuery(userId?: string, enabled = true) {
             return { favorites, likes, ...stats };
         },
         enabled: !!userId && enabled,
-        staleTime: Infinity, // Prevent background refetches
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 }
 
@@ -49,7 +49,7 @@ export function useUserContentQuery(userId?: string, enabled = true) {
         queryKey: userId ? profileKeys.content(userId) : ['profile', 'content', 'none'],
         queryFn: () => userId ? profileService.fetchUserContent(userId) : null,
         enabled: !!userId && enabled,
-        staleTime: Infinity, // Prevent background refetches
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 }
 

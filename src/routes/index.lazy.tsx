@@ -9,7 +9,7 @@ import { SpotListSkeleton } from './spots/-components/SpotCardSkeleton';
 import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
 
 // Lazy load the Map component
-const SpotMap = lazy(() => import('./-components/SpotMap'));
+const SpotMap = lazy(() => import('./-components/SpotMap').then(m => ({ default: m.SpotMap })));
 
 export const Route = createLazyFileRoute('/')({
     component: HomeComponent,

@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { PhotoUpload } from './PhotoUpload';
 import { VideoUpload } from './VideoUpload';
-import { useMediaUpload } from 'src/hooks/useMediaUpload';
+import { useMediaUploadMutation } from 'src/hooks/useMediaUploadMutation';
 import type { VideoAsset } from 'src/types';
 
 interface AddMediaDialogProps {
@@ -29,11 +29,10 @@ interface AddMediaDialogProps {
 export const AddMediaDialog = ({ spotId, spotName, open, onClose, onSuccess, user }: AddMediaDialogProps) => {
     const [selectedPhotos, setSelectedPhotos] = useState<File[]>([]);
     const [selectedVideos, setSelectedVideos] = useState<VideoAsset[]>([]);
-    const [isUploading, setIsUploading] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
     const [error, setError] = useState<string | null>(null);
 
-    const { uploadMedia } = useMediaUpload({ user, setStatusMessage });
+    const mediaUploadMutation = useMediaUploadMutation({ user, spotId });
 
     const handleSubmit = async () => {
         if (selectedPhotos.length === 0 && selectedVideos.length === 0) {
@@ -42,22 +41,24 @@ export const AddMediaDialog = ({ spotId, spotName, open, onClose, onSuccess, use
         }
 
         try {
-            setIsUploading(true);
             setError(null);
+            setStatusMessage('Uploading media...');
 
-            await uploadMedia(spotId, selectedPhotos, selectedVideos);
+            await mediaUploadMutation.mutateAsync({ 
+                photos: selectedPhotos, 
+                videos: selectedVideos 
+            });
 
             onSuccess();
             handleClose();
         } catch (err: any) {
             console.error('Error uploading media:', err);
             setError(err.message || 'Failed to upload media. Please try again.');
-            setIsUploading(false);
         }
     };
 
     const handleClose = () => {
-        if (isUploading) return;
+        if (mediaUploadMutation.isPending) return;
         setSelectedPhotos([]);
         setSelectedVideos([]);
         setError(null);
@@ -90,16 +91,16 @@ export const AddMediaDialog = ({ spotId, spotName, open, onClose, onSuccess, use
                 </Stack>
             </DialogContent>
             <DialogActions sx={{ px: 3, py: 2 }}>
-                <Button onClick={handleClose} disabled={isUploading}>
+                <Button onClick={handleClose} disabled={mediaUploadMutation.isPending}>
                     Cancel
                 </Button>
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
-                    disabled={isUploading || (selectedPhotos.length === 0 && selectedVideos.length === 0)}
-                    startIcon={isUploading ? <CircularProgress size={20} color="inherit" /> : null}
+                    disabled={mediaUploadMutation.isPending || (selectedPhotos.length === 0 && selectedVideos.length === 0)}
+                    startIcon={mediaUploadMutation.isPending ? <CircularProgress size={20} color="inherit" /> : null}
                 >
-                    {isUploading ? statusMessage || 'Uploading...' : 'Upload Media'}
+                    {mediaUploadMutation.isPending ? statusMessage || 'Uploading...' : 'Upload Media'}
                 </Button>
             </DialogActions>
         </Dialog>

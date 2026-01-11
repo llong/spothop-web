@@ -4,11 +4,12 @@ import type { Spot } from "src/types";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { useState, useEffect } from "react";
-import { reverseGeocode } from "src/utils/geocoding";
+import { useState, useEffect, memo } from "react";
+import { useGeocoding } from "src/hooks/useGeocoding";
 
-const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = ({ spot, priority }) => {
+const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = memo(({ spot, priority }) => {
     const [locationString, setLocationString] = useState<string>('Loading location...');
+    const { buildLocationString } = useGeocoding();
     // Format difficulty with color coding
     const getDifficultyColor = (difficulty?: string) => {
         switch (difficulty) {
@@ -32,34 +33,18 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = ({ spot, pri
     // Build location string
     useEffect(() => {
         const buildLocation = async () => {
-            if (spot.address) {
-                setLocationString(spot.address);
-                return;
-            }
-
-            if (spot.latitude && spot.longitude) {
-                const info = await reverseGeocode(spot.latitude, spot.longitude);
-
-                const streetInfo = spot.address || [info.streetNumber, info.street].filter(Boolean).join(' ');
-                const city = spot.city || info.city;
-                const state = spot.state || info.state;
-                const country = spot.country || info.country;
-
-                const locationParts = [city, state].filter(Boolean).join(', ');
-                const cleanAddress = [streetInfo, locationParts, country].filter(Boolean).join(', ');
-
-                if (cleanAddress) {
-                    setLocationString(cleanAddress);
-                    return;
-                }
-            }
-
-            const parts = [spot.city, spot.country].filter(Boolean);
-            setLocationString(parts.length > 0 ? parts.join(', ') : 'Unknown Location');
+            const location = await buildLocationString(
+                spot.address,
+                spot.city,
+                spot.country,
+                spot.latitude,
+                spot.longitude
+            );
+            setLocationString(location);
         };
 
         buildLocation();
-    }, [spot.id, spot.address, spot.city, spot.country, spot.latitude, spot.longitude]);
+    }, [spot.id, spot.address, spot.city, spot.country, spot.latitude, spot.longitude, buildLocationString]);
 
     return (
         <Link to="/spots/$spotId" params={{ spotId: spot.id.toString() }} style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
@@ -225,6 +210,10 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = ({ spot, pri
             </Card>
         </Link>
     )
-}
+}, (prevProps, nextProps) => {
+    return prevProps.spot.id === nextProps.spot.id &&
+           prevProps.spot.updated_at === nextProps.spot.updated_at &&
+           prevProps.priority === nextProps.priority;
+});
 
 export default SpotsListCard;

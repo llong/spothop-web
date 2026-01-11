@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { InputBase } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import { useAtomValue } from "jotai";
+import { isGoogleMapsLoadedAtom } from "src/atoms/map";
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
     color: 'inherit',
@@ -22,15 +24,21 @@ interface PlaceAutocompleteProps {
 }
 
 export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment }: PlaceAutocompleteProps) => {
+    const isLoaded = useAtomValue(isGoogleMapsLoadedAtom);
+
     useEffect(() => {
-        if (inputRef.current) {
+        if (isLoaded && inputRef.current) {
             const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current);
             autocomplete.addListener("place_changed", () => {
                 const place = autocomplete.getPlace();
                 onPlaceSelect(place);
             });
+
+            return () => {
+                window.google.maps.event.clearInstanceListeners(autocomplete);
+            };
         }
-    }, [onPlaceSelect, inputRef]);
+    }, [isLoaded, onPlaceSelect, inputRef]);
 
     return <StyledInputBase placeholder="Search…" fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'Search spots', ref: inputRef }} />;
 }

@@ -10,3 +10,6 @@ boundsAtom.debugLabel = 'bounds';
 
 export const viewAtom = atom<'map' | 'list'>('map');
 viewAtom.debugLabel = 'view';
+
+export const isGoogleMapsLoadedAtom = atom<boolean>(false);
+isGoogleMapsLoadedAtom.debugLabel = 'isGoogleMapsLoaded';

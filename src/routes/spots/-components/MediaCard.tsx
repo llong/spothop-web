@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { Link } from '@tanstack/react-router';
 import type { MediaItem } from 'src/types';
 import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
+import { memo } from 'react';
 
 interface MediaCardProps {
     item: MediaItem;
@@ -12,7 +13,7 @@ interface MediaCardProps {
     onSelect: () => void;
 }
 
-export const MediaCard = ({ item, onToggleLike, isLoading, onSelect }: MediaCardProps) => (
+export const MediaCard = memo(({ item, onToggleLike, isLoading, onSelect }: MediaCardProps) => (
     <Box sx={{ bgcolor: 'white', borderRadius: 2, overflow: 'hidden', border: 1, borderColor: 'divider', height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Box
             sx={{ position: 'relative', pt: '75%', bgcolor: 'black', cursor: 'pointer' }}
@@ -82,4 +83,9 @@ export const MediaCard = ({ item, onToggleLike, isLoading, onSelect }: MediaCard
             </Stack>
         </Box>
     </Box>
-);
+), (prevProps, nextProps) => {
+    return prevProps.item.id === nextProps.item.id &&
+           prevProps.item.isLiked === nextProps.item.isLiked &&
+           prevProps.item.likeCount === nextProps.item.likeCount &&
+           prevProps.isLoading === nextProps.isLoading;
+});

@@ -17,6 +17,7 @@ import {
 import { useAtom } from 'jotai';
 import type { SpotFilters } from 'src/types';
 import { isFiltersOpenAtom } from 'src/atoms/spots';
+import { memo } from 'react';
 
 interface FilterBarProps {
     filters: SpotFilters;
@@ -24,15 +25,15 @@ interface FilterBarProps {
     anchorEl?: HTMLElement | null;
 }
 
-export const FilterBar = ({ filters, onFiltersChange, anchorEl }: FilterBarProps) => {
+export const FilterBar = memo(({ filters, onFiltersChange, anchorEl }: FilterBarProps) => {
     const [isFiltersOpen, setIsFiltersOpen] = useAtom(isFiltersOpenAtom);
 
     const handleTypeChange = (_: React.MouseEvent<HTMLElement>, newFormats: string[]) => {
         onFiltersChange({ ...filters, spot_type: newFormats });
     };
 
-    const handleDifficultyChange = (event: any) => {
-        onFiltersChange({ ...filters, difficulty: event.target.value });
+    const handleDifficultyChange = (event: { target: { name?: string; value: unknown } }) => {
+        onFiltersChange({ ...filters, difficulty: event.target.value as string });
     };
 
     const handleKickoutChange = (_: Event, newValue: number | number[]) => {
@@ -150,4 +151,7 @@ export const FilterBar = ({ filters, onFiltersChange, anchorEl }: FilterBarProps
             </Stack>
         </Popover>
     );
-};
+}, (prevProps, nextProps) => {
+    return JSON.stringify(prevProps.filters) === JSON.stringify(nextProps.filters) &&
+           prevProps.anchorEl === nextProps.anchorEl;
+});

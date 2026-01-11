@@ -1,7 +1,7 @@
-import { createLazyFileRoute, useRouter } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router'
 import { SpotGallery } from './-components/SpotGallery'
-import { SpotInfo } from './-components/SpotInfo'
-import { SpotSidebar } from './-components/SpotSidebar'
+import { SpotInfo } from './-components/SpotInfo/SpotInfo'
+import { SpotSidebar } from './-components/SpotSidebar/SpotSidebar'
 import { SpotCreatorInfo } from './-components/SpotCreatorInfo'
 import { CommentSection } from './-components/CommentSection'
 import { AddMediaDialog } from './-components/AddMediaDialog'
@@ -10,28 +10,21 @@ import { Box, Container, Grid, Divider, Typography, Snackbar } from '@mui/materi
 import { useSpotQuery } from 'src/hooks/useSpotQueries'
 import { useAtomValue } from 'jotai'
 import { userAtom } from 'src/atoms/auth'
-import { useState, useMemo } from 'react'
-import supabase from 'src/supabase'
+import { useState } from 'react'
+import { useSpotFavorites } from 'src/hooks/useSpotFavorites'
 
 export const Route = createLazyFileRoute('/spots/$spotId')({
     component: SpotDetailsComponent,
 })
 
 function SpotDetailsComponent() {
-    const router = useRouter();
     const { spotId } = Route.useParams();
     const user = useAtomValue(userAtom);
 
     const { data: spot, isLoading: loadingSpot } = useSpotQuery(spotId, user?.user.id);
+    const { isFavorited, toggleFavorite } = useSpotFavorites(spot ?? undefined, user?.user.id);
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [isFavorited, setIsFavorited] = useState(false);
-
-    // Sync favorite state with query data
-    useMemo(() => {
-        if (spot) setIsFavorited(spot.isFavorited);
-    }, [spot?.isFavorited]);
-
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [addMediaDialogOpen, setAddMediaDialogOpen] = useState(false);
 
@@ -47,28 +40,10 @@ function SpotDetailsComponent() {
         );
     }
 
-    const toggleFavorite = async () => {
-        if (!user?.user.id || !spot) return;
-
-        try {
-            if (isFavorited) {
-                await supabase
-                    .from('user_favorite_spots')
-                    .delete()
-                    .eq('user_id', user.user.id)
-                    .eq('spot_id', spot.id);
-                setSnackbarMessage('Removed from favorites');
-            } else {
-                await supabase
-                    .from('user_favorite_spots')
-                    .insert({ user_id: user.user.id, spot_id: spot.id });
-                setSnackbarMessage('Added to favorites');
-            }
-            setIsFavorited(!isFavorited);
-            setSnackbarOpen(true);
-        } catch (error) {
-            console.error('Error toggling favorite:', error);
-            setSnackbarMessage('Error updating favorite status');
+    const handleToggleFavorite = async () => {
+        const result = await toggleFavorite();
+        if (result) {
+            setSnackbarMessage(result.message);
             setSnackbarOpen(true);
         }
     };
@@ -82,7 +57,7 @@ function SpotDetailsComponent() {
                         <SpotInfo
                             spot={spot}
                             isFavorited={isFavorited}
-                            onToggleFavorite={toggleFavorite}
+                            onToggleFavorite={handleToggleFavorite}
                             isLoggedIn={!!user?.user}
                             onReportSuccess={() => {
                                 setSnackbarMessage('Thank you for your report. Our moderators will review it.');
@@ -94,7 +69,7 @@ function SpotDetailsComponent() {
                         <SpotSidebar
                             spot={spot}
                             isFavorited={isFavorited}
-                            onToggleFavorite={toggleFavorite}
+                            onToggleFavorite={handleToggleFavorite}
                             onAddMedia={() => setAddMediaDialogOpen(true)}
                             isLoggedIn={!!user?.user}
                         />
@@ -122,7 +97,6 @@ function SpotDetailsComponent() {
                 onSuccess={() => {
                     setSnackbarMessage('Media uploaded successfully!');
                     setSnackbarOpen(true);
-                    router.invalidate();
                 }}
                 user={user}
             />
