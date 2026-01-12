@@ -2,7 +2,7 @@ import supabase from "../supabase";
 import type { UserProfile, Spot, LikedMediaItem, UserMediaItem, AppNotification } from "../types";
 import { getSpotThumbnail } from "../utils/media-utils";
 
-export const PROFILE_SELECT = `id, username, "displayName", "avatarUrl", city, country, "riderType", bio, "instagramHandle"`;
+export const PROFILE_SELECT = `id, username, "displayName", "avatarUrl", city, country, "riderType", bio, "instagramHandle", role, "isBanned"`;
 
 export const profileService = {
     /**
