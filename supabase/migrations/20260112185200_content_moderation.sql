@@ -2,10 +2,10 @@
 
 -- 1. Update profiles table with administrative columns
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user' CHECK (role IN ('admin', 'moderator', 'user'));
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_banned BOOLEAN DEFAULT false;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS "isBanned" BOOLEAN DEFAULT false;
 
 COMMENT ON COLUMN profiles.role IS 'The administrative role of the user.';
-COMMENT ON COLUMN profiles.is_banned IS 'Whether the user is banned from contributing content.';
+COMMENT ON COLUMN profiles."isBanned" IS 'Whether the user is banned from contributing content.';
 
 -- 2. Create helper function to check if current user is admin
 CREATE OR REPLACE FUNCTION public.is_admin()
@@ -68,7 +68,7 @@ BEGIN
   RETURN EXISTS (
     SELECT 1 FROM profiles
     WHERE id = (select auth.uid())
-    AND is_banned = true
+    AND "isBanned" = true
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;

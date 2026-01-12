@@ -11,7 +11,7 @@ export interface UserProfile {
     followerCount?: number;
     followingCount?: number;
     role?: 'admin' | 'moderator' | 'user';
-    is_banned?: boolean;
+    isBanned?: boolean;
 }
 
 export interface Spot {

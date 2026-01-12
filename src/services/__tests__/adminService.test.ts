@@ -62,12 +62,14 @@ describe('adminService', () => {
 
     it('toggles user ban', async () => {
         const mockEq = vi.fn().mockResolvedValue({ error: null });
+        const mockUpdate = vi.fn().mockReturnThis();
         (supabase.from as any).mockReturnValue({
-            update: vi.fn().mockReturnThis(),
+            update: mockUpdate,
             eq: mockEq
         });
 
         await adminService.toggleUserBan('user-123', true);
+        expect(mockUpdate).toHaveBeenCalledWith({ "isBanned": true });
         expect(supabase.from).toHaveBeenCalledWith('profiles');
     });
 

@@ -141,28 +141,28 @@ function AdminDashboard() {
                                         </ListItemAvatar>
                                         <ListItemText
                                             primary={`${user.displayName || user.username} (${user.role})`}
-                                            secondary={user.is_banned ? "BANNED" : "Active"}
+                                            secondary={user.isBanned ? "BANNED" : "Active"}
                                             secondaryTypographyProps={{
-                                                color: user.is_banned ? 'error' : 'textSecondary',
-                                                fontWeight: user.is_banned ? 700 : 400
+                                                color: user.isBanned ? 'error' : 'textSecondary',
+                                                fontWeight: user.isBanned ? 700 : 400
                                             }}
                                         />
                                         <ListItemSecondaryAction>
                                             <Button
                                                 variant="contained"
-                                                color={user.is_banned ? "success" : "error"}
+                                                color={user.isBanned ? "success" : "error"}
                                                 size="small"
                                                 onClick={async () => {
-                                                    await toggleBan({ userId: user.id, isBanned: !user.is_banned })
+                                                    await toggleBan({ userId: user.id, isBanned: !user.isBanned })
                                                     // Refresh the local search result
                                                     const updatedUsers = users.map(u =>
-                                                        u.id === user.id ? { ...u, is_banned: !user.is_banned } : u
+                                                        u.id === user.id ? { ...u, isBanned: !user.isBanned } : u
                                                     )
                                                     setUsers(updatedUsers)
                                                 }}
                                                 disabled={isActioning}
                                             >
-                                                {user.is_banned ? "Unban" : "Ban User"}
+                                                {user.isBanned ? "Unban" : "Ban User"}
                                             </Button>
                                         </ListItemSecondaryAction>
                                     </ListItem>
