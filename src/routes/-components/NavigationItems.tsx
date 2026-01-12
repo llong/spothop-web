@@ -1,12 +1,14 @@
 import { Stack, Button } from '@mui/material';
 import { Link } from '@tanstack/react-router';
-import { Home, AccountCircle, Login, Logout, ChatBubble } from '@mui/icons-material';
+import { Home, AccountCircle, Login, Logout, ChatBubble, Shield } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import supabase from 'src/supabase';
+import { useProfileQuery } from 'src/hooks/useProfileQueries';
 
 export function NavigationItems() {
     const user = useAtomValue(userAtom);
+    const { data: profile } = useProfileQuery(user?.user.id);
 
     return (
         <Stack direction="row" spacing={2}>
@@ -16,6 +18,11 @@ export function NavigationItems() {
 
             {user?.user.aud && (
                 <>
+                    {profile?.role === 'admin' && (
+                        <Button color="inherit" component={Link} to="/admin" startIcon={<Shield />}>
+                            Admin
+                        </Button>
+                    )}
                     <Button color="inherit" component={Link} to="/profile" startIcon={<AccountCircle />}>
                         Profile
                     </Button>

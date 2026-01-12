@@ -10,6 +10,8 @@ export interface UserProfile {
     instagramHandle: string | null;
     followerCount?: number;
     followingCount?: number;
+    role?: 'admin' | 'moderator' | 'user';
+    is_banned?: boolean;
 }
 
 export interface Spot {
@@ -70,13 +72,19 @@ export const SPOT_FLAG_REASONS: Record<SpotFlagReason, string> = {
     other: 'Other',
 };
 
-export interface SpotFlag {
+export interface ContentReport {
     id: string;
-    spot_id: string;
     user_id: string;
-    reason: SpotFlagReason;
+    target_id: string;
+    target_type: 'spot' | 'comment' | 'media';
+    reason: string;
     details?: string;
     created_at: string;
+    reporter?: {
+        username: string | null;
+        avatarUrl: string | null;
+    };
+    target_content?: any; // To store a preview of the reported content
 }
 
 export interface MediaLike {
