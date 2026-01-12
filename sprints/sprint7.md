@@ -31,3 +31,6 @@ Establish administrative controls and a moderation dashboard to manage platform 
 7. **[chore] Cleanup & Testing**
     - [x] Write tests for admin services and hooks.
     - [x] Manual verification of content deletion flows.
+8. **[chore] Commit Re-organization**
+    - [x] Separate pre-existing test coverage into its own commit.
+    - [x] Commit admin moderation feature as a distinct unit.
