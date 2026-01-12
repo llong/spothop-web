@@ -1,75 +1,64 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from '../useProfileQueries';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useProfileQuery, useSocialStatsQuery } from '../useProfileQueries';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { profileService } from 'src/services/profileService';
-import React from 'react';
 
-// Mock profileService
 vi.mock('src/services/profileService', () => ({
     profileService: {
         fetchIdentity: vi.fn(),
+        fetchFollowStats: vi.fn(),
         fetchFavoriteSpots: vi.fn(),
         fetchLikedMedia: vi.fn(),
-        fetchFollowStats: vi.fn(),
-        fetchUserContent: vi.fn(),
     }
 }));
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            retry: false,
-        },
-    },
-});
+describe('useProfileQueries', () => {
+    let queryClient: QueryClient;
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-        {children}
-    </QueryClientProvider>
-);
-
-describe('useProfileQueries hooks', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        queryClient.clear();
-    });
-
-    describe('useProfileQuery', () => {
-        it('fetches identity when userId is provided', async () => {
-            const mockIdentity = { id: 'user1', username: 'userone' } as any;
-            vi.mocked(profileService.fetchIdentity).mockResolvedValue(mockIdentity);
-
-            const { result } = renderHook(() => useProfileQuery('user1'), { wrapper });
-
-            await waitFor(() => expect(result.current.isSuccess).toBe(true));
-            expect(result.current.data).toEqual(mockIdentity);
+        queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    retry: false,
+                },
+            },
         });
     });
 
-    describe('useSocialStatsQuery', () => {
-        it('fetches social stats correctly', async () => {
-            vi.mocked(profileService.fetchFavoriteSpots).mockResolvedValue([]);
-            vi.mocked(profileService.fetchLikedMedia).mockResolvedValue([]);
-            vi.mocked(profileService.fetchFollowStats).mockResolvedValue({ followerCount: 5, followingCount: 5 });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    );
 
-            const { result } = renderHook(() => useSocialStatsQuery('user1'), { wrapper });
+    it('useProfileQuery fetches user identity', async () => {
+        const mockProfile = { id: 'u1', username: 'testuser' };
+        vi.mocked(profileService.fetchIdentity).mockResolvedValue(mockProfile as any);
 
-            await waitFor(() => expect(result.current.isSuccess).toBe(true));
-            expect(result.current.data?.followerCount).toBe(5);
-        });
+        const { result } = renderHook(() => useProfileQuery('u1'), { wrapper });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.data).toEqual(mockProfile);
     });
 
-    describe('useUserContentQuery', () => {
-        it('fetches user content correctly', async () => {
-            const mockContent = { createdSpots: [], userMedia: [] };
-            vi.mocked(profileService.fetchUserContent).mockResolvedValue(mockContent);
+    it('useSocialStatsQuery fetches combined social data', async () => {
+        const mockStats = { followerCount: 10, followingCount: 5 };
+        const mockFavorites = [{ id: 's1' }];
+        const mockLikes = [{ id: 'l1' }];
 
-            const { result } = renderHook(() => useUserContentQuery('user1'), { wrapper });
+        vi.mocked(profileService.fetchFollowStats).mockResolvedValue(mockStats);
+        vi.mocked(profileService.fetchFavoriteSpots).mockResolvedValue(mockFavorites as any);
+        vi.mocked(profileService.fetchLikedMedia).mockResolvedValue(mockLikes as any);
 
-            await waitFor(() => expect(result.current.isSuccess).toBe(true));
-            expect(result.current.data).toEqual(mockContent);
+        const { result } = renderHook(() => useSocialStatsQuery('u1'), { wrapper });
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true));
+        expect(result.current.data).toEqual({
+            favorites: mockFavorites,
+            likes: mockLikes,
+            ...mockStats
         });
     });
 });

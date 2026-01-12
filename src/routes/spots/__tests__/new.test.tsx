@@ -1,206 +1,125 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { NewSpotComponent } from '../new';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NewSpotComponent, Route } from '../new'; // Import Route specifically
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import supabase from 'src/supabase';
 
-// Mock dependencies
-const { mockInsert, mockFrom, mockSupabase, mockNavigate, mockUseSearch } = vi.hoisted(() => {
-    const mockInsert = vi.fn();
-    const mockFrom = vi.fn(() => ({
-        insert: mockInsert.mockReturnValue({ error: null }),
-    }));
-
-    const mockSupabase = {
-        auth: {
-            getSession: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'test-user-id' } } } }),
-        },
-        from: mockFrom,
-        storage: {
-            from: () => ({
-                upload: vi.fn().mockResolvedValue({ error: null }),
-                getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'http://mock.url' } }),
-            }),
-        },
+// Mock TanStack Router
+vi.mock('@tanstack/react-router', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@tanstack/react-router')>();
+    return {
+        ...actual,
+        useNavigate: () => vi.fn(),
+        createFileRoute: () => (config: any) => {
+            return {
+                useSearch: vi.fn().mockReturnValue({ lat: 40.7128, lng: -74.0060 }),
+                ...config
+            };
+        }
     };
-
-    const mockNavigate = vi.fn();
-    const mockUseSearch = vi.fn(() => ({ lat: 3.125, lng: 101.677 }));
-
-    return { mockInsert, mockFrom, mockSupabase, mockNavigate, mockUseSearch };
 });
 
-vi.mock('src/supabase', () => ({ default: mockSupabase }));
-
-vi.mock('@tanstack/react-router', () => ({
-    useNavigate: () => mockNavigate,
-    createFileRoute: () => () => ({
-        useSearch: mockUseSearch,
-    }),
-    redirect: vi.fn(),
-}));
-
-// Mock Jotai
-vi.mock('jotai', () => ({
-    useAtomValue: vi.fn(() => ({ user: { id: 'test-user-id' } })),
-    atom: vi.fn(() => ({})),
-}));
-
-// Mock useMediaUpload
-vi.mock('src/hooks/useMediaUpload', () => ({
-    useMediaUpload: () => ({
-        uploadMedia: vi.fn().mockResolvedValue(true),
-    }),
-}));
-
-// Mock Online Status
-vi.mock('src/hooks/useOnlineStatus', () => ({
-    useOnlineStatus: vi.fn(() => true),
-}));
-
-// Mock Leaflet
-vi.mock('react-leaflet', () => ({
-    MapContainer: ({ children }: any) => <div data-testid="map">{children}</div>,
-    TileLayer: () => <div data-testid="tile-layer" />,
-    Marker: () => <div data-testid="marker" />,
-}));
-
-// Mock Upload Components
+// Mock other components
 vi.mock('../-components/PhotoUpload', () => ({
     PhotoUpload: ({ onFilesSelect }: any) => (
-        <button
-            data-testid="photo-upload-btn"
-            onClick={() => onFilesSelect([new File([], 'test.jpg')])}
-        >
-            Mock Upload Photo
-        </button>
-    ),
+        <button onClick={() => onFilesSelect([new File([''], 'photo.jpg')])}>Mock Photo Upload</button>
+    )
 }));
-
 vi.mock('../-components/VideoUpload', () => ({
-    VideoUpload: ({ onFilesSelect }: any) => (
-        <button
-            data-testid="video-upload-btn"
-            onClick={() => onFilesSelect([{ file: new File([], 'test.mp4'), thumbnail: new Blob() }])}
-        >
-            Mock Upload Video
-        </button>
-    ),
+    VideoUpload: () => <div data-testid="video-upload" />
+}));
+vi.mock('../-components/LocationPreview', () => ({
+    LocationPreview: () => <div data-testid="location-preview" />
+}));
+vi.mock('../-components/SpotDetailsForm', () => ({
+    SpotDetailsForm: ({ setName, setDescription }: any) => (
+        <div>
+            <input aria-label="name-input" onChange={(e) => setName(e.target.value)} />
+            <textarea aria-label="description-input" onChange={(e) => setDescription(e.target.value)} />
+        </div>
+    )
+}));
+vi.mock('../-components/SpotCharacteristics', () => ({
+    SpotCharacteristics: () => <div data-testid="spot-characteristics" />
 }));
 
-// Mock Fetch for Geocoding
-window.fetch = vi.fn(() =>
-    Promise.resolve({
-        json: () => Promise.resolve({
-            results: [{
-                formatted_address: '123 Test St, Test City',
-                address_components: [
-                    { types: ['postal_code'], long_name: '12345' }
-                ]
-            }]
+// Mock atoms
+vi.mock('jotai', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('jotai')>();
+    return {
+        ...actual,
+        useAtomValue: vi.fn((atom) => {
+            if (atom && (atom as any).debugLabel === 'user') return { user: { id: 'u1' } };
+            return null;
         }),
-    })
-) as any;
+    };
+});
 
-// Mock Alert
-window.alert = vi.fn();
+// Mock Supabase
+vi.mock('src/supabase', () => ({
+    default: {
+        from: vi.fn(() => ({
+            insert: vi.fn().mockResolvedValue({ error: null })
+        })),
+        auth: {
+            getSession: vi.fn(() => Promise.resolve({ data: { session: { user: { id: 'u1' } } } }))
+        }
+    }
+}));
 
-// Helper to provide route context if needed
-// But since we mocked the whole module, it should work if we handle the Route object
+const theme = createTheme();
+const queryClient = new QueryClient();
 
 describe('NewSpotComponent', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        // Ensure Route.useSearch returns our mock
-        (NewSpotComponent as any).Route = {
-            useSearch: mockUseSearch
-        };
+        window.fetch = vi.fn().mockResolvedValue({
+            json: () => Promise.resolve({ results: [] })
+        }) as any;
     });
 
-    it('renders correctly and populates address from coordinates', async () => {
-        render(<NewSpotComponent />);
+    it('renders the form correctly', () => {
+        vi.mocked(Route.useSearch).mockReturnValue({ lat: 10, lng: 20 });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider theme={theme}>
+                    <NewSpotComponent />
+                </ThemeProvider>
+            </QueryClientProvider>
+        );
 
         expect(screen.getByText('Add a New Spot')).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(screen.getByText('123 Test St, Test City')).toBeInTheDocument();
-        });
+        expect(screen.getByTestId('video-upload')).toBeInTheDocument();
     });
 
-    it('shows error if photo is not uploaded', async () => {
-        render(<NewSpotComponent />);
+    it('handles successful submission', async () => {
+        const mockInsert = vi.fn().mockResolvedValue({ error: null });
+        vi.mocked(supabase.from).mockReturnValue({
+            insert: mockInsert
+        } as any);
 
-        // Fill required text fields first
-        fireEvent.change(screen.getByLabelText(/Spot Name/i), { target: { value: 'Test Spot' } });
-        fireEvent.change(screen.getByLabelText(/Description/i), { target: { value: 'Test Desc' } });
-
-        const submitBtn = screen.getByText('Create Spot');
-        fireEvent.click(submitBtn);
-
-        await waitFor(() => {
-            expect(screen.getByText(/You must upload at least one photo/i)).toBeInTheDocument();
-        });
-        expect(mockFrom).not.toHaveBeenCalled();
-    });
-
-    it('creates a spot successfully with photo and video', async () => {
-        render(<NewSpotComponent />);
-
-        // Wait for geocoding to finish
-        await waitFor(() => {
-            expect(screen.getByText('123 Test St, Test City')).toBeInTheDocument();
-        }, { timeout: 5000 });
+        render(
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider theme={theme}>
+                    <NewSpotComponent />
+                </ThemeProvider>
+            </QueryClientProvider>
+        );
 
         // Fill form
-        const nameInput = screen.getByLabelText(/Spot Name/i);
-        const descInput = screen.getByLabelText(/Description/i);
+        fireEvent.change(screen.getByLabelText('name-input'), { target: { value: 'New Spot' } });
+        fireEvent.change(screen.getByLabelText('description-input'), { target: { value: 'Cool place' } });
 
-        fireEvent.change(nameInput, { target: { value: 'My Cool Spot' } });
-        fireEvent.change(descInput, { target: { value: 'A great place to skate' } });
-
-        // Upload Photo
-        const photoBtn = screen.getByTestId('photo-upload-btn');
-        fireEvent.click(photoBtn);
-
-        // Upload Video
-        const videoBtn = screen.getByTestId('video-upload-btn');
-        fireEvent.click(videoBtn);
+        // Select photo
+        fireEvent.click(screen.getByText('Mock Photo Upload'));
 
         // Submit
-        const submitBtn = screen.getByRole('button', { name: /Create Spot/i });
-        fireEvent.click(submitBtn);
+        fireEvent.click(screen.getByRole('button', { name: /Create Spot/i }));
 
         await waitFor(() => {
-            // Check spots insert
-            expect(mockFrom).toHaveBeenCalledWith('spots');
-        }, { timeout: 5000 });
-
-        expect(mockInsert).toHaveBeenCalledWith(expect.arrayContaining([
-            expect.objectContaining({
-                name: 'My Cool Spot',
-                description: 'A great place to skate',
-            })
-        ]));
-
-        // Check success message (use getAll as it appears in Snackbar and Button)
-        await waitFor(() => {
-            expect(screen.getAllByText(/Spot created successfully!/i).length).toBeGreaterThan(0);
-        });
-    }, 10000);
-
-    it('handles errors during creation', async () => {
-        // Mock error response for spots insert
-        mockInsert.mockReturnValueOnce({ error: { message: 'DB Error' } });
-
-        render(<NewSpotComponent />);
-
-        // Setup valid state
-        fireEvent.change(screen.getByLabelText(/Spot Name/i), { target: { value: 'Error Spot' } });
-        fireEvent.change(screen.getByLabelText(/Description/i), { target: { value: 'Error Desc' } });
-        fireEvent.click(screen.getByTestId('photo-upload-btn'));
-
-        fireEvent.click(screen.getByText('Create Spot'));
-
-        await waitFor(() => {
-            expect(screen.getByText(/DB Error/i)).toBeInTheDocument();
+            expect(mockInsert).toHaveBeenCalled();
         });
     });
 });

@@ -14,7 +14,7 @@ export const ProfileHeader = ({ profile, formData, onAvatarUpload }: ProfileHead
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <AvatarUpload
-                avatarUrl={formData.avatarUrl}
+                avatarUrl={formData.avatarUrl ?? null}
                 onUpload={onAvatarUpload}
             />
             <Typography variant="h6" component="h2" fontWeight={700}>

@@ -21,6 +21,17 @@ vi.mock('src/supabase', () => ({
     }
 }));
 
+// Mock geocoding util to resolve address construction
+vi.mock('src/utils/geocoding', () => ({
+    reverseGeocode: vi.fn(() => Promise.resolve({
+        streetNumber: '123',
+        street: 'Skate St',
+        city: 'Skate City',
+        state: 'SC',
+        country: 'Skate Country'
+    }))
+}));
+
 describe('SpotsListCard', () => {
     const mockSpot: Spot = {
         id: '1',
@@ -40,11 +51,12 @@ describe('SpotsListCard', () => {
         spot_type: ['rail', 'ledge']
     };
 
-    it('renders the spot name and location correctly', () => {
+    it('renders the spot name and location correctly', async () => {
         render(<SpotsListCard spot={mockSpot} />);
 
         expect(screen.getByText('Test Skate Spot')).toBeInTheDocument();
-        expect(screen.getByText('123 Skate St')).toBeInTheDocument();
+        // Since useSpotAddress is async, we use findByText
+        expect(await screen.findByText(/123 Skate St/)).toBeInTheDocument();
     });
 
     it('renders the correct difficulty chip', () => {
@@ -63,8 +75,6 @@ describe('SpotsListCard', () => {
         render(<SpotsListCard spot={mockSpot} />);
 
         const image = screen.getByRole('img');
-        // The URL is optimized via getOptimizedImageUrl which we didn't mock, 
-        // so it should contain the thumbnail URL and params
         expect(image.getAttribute('src')).toContain('thumb_small.jpg');
     });
 

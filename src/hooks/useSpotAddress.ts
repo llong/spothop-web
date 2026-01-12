@@ -2,8 +2,24 @@ import { useState, useEffect } from 'react';
 import { reverseGeocode } from 'src/utils/geocoding';
 import type { Spot } from 'src/types';
 
+const buildBasicAddress = (spot: Spot | undefined) => {
+    if (!spot) return null;
+    if (spot.address) {
+        return [
+            spot.address,
+            [spot.city, spot.state].filter(Boolean).join(', '),
+            spot.country
+        ].filter(Boolean).join(', ');
+    }
+    const locationParts = [spot.city, spot.state].filter(Boolean).join(', ');
+    return [
+        locationParts,
+        spot.country
+    ].filter(Boolean).join(', ') || 'Unknown Location';
+};
+
 export const useSpotAddress = (spot: Spot | undefined) => {
-    const [displayAddress, setDisplayAddress] = useState<string | null>(null);
+    const [displayAddress, setDisplayAddress] = useState<string | null>(() => buildBasicAddress(spot));
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -13,53 +29,35 @@ export const useSpotAddress = (spot: Spot | undefined) => {
         }
 
         const buildAddress = async () => {
-            setIsLoading(true);
-            try {
-                // Priority 1: Use reverse geocoding if lat/lng available to get the most accurate address
-                if (spot.latitude && spot.longitude) {
+            // Priority 1: Use reverse geocoding if lat/lng available to get the most accurate address
+            if (spot.latitude && spot.longitude) {
+                setIsLoading(true);
+                try {
                     const info = await reverseGeocode(spot.latitude, spot.longitude);
 
                     // Build a clean address: "123 Street Name, City, State"
-                    const streetInfo = spot.address || [info.streetNumber, info.street].filter(Boolean).join(' ');
-                    const city = spot.city || info.city;
-                    const state = spot.state || info.state;
-                    const country = spot.country || info.country;
+                    const streetInfo = [info.streetNumber, info.street].filter(Boolean).join(' ');
+                    const city = info.city;
+                    const state = info.state;
+                    const country = info.country;
 
                     const locationParts = [city, state].filter(Boolean).join(', ');
-                    const cleanAddress = [streetInfo, locationParts, country].filter(Boolean).join(', ');
+                    const enrichedAddress = [streetInfo, locationParts, country].filter(Boolean).join(', ');
 
-                    if (cleanAddress) {
-                        setDisplayAddress(cleanAddress);
-                        return;
+                    // If enriched address is available and has some content, use it. 
+                    if (enrichedAddress && enrichedAddress.length > 5) {
+                        setDisplayAddress(enrichedAddress);
                     }
+                } catch (error) {
+                    console.error('Error building address:', error);
+                } finally {
+                    setIsLoading(false);
                 }
-
-                // Fallback 1: Use existing fields if available
-                if (spot.address) {
-                    setDisplayAddress([
-                        spot.address,
-                        [spot.city, spot.state].filter(Boolean).join(', '),
-                        spot.country
-                    ].filter(Boolean).join(', '));
-                    return;
-                }
-
-                // Fallback 2: Just city/state/country from DB
-                const locationParts = [spot.city, spot.state].filter(Boolean).join(', ');
-                setDisplayAddress([
-                    locationParts,
-                    spot.country
-                ].filter(Boolean).join(', ') || 'Unknown Location');
-            } catch (error) {
-                console.error('Error building address:', error);
-                setDisplayAddress('Unknown Location');
-            } finally {
-                setIsLoading(false);
             }
         };
 
         buildAddress();
-    }, [spot?.id, spot?.address, spot?.city, spot?.state, spot?.country, spot?.latitude, spot?.longitude]);
+    }, [spot?.id, spot?.latitude, spot?.longitude]);
 
     return { displayAddress, isLoading };
 };

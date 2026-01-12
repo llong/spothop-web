@@ -189,6 +189,7 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
                     type="file"
                     ref={fileInputRef}
                     onChange={onSelectFile}
+                    data-testid="avatar-file-input"
                     onClick={() => {
                         if (fileInputRef.current) {
                             fileInputRef.current.value = "";

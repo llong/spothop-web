@@ -25,6 +25,7 @@ vi.mock('jotai', async (importOriginal) => {
         useAtomValue: vi.fn((atom) => {
             if (atom && (atom as any).debugLabel === 'filters') return {};
             if (atom && (atom as any).debugLabel === 'user') return null;
+            if (atom && (atom as any).debugLabel === 'isGoogleMapsLoaded') return true;
             return null;
         }),
     };
@@ -95,10 +96,11 @@ describe('SearchAppBar', () => {
 
     it('renders notification bell and navigation items on desktop', () => {
         (useMediaQuery as any).mockReturnValue(false); // Desktop
-        // Mock user as logged in
+        // Mock user as logged in and google maps as loaded
         vi.mocked(useAtomValue).mockImplementation((atom: any) => {
             if (atom && atom.debugLabel === 'user') return { user: { id: '1' } };
             if (atom && atom.debugLabel === 'filters') return {};
+            if (atom && atom.debugLabel === 'isGoogleMapsLoaded') return true;
             return null;
         });
 

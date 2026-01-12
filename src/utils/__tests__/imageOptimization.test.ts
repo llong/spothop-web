@@ -1,25 +1,69 @@
-import { describe, it, expect } from 'vitest';
-import { getOptimizedImageUrl } from '../imageOptimization';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getOptimizedImageUrl, generateImageFilename, optimizePhoto } from '../imageOptimization';
 
 describe('imageOptimization', () => {
-    it('returns the original URL without transformation parameters (Free Plan workaround)', () => {
-        const url = 'https://example.supabase.co/storage/v1/object/public/spots/photo.jpg';
-        // Should NOT append any ?width= or ?height=
-        expect(getOptimizedImageUrl(url)).toBe(url);
+    beforeEach(() => {
+        vi.clearAllMocks();
+
+        // Mock URL methods
+        window.URL.createObjectURL = vi.fn(() => 'blob:url');
+        window.URL.revokeObjectURL = vi.fn();
+
+        // Mock Canvas and Image
+        const mockCanvas = {
+            getContext: vi.fn(() => ({
+                drawImage: vi.fn()
+            })),
+            toBlob: vi.fn((cb) => cb(new Blob()))
+        };
+        document.createElement = vi.fn((el) => {
+            if (el === 'canvas') return mockCanvas as any;
+            return {};
+        });
+
+        // Mock Image class
+        window.Image = class {
+            onload: () => void = () => { };
+            onerror: () => void = () => { };
+            src: string = '';
+            width: number = 2000;
+            height: number = 1000;
+            constructor() {
+                setTimeout(() => this.onload(), 0);
+            }
+        } as any;
     });
 
-    it('returns the original URL even if we intend to pass options (Free Plan workaround)', () => {
-        const url = 'https://example.supabase.co/storage/v1/object/public/spots/photo.jpg';
-        expect(getOptimizedImageUrl(url)).toBe(url);
+    describe('getOptimizedImageUrl', () => {
+        it('returns same url for any input', () => {
+            const url = 'https://example.com/image.jpg';
+            expect(getOptimizedImageUrl(url)).toBe(url);
+        });
+
+        it('returns empty string if no url', () => {
+            expect(getOptimizedImageUrl(null)).toBe('');
+            expect(getOptimizedImageUrl(undefined)).toBe('');
+        });
     });
 
-    it('handles non-Supabase URLs correctly', () => {
-        const url = 'https://other-site.com/image.png';
-        expect(getOptimizedImageUrl(url)).toBe(url);
+    describe('generateImageFilename', () => {
+        it('includes userId in the filename', () => {
+            const userId = 'user123';
+            const filename = generateImageFilename(userId);
+            expect(filename).toContain(userId);
+            expect(filename.endsWith('.jpg')).toBe(true);
+        });
     });
 
-    it('handles empty or null URLs', () => {
-        expect(getOptimizedImageUrl('')).toBe('');
-        expect(getOptimizedImageUrl(null as any)).toBe('');
+    describe('optimizePhoto', () => {
+        it('returns original and thumbnails', async () => {
+            const mockFile = new File(['test'], 'test.jpg', { type: 'image/jpeg' });
+            const result = await optimizePhoto(mockFile);
+
+            expect(result.original).toBeDefined();
+            expect(result.thumbnailLarge).toBeDefined();
+            expect(result.thumbnailSmall).toBeDefined();
+            expect(result.original.url).toBe('blob:url');
+        });
     });
 });

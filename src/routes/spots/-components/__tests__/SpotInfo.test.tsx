@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SpotInfo } from '../SpotInfo';
+import { SpotInfo } from '../SpotInfo/SpotInfo';
 import { reverseGeocode } from 'src/utils/geocoding';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -42,6 +42,7 @@ const mockSpot = {
     longitude: -74.0060,
     address: '', // Missing address
     city: 'New York',
+    state: 'NY',
     country: 'USA',
     difficulty: 'intermediate' as const,
     kickout_risk: 5,
@@ -73,10 +74,10 @@ describe('SpotInfo Address Formatting', () => {
     };
 
     it('renders the address from the database when available', async () => {
-        const spotWithAddress = { ...mockSpot, address: '123 Main St', state: 'NY' };
+        const spotWithAddress = { ...mockSpot, address: '123 Main St' };
         renderWithProviders(
             <SpotInfo
-                spot={spotWithAddress}
+                spot={spotWithAddress as any}
                 isFavorited={false}
                 onToggleFavorite={() => { }}
                 isLoggedIn={true}
@@ -84,11 +85,8 @@ describe('SpotInfo Address Formatting', () => {
             />
         );
 
-        // Address building is async now due to potential enrichment
-        // Use a more flexible matcher in case of whitespace/formatting issues
-        await waitFor(() => {
-            expect(screen.getByText((content) => content.includes('123 Main St') && content.includes('NY'))).toBeDefined();
-        });
+        // Address building is immediate now for basic data
+        expect(screen.getByText(/123 Main St, New York, NY, USA/i)).toBeInTheDocument();
     });
 
     it('falls back to reverse geocoding when address is missing', async () => {
@@ -101,12 +99,11 @@ describe('SpotInfo Address Formatting', () => {
             formattedAddress: '306 Caleb Avenue, Syracuse, NY 13215, USA'
         });
 
-        // Test with null to trigger fallback
-        const spotWithoutAddress = { ...mockSpot, address: null as any };
+        const spotWithoutAddress = { ...mockSpot, address: '' };
 
         renderWithProviders(
             <SpotInfo
-                spot={spotWithoutAddress}
+                spot={spotWithoutAddress as any}
                 isFavorited={false}
                 onToggleFavorite={() => { }}
                 isLoggedIn={true}
@@ -114,17 +111,8 @@ describe('SpotInfo Address Formatting', () => {
             />
         );
 
-        // Address building logic in SpotInfo:
-        // streetInfo: spot.address || [info.streetNumber, info.street].join(' ') -> "306 Caleb Avenue"
-        // city: spot.city || info.city -> "New York" (from mockSpot)
-        // state: spot.state || info.state -> "NY" (from info)
-        // country: spot.country || info.country -> "USA" (from mockSpot)
-        // cleanAddress: "306 Caleb Avenue, New York, NY, USA"
-
-        const expectedAddress = '306 Caleb Avenue, New York, NY, USA';
-
-        const addressElement = await screen.findByText(expectedAddress, {}, { timeout: 5000 });
-        expect(addressElement).toBeDefined();
+        // Expected format from useSpotAddress: "306 Caleb Avenue, Syracuse, NY, United States"
+        await screen.findByText(/306 Caleb Avenue, Syracuse, NY, United States/i, {}, { timeout: 3000 });
     });
 
     it('correctly formats addresses without redundant information', async () => {
@@ -139,7 +127,7 @@ describe('SpotInfo Address Formatting', () => {
 
         renderWithProviders(
             <SpotInfo
-                spot={mockSpot}
+                spot={mockSpot as any}
                 isFavorited={false}
                 onToggleFavorite={() => { }}
                 isLoggedIn={true}
@@ -147,12 +135,6 @@ describe('SpotInfo Address Formatting', () => {
             />
         );
 
-        await waitFor(() => {
-            // Should be clean: "108 Jalan Pantai Permai 1, Kuala Lumpur, KL, Malaysia"
-            expect(screen.getByText((content) =>
-                content.includes('108 Jalan Pantai Permai 1') &&
-                content.includes('KL')
-            )).toBeDefined();
-        });
+        await screen.findByText(/108 Jalan Pantai Permai 1, Kuala Lumpur, KL, Malaysia/i, {}, { timeout: 3000 });
     });
 });

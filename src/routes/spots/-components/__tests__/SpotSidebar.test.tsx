@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SpotSidebar } from '../SpotSidebar';
+import { SpotSidebar } from '../SpotSidebar/SpotSidebar';
 import { vi, describe, it, expect } from 'vitest';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import type { Spot } from 'src/types';
@@ -20,7 +20,7 @@ describe('SpotSidebar', () => {
         render(
             <ThemeProvider theme={theme}>
                 <SpotSidebar
-                    spot={mockSpot}
+                    spot={mockSpot as any}
                     isFavorited={false}
                     onToggleFavorite={vi.fn()}
                     onAddMedia={vi.fn()}
@@ -36,7 +36,7 @@ describe('SpotSidebar', () => {
         render(
             <ThemeProvider theme={theme}>
                 <SpotSidebar
-                    spot={mockSpot}
+                    spot={mockSpot as any}
                     isFavorited={false}
                     onToggleFavorite={vi.fn()}
                     onAddMedia={vi.fn()}
@@ -53,7 +53,7 @@ describe('SpotSidebar', () => {
         render(
             <ThemeProvider theme={theme}>
                 <SpotSidebar
-                    spot={mockSpot}
+                    spot={mockSpot as any}
                     isFavorited={false}
                     onToggleFavorite={vi.fn()}
                     onAddMedia={vi.fn()}
@@ -73,7 +73,7 @@ describe('SpotSidebar', () => {
         render(
             <ThemeProvider theme={theme}>
                 <SpotSidebar
-                    spot={mockSpot}
+                    spot={mockSpot as any}
                     isFavorited={false}
                     onToggleFavorite={vi.fn()}
                     onAddMedia={vi.fn()}

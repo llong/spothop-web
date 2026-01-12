@@ -16,8 +16,23 @@ const mockAutocomplete = vi.fn().mockImplementation(function () {
         places: {
             Autocomplete: mockAutocomplete,
         },
+        event: {
+            clearInstanceListeners: vi.fn(),
+        },
     },
 };
+
+// Mock jotai
+vi.mock('jotai', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('jotai')>();
+    return {
+        ...actual,
+        useAtomValue: vi.fn((atom) => {
+            if (atom && (atom as any).debugLabel === 'isGoogleMapsLoaded') return true;
+            return null;
+        }),
+    };
+});
 
 const theme = createTheme();
 

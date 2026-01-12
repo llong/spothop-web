@@ -18,6 +18,7 @@ import { Route as NotificationsIndexRouteImport } from './routes/notifications/i
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ForgotPasswordIndexRouteImport } from './routes/forgot-password/index'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SpotsNewRouteImport } from './routes/spots/new'
 import { Route as SpotsSpotIdRouteImport } from './routes/spots/$spotId'
 import { Route as ProfileUsernameRouteImport } from './routes/profile/$username'
@@ -68,6 +69,11 @@ const ChatIndexRoute = ChatIndexRouteImport.update({
   path: '/chat/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/admin/index.lazy').then((d) => d.Route))
 const SpotsNewRoute = SpotsNewRouteImport.update({
   id: '/spots/new',
   path: '/spots/new',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/admin': typeof AdminIndexRoute
   '/chat': typeof ChatIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/admin': typeof AdminIndexRoute
   '/chat': typeof ChatIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
+  '/admin/': typeof AdminIndexRoute
   '/chat/': typeof ChatIndexRoute
   '/forgot-password/': typeof ForgotPasswordIndexRoute
   '/login/': typeof LoginIndexRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/admin'
     | '/chat'
     | '/forgot-password'
     | '/login'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/admin'
     | '/chat'
     | '/forgot-password'
     | '/login'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
+    | '/admin/'
     | '/chat/'
     | '/forgot-password/'
     | '/login/'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   ProfileUsernameRoute: typeof ProfileUsernameRoute
   SpotsSpotIdRoute: typeof SpotsSpotIdRoute
   SpotsNewRoute: typeof SpotsNewRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   ChatIndexRoute: typeof ChatIndexRoute
   ForgotPasswordIndexRoute: typeof ForgotPasswordIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
@@ -264,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/spots/new': {
       id: '/spots/new'
       path: '/spots/new'
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileUsernameRoute: ProfileUsernameRoute,
   SpotsSpotIdRoute: SpotsSpotIdRoute,
   SpotsNewRoute: SpotsNewRoute,
+  AdminIndexRoute: AdminIndexRoute,
   ChatIndexRoute: ChatIndexRoute,
   ForgotPasswordIndexRoute: ForgotPasswordIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
