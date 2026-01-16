@@ -85,6 +85,7 @@ export interface ContentReport {
         avatarUrl: string | null;
     };
     target_content?: any; // To store a preview of the reported content
+    context_id?: string | null; // ID of the spot for context
 }
 
 export interface MediaLike {

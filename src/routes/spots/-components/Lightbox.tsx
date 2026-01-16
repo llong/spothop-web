@@ -1,8 +1,10 @@
-import { Box, IconButton, Stack, Avatar, Typography, Dialog, styled } from '@mui/material';
-import { Favorite, FavoriteBorder, Close } from '@mui/icons-material';
+import { Box, IconButton, Stack, Avatar, Typography, Dialog, styled, Button } from '@mui/material';
+import { Favorite, FavoriteBorder, Close, DeleteForever } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { EmblaCarousel } from './EmblaCarousel';
 import type { MediaItem } from 'src/types';
+import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { useAdminQueries } from 'src/hooks/useAdminQueries';
 
 const LightboxVideo = styled('video')({
     maxWidth: '100%',
@@ -20,6 +22,9 @@ interface LightboxProps {
     loadingStates: Record<string, boolean>;
 }
 
+import { useAtomValue } from 'jotai';
+import { userAtom } from 'src/atoms/auth';
+
 export const Lightbox = ({
     open,
     onClose,
@@ -29,9 +34,22 @@ export const Lightbox = ({
     onToggleLike,
     loadingStates
 }: LightboxProps) => {
+    const user = useAtomValue(userAtom);
+    const { data: profile } = useProfileQuery(user?.user.id);
+    const { deleteContent, isActioning } = useAdminQueries();
+    const isAdmin = profile?.role === 'admin';
     const currentItem = mediaItems[currentIndex];
 
     if (!currentItem) return null;
+
+    const handleDeleteMedia = async () => {
+        if (window.confirm('ADMIN: Are you sure you want to delete this media item? This cannot be undone.')) {
+            await deleteContent({ type: 'media', id: currentItem.id });
+            onClose();
+            // Note: The UI will refresh when the parent refetches spot details
+            window.location.reload();
+        }
+    };
 
     return (
         <Dialog
@@ -95,6 +113,19 @@ export const Lightbox = ({
                             </Box>
                         </Stack>
                         <Stack direction="row" spacing={1} alignItems="center">
+                            {isAdmin && (
+                                <Button
+                                    variant="contained"
+                                    color="error"
+                                    size="small"
+                                    startIcon={<DeleteForever />}
+                                    onClick={handleDeleteMedia}
+                                    disabled={isActioning}
+                                    sx={{ mr: 2 }}
+                                >
+                                    Delete
+                                </Button>
+                            )}
                             <Typography variant="h6">{currentItem.likeCount}</Typography>
                             <IconButton
                                 onClick={() => onToggleLike(currentItem)}

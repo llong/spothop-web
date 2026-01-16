@@ -24,17 +24,24 @@ describe('adminService', () => {
     });
 
     it('fetches reports successfully', async () => {
-        const mockReports = [{ id: '1', reason: 'Spam' }];
+        const mockReports = [{ id: '1', reason: 'Spam', target_type: 'spot', target_id: 's1' }];
         const mockSelect = vi.fn().mockReturnThis();
         const mockOrder = vi.fn().mockResolvedValue({ data: mockReports, error: null });
 
         (supabase.from as any).mockReturnValue({
             select: mockSelect,
-            order: mockOrder
+            order: mockOrder,
+            in: vi.fn().mockResolvedValue({ data: [], error: null })
         });
 
         const result = await adminService.fetchReports();
-        expect(result).toEqual(mockReports);
+        expect(result).toEqual([
+            {
+                ...mockReports[0],
+                target_content: undefined,
+                context_id: 's1'
+            }
+        ]);
         expect(supabase.from).toHaveBeenCalledWith('content_reports');
     });
 

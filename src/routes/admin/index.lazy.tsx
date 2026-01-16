@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute, Link } from '@tanstack/react-router'
 import {
     Container,
     Typography,
@@ -19,6 +19,9 @@ import {
     Stack,
     Chip,
     Grid,
+    Card,
+    CardMedia,
+    CardContent,
 } from '@mui/material'
 import {
     DeleteForever,
@@ -39,7 +42,58 @@ export const Route = createLazyFileRoute('/admin/')({
     component: AdminDashboard,
 })
 
-function AdminDashboard() {
+function ModerationCard({ report }: { report: ContentReport }) {
+    return (
+        <Card
+            variant="outlined"
+            sx={{
+                bgcolor: 'background.paper',
+                cursor: report.context_id ? 'pointer' : 'default',
+                '&:hover': report.context_id ? { bgcolor: 'grey.50' } : {},
+                overflow: 'hidden'
+            }}
+        >
+            {(report.target_type === 'media' || (report.target_type === 'spot' && report.target_content?.thumbnailUrl)) && (
+                <CardMedia
+                    component="img"
+                    height="160"
+                    image={report.target_type === 'spot' ? report.target_content.thumbnailUrl : (report.target_content.thumbnail_url || report.target_content.url)}
+                    alt="Content preview"
+                    sx={{ objectFit: 'cover', bgcolor: 'black' }}
+                />
+            )}
+            <CardContent>
+                {report.target_type === 'spot' && report.target_content && (
+                    <>
+                        <Typography variant="subtitle1" color="primary" fontWeight={800}>
+                            {report.target_content.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {[
+                                report.target_content.address,
+                                report.target_content.city,
+                                report.target_content.state,
+                                report.target_content.country
+                            ].filter(Boolean).join(', ')}
+                        </Typography>
+                    </>
+                )}
+                {report.target_type === 'comment' && report.target_content && (
+                    <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.primary' }}>
+                        "{report.target_content.content}"
+                    </Typography>
+                )}
+                {report.target_type === 'media' && report.target_content && (
+                    <Typography variant="caption" color="text.secondary">
+                        Media ID: {report.target_content.id}
+                    </Typography>
+                )}
+            </CardContent>
+        </Card>
+    )
+}
+
+export function AdminDashboard() {
     const [activeTab, setActiveTab] = useState(0)
     const { reports, isLoadingReports, reportsError, resolveReport, deleteContent, toggleBan, isActioning } = useAdminQueries()
     const [userSearch, setUserSearch] = useState('')
@@ -135,7 +189,7 @@ function AdminDashboard() {
                                             </Typography>
                                         </Stack>
 
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                                             Reported by <strong>@{report.reporter?.username}</strong> on {format(new Date(report.created_at), 'PPP p')}
                                         </Typography>
 
@@ -147,9 +201,26 @@ function AdminDashboard() {
                                             </Box>
                                         )}
 
-                                        <Typography variant="caption" sx={{ color: 'grey.500' }}>
+                                        <Typography variant="caption" display="block" sx={{ color: 'grey.500', mb: 2 }}>
                                             Target ID: {report.target_id}
                                         </Typography>
+
+                                        {/* Target Preview Section */}
+                                        {report.target_content && (
+                                            <Box sx={{ mb: 2 }}>
+                                                {report.context_id ? (
+                                                    <Link
+                                                        to="/spots/$spotId"
+                                                        params={{ spotId: report.context_id }}
+                                                        style={{ textDecoration: 'none', color: 'inherit' }}
+                                                    >
+                                                        <ModerationCard report={report} />
+                                                    </Link>
+                                                ) : (
+                                                    <ModerationCard report={report} />
+                                                )}
+                                            </Box>
+                                        )}
                                     </Grid>
 
                                     <Grid size={{ xs: 12, md: 4 }}>
@@ -158,7 +229,10 @@ function AdminDashboard() {
                                                 variant="outlined"
                                                 color="inherit"
                                                 startIcon={<CheckCircleOutline />}
-                                                onClick={() => resolveReport(report.id)}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    resolveReport(report.id);
+                                                }}
                                                 disabled={isActioning}
                                             >
                                                 Dismiss
@@ -167,7 +241,8 @@ function AdminDashboard() {
                                                 variant="contained"
                                                 color="error"
                                                 startIcon={<DeleteForever />}
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.preventDefault();
                                                     if (window.confirm(`Are you sure you want to delete this ${report.target_type}?`)) {
                                                         deleteContent({ type: report.target_type, id: report.target_id })
                                                     }
@@ -249,7 +324,7 @@ function AdminDashboard() {
                                                     startIcon={user.isBanned ? <CheckCircleOutline /> : <PersonOff />}
                                                     onClick={async () => {
                                                         const action = user.isBanned ? 'unban' : 'ban';
-                                                        if (window.confirm(`Are you sure you want to ${action} ${user.username}?`)) {
+                                                        if (window.confirm(`Are you sure you want to ${action} ${user.displayName || user.username}?`)) {
                                                             await toggleBan({ userId: user.id, isBanned: !user.isBanned })
                                                             const updatedUsers = users.map(u =>
                                                                 u.id === user.id ? { ...u, isBanned: !user.isBanned } : u

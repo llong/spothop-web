@@ -6,6 +6,7 @@ export interface LocationInfo {
     country?: string;
     streetNumber?: string;
     street?: string;
+    postalCode?: string;
     formattedAddress?: string;
 }
 
@@ -48,12 +49,17 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Location
             const city = cityComponent?.long_name ||
                 result.address_components.find((c: any) => c.types.includes('administrative_area_level_2'))?.long_name;
 
+            const postalCode = result.address_components.find((c: any) =>
+                c.types.includes('postal_code')
+            )?.long_name;
+
             const info = {
                 city: city,
                 state: stateComponent?.short_name,
                 country: countryComponent?.long_name,
                 streetNumber,
                 street: route,
+                postalCode,
                 formattedAddress: result.formatted_address
             };
 

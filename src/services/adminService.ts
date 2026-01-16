@@ -6,7 +6,7 @@ export const adminService = {
      * Fetches all pending reports from content_reports.
      */
     async fetchReports(): Promise<ContentReport[]> {
-        const { data, error } = await supabase
+        const { data: reports, error } = await supabase
             .from('content_reports')
             .select(`
                 *,
@@ -15,10 +15,59 @@ export const adminService = {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
+        if (!reports || reports.length === 0) return [];
 
-        // Since target_id is not a real foreign key, we might need to fetch target previews
-        // but for now we return the list and the UI can handle fetching details if needed.
-        return data as ContentReport[];
+        // Group IDs by type for efficient fetching
+        const spotIds = reports.filter(r => r.target_type === 'spot').map(r => r.target_id);
+        const commentIds = reports.filter(r => r.target_type === 'comment').map(r => r.target_id);
+        const mediaIds = reports.filter(r => r.target_type === 'media').map(r => r.target_id);
+
+        // Fetch targets in parallel
+        const [spotsRes, commentsRes, photosRes, videosRes] = await Promise.all([
+            spotIds.length ? supabase.from('spots').select('id, name, address, city, state, country, spot_photos(url)').in('id', spotIds) : { data: [] },
+            commentIds.length ? supabase.from('spot_comments').select('id, content, spot_id').in('id', commentIds) : { data: [] },
+            mediaIds.length ? supabase.from('spot_photos').select('id, url, spot_id').in('id', mediaIds) : { data: [] },
+            mediaIds.length ? supabase.from('spot_videos').select('id, url, thumbnail_url, spot_id').in('id', mediaIds) : { data: [] }
+        ]);
+
+        // Create maps for quick lookup
+        const spotMap = new Map(spotsRes.data?.map((s: any) => [s.id, {
+            ...s,
+            thumbnailUrl: s.spot_photos?.[0]?.url || null
+        }]));
+        const commentMap = new Map(commentsRes.data?.map(c => [c.id, c]));
+        const photoMap = new Map(photosRes.data?.map(p => [p.id, p]));
+        const videoMap = new Map(videosRes.data?.map(v => [v.id, v]));
+
+        // Merge target data into reports
+        return reports.map(report => {
+            let targetContent = null;
+            let contextId = null;
+
+            switch (report.target_type) {
+                case 'spot':
+                    targetContent = spotMap.get(report.target_id);
+                    contextId = report.target_id;
+                    break;
+                case 'comment':
+                    const comment = commentMap.get(report.target_id);
+                    targetContent = comment;
+                    contextId = comment?.spot_id;
+                    break;
+                case 'media':
+                    const photo = photoMap.get(report.target_id);
+                    const video = videoMap.get(report.target_id);
+                    targetContent = photo || video;
+                    contextId = (photo || video)?.spot_id;
+                    break;
+            }
+
+            return {
+                ...report,
+                target_content: targetContent,
+                context_id: contextId // Used for linking back to the spot page
+            };
+        }) as ContentReport[];
     },
 
     /**

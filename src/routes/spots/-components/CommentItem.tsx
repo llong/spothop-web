@@ -28,6 +28,9 @@ import { Link } from '@tanstack/react-router';
 import type { SpotComment } from 'src/types';
 import { CommentForm } from './CommentForm';
 import { ReportDialog } from './ReportDialog';
+import { useAtomValue } from 'jotai';
+import { userAtom } from 'src/atoms/auth';
+import { useProfileQuery } from 'src/hooks/useProfileQueries';
 
 interface CommentItemProps {
     comment: SpotComment;
@@ -53,6 +56,9 @@ export const CommentItem = ({
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [reportOpen, setReportOpen] = useState(false);
 
+    const user = useAtomValue(userAtom);
+    const { data: profile } = useProfileQuery(user?.user.id);
+    const isAdmin = profile?.role === 'admin';
     const isAuthor = currentUserId === comment.user_id;
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -211,16 +217,21 @@ export const CommentItem = ({
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
             >
-                {isAuthor ? [
+                {isAuthor && (
                     <MenuItem key="edit" onClick={handleEditStart}>
                         <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
                         <ListItemText>Edit</ListItemText>
-                    </MenuItem>,
+                    </MenuItem>
+                )}
+
+                {(isAuthor || isAdmin) && (
                     <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main' }}>
                         <ListItemIcon><Delete fontSize="small" color="error" /></ListItemIcon>
-                        <ListItemText>Delete</ListItemText>
+                        <ListItemText>{isAdmin && !isAuthor ? 'Delete (Admin)' : 'Delete'}</ListItemText>
                     </MenuItem>
-                ] : (
+                )}
+
+                {!isAuthor && (
                     <MenuItem key="report" onClick={() => { setReportOpen(true); handleMenuClose(); }}>
                         <ListItemIcon><FlagOutlined fontSize="small" /></ListItemIcon>
                         <ListItemText>Report</ListItemText>

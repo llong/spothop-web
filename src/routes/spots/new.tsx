@@ -26,6 +26,7 @@ import { userAtom } from 'src/atoms/auth';
 import { useMediaUpload } from 'src/hooks/useMediaUpload';
 import type { VideoAsset } from 'src/types';
 import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
+import { reverseGeocode } from 'src/utils/geocoding';
 
 export const NewSpotComponent = () => {
     const isOnline = useOnlineStatus();
@@ -66,31 +67,13 @@ export const NewSpotComponent = () => {
     useEffect(() => {
         const getAddress = async () => {
             try {
-                const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE'}`);
-                const data = await response.json();
-                if (data.results && data.results.length > 0) {
-                    const result = data.results[0];
-                    setAddress(result.formatted_address);
-
-                    const postalCodeComponent = result.address_components.find((c: any) => c.types.includes('postal_code'));
-                    if (postalCodeComponent) {
-                        setPostalCode(postalCodeComponent.long_name);
-                    }
-
-                    const cityComponent = result.address_components.find((c: any) => c.types.includes('locality') || c.types.includes('administrative_area_level_1') || c.types.includes('administrative_area_level_2'));
-                    if (cityComponent) {
-                        setCity(cityComponent.long_name);
-                    }
-
-                    const stateComponent = result.address_components.find((c: any) => c.types.includes('administrative_area_level_1'));
-                    if (stateComponent) {
-                        setState(stateComponent.short_name);
-                    }
-
-                    const countryComponent = result.address_components.find((c: any) => c.types.includes('country'));
-                    if (countryComponent) {
-                        setCountry(countryComponent.long_name);
-                    }
+                const info = await reverseGeocode(lat, lng);
+                if (info.formattedAddress) {
+                    setAddress(info.formattedAddress);
+                    setPostalCode(info.postalCode || '');
+                    setCity(info.city || '');
+                    setState(info.state || '');
+                    setCountry(info.country || '');
                 }
             } catch (e) {
                 console.error("Failed to fetch address", e);

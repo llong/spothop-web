@@ -14,8 +14,17 @@ vi.mock('@tanstack/react-router', () => ({
         history: { back: vi.fn() },
         invalidate: vi.fn(),
     }),
+    useNavigate: () => vi.fn(),
     Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
+
+vi.mock('jotai', async (importOriginal) => {
+    const actual = await importOriginal() as any;
+    return {
+        ...actual,
+        useAtomValue: vi.fn(),
+    }
+});
 
 vi.mock('src/supabase', () => ({
     default: {

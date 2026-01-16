@@ -11,7 +11,7 @@ export const spotService = {
         const spotPromise = supabase
             .from('spots')
             .select(`
-                id, name, description, latitude, longitude, address, city, country, created_by, created_at, 
+                id, name, description, latitude, longitude, address, city, state, country, created_by, created_at, 
                 spot_photos (
                     id,
                     url,
@@ -70,10 +70,11 @@ export const spotService = {
         if (!spotData) return null;
 
         // 3. Location Enrichment (Only if missing)
-        if (!spotData.city || !spotData.country) {
+        if (!spotData.city || !spotData.country || !spotData.state) {
             try {
                 const info = await reverseGeocode(spotData.latitude, spotData.longitude);
                 spotData.city = spotData.city || info.city;
+                spotData.state = spotData.state || info.state;
                 spotData.country = spotData.country || info.country;
             } catch (e) {
                 console.warn("Geocoding failed for spot:", spotId);

@@ -1,9 +1,9 @@
-import { Paper, Typography, Box, Divider, Chip, Stack } from '@mui/material';
-import { Skateboarding } from '@mui/icons-material';
+import { Paper, Typography, Box, Divider, Chip, Stack, Button } from '@mui/material';
+import { Skateboarding, DeleteForever } from '@mui/icons-material';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { Link as RouterLink } from '@tanstack/react-router';
+import { Link as RouterLink, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { Spot } from 'src/types';
 import { useSpotAddress } from 'src/hooks/useSpotAddress';
@@ -11,6 +11,10 @@ import { FlagSpotDialog } from '../FlagSpotDialog';
 import { SpotSocialActions } from './SpotSocialActions';
 import { SpotStats } from './SpotStats';
 import { SpotAddress } from './SpotAddress';
+import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { useAdminQueries } from 'src/hooks/useAdminQueries';
+import { useAtomValue } from 'jotai';
+import { userAtom } from 'src/atoms/auth';
 
 interface SpotInfoProps {
     spot: Spot;
@@ -40,6 +44,12 @@ export const SpotInfo = ({ spot, isFavorited, onToggleFavorite, isLoggedIn, onRe
     const [reportDialogOpen, setReportDialogOpen] = useState(false);
     const { displayAddress } = useSpotAddress(spot);
     const kickoutRisk = getKickoutRiskLabel(spot.kickout_risk);
+    const navigate = useNavigate();
+
+    const user = useAtomValue(userAtom);
+    const { data: profile } = useProfileQuery(user?.user.id);
+    const { deleteContent, isActioning } = useAdminQueries();
+    const isAdmin = profile?.role === 'admin';
 
     const handleShare = async () => {
         if (navigator.share) {
@@ -64,11 +74,31 @@ export const SpotInfo = ({ spot, isFavorited, onToggleFavorite, isLoggedIn, onRe
 
     return (
         <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h4" fontWeight={700} gutterBottom>
-                {spot.name}
-            </Typography>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
+                <Typography variant="h4" fontWeight={700}>
+                    {spot.name}
+                </Typography>
+                {isAdmin && (
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        disabled={isActioning}
+                        onClick={async (e) => {
+                            e.stopPropagation();
+                            if (window.confirm('ADMIN: Are you sure you want to delete this entire spot? This cannot be undone.')) {
+                                await deleteContent({ type: 'spot', id: spot.id });
+                                navigate({ to: '/' });
+                            }
+                        }}
+                        sx={{ textTransform: 'none', fontWeight: 600 }}
+                    >
+                        Delete Spot
+                    </Button>
+                )}
+            </Stack>
 
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2, mt: 1 }}>
                 <SpotAddress displayAddress={displayAddress} />
 
                 <SpotSocialActions
