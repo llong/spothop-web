@@ -150,9 +150,10 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
                         >
                             <img
                                 ref={imgRef}
-                                alt="Crop me"
                                 src={imgSrc}
-                                onLoad={onImageLoad}
+                                alt="Avatar preview"
+                                crossOrigin="anonymous"
+                                style={{ maxWidth: '100%', maxHeight: '400px', display: 'block' }}
                             />
                         </ReactCrop>
                     )}

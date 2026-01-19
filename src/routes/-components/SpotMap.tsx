@@ -13,6 +13,7 @@ import type { Spot } from 'src/types';
 import L, { Icon } from 'leaflet';
 import { useGeolocation } from 'src/hooks/useGeolocation';
 import { MapSearchAreaButton } from './MapSearchAreaButton';
+import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -98,7 +99,7 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
 
     const onRightClick = useCallback(async (latlng: L.LatLng) => {
         if (!isLoggedIn) return;
-        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latlng.lat},${latlng.lng}&key=AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE`);
+        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latlng.lat},${latlng.lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`);
         const data = await response.json();
         if (data.results && data.results.length > 0) {
             setNewSpot({ latlng, address: data.results[0].formatted_address });
@@ -169,8 +170,9 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
                                     >
                                         {spot.photoUrl && (
                                             <img
-                                                src={spot.photoUrl}
+                                                src={getOptimizedImageUrl(spot.photoUrl)}
                                                 alt={spot.name}
+                                                crossOrigin="anonymous"
                                                 style={{ width: '100%', height: 'auto', borderRadius: '4px' }}
                                             />
                                         )}

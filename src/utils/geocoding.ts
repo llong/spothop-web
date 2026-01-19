@@ -1,4 +1,4 @@
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE';
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export interface LocationInfo {
     city?: string;

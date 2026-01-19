@@ -6,6 +6,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useState, useEffect, memo } from "react";
 import { useGeocoding } from "src/hooks/useGeocoding";
+import { getOptimizedImageUrl } from "src/utils/imageOptimization";
 
 const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = memo(({ spot, priority }) => {
     const [locationString, setLocationString] = useState<string>('Loading location...');
@@ -68,8 +69,9 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = memo(({ spot
                         {spot.photoUrl ? (
                             <CardMedia
                                 component="img"
-                                image={spot.thumbnail_small_url || spot.thumbnail_large_url || spot.photoUrl || ''}
+                                image={getOptimizedImageUrl(spot.thumbnail_small_url || spot.thumbnail_large_url || spot.photoUrl || '')}
                                 alt={spot.name}
+                                crossOrigin="anonymous"
                                 loading={priority ? "eager" : "lazy"}
                                 decoding="async"
                                 {...(priority ? { fetchpriority: "high" } : {})}
@@ -212,8 +214,8 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = memo(({ spot
     )
 }, (prevProps, nextProps) => {
     return prevProps.spot.id === nextProps.spot.id &&
-           prevProps.spot.updated_at === nextProps.spot.updated_at &&
-           prevProps.priority === nextProps.priority;
+        prevProps.spot.updated_at === nextProps.spot.updated_at &&
+        prevProps.priority === nextProps.priority;
 });
 
 export default SpotsListCard;

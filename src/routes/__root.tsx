@@ -18,7 +18,7 @@ export function RootComponent() {
     const setIsGoogleMapsLoaded = useSetAtom(isGoogleMapsLoadedAtom);
     const libraries = useMemo(() => ["places"], []);
     const { isLoaded } = useLoadScript({
-        googleMapsApiKey: "AIzaSyA4RiC3UlcdfU3MRNkp0kBirRmSE8V9vdE",
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
         libraries: libraries as any,
     });
 

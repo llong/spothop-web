@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-5db6c9d5'], (function (workbox) { 'use strict';
+define(['./workbox-fbb422ed'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -82,14 +82,13 @@ define(['./workbox-5db6c9d5'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.71hoheau7vg"
+    "revision": "0.h19v1k08i8g"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/],
-    denylist: [/^\/api/]
+    denylist: [/^\/api/, /maps\.googleapis\.com/]
   }));
-  workbox.registerRoute(/^https:\/\/maps\.googleapis\.com\/maps\/api\/mapsjs\/gen_204.*/i, new workbox.NetworkOnly(), 'GET');
   workbox.registerRoute(/^https:\/\/maps\.googleapis\.com\/.*/i, new workbox.CacheFirst({
     "cacheName": "google-maps-cache",
     plugins: [new workbox.ExpirationPlugin({

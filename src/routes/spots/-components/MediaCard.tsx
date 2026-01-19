@@ -26,6 +26,7 @@ export const MediaCard = memo(({ item, onToggleLike, isLoading, onSelect }: Medi
                     alt={`Photo by ${item.author.username || 'unknown'}`}
                     loading="lazy"
                     decoding="async"
+                    crossOrigin="anonymous"
                     sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                 />
             ) : (
@@ -37,6 +38,7 @@ export const MediaCard = memo(({ item, onToggleLike, isLoading, onSelect }: Medi
                             alt={`Video thumbnail by ${item.author.username || 'unknown'}`}
                             loading="lazy"
                             decoding="async"
+                            crossOrigin="anonymous"
                             sx={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
                         />
                     )}
@@ -85,7 +87,7 @@ export const MediaCard = memo(({ item, onToggleLike, isLoading, onSelect }: Medi
     </Box>
 ), (prevProps, nextProps) => {
     return prevProps.item.id === nextProps.item.id &&
-           prevProps.item.isLiked === nextProps.item.isLiked &&
-           prevProps.item.likeCount === nextProps.item.likeCount &&
-           prevProps.isLoading === nextProps.isLoading;
+        prevProps.item.isLiked === nextProps.item.isLiked &&
+        prevProps.item.likeCount === nextProps.item.likeCount &&
+        prevProps.isLoading === nextProps.isLoading;
 });

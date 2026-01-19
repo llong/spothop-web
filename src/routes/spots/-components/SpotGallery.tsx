@@ -79,7 +79,13 @@ export const SpotGallery = ({ media: initialMedia }: SpotGalleryProps) => {
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', userSelect: 'none', pointerEvents: 'none' }}
                                 />
                             ) : (
-                                <Box component="video" src={item.url} playsInline preload="metadata" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                <Box
+                                    component="video"
+                                    src={item.url}
+                                    playsInline
+                                    preload="metadata"
+                                    sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                />
                             )}
                         </Box>
                     ))}

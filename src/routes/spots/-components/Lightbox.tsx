@@ -2,6 +2,7 @@ import { Box, IconButton, Stack, Avatar, Typography, Dialog, styled, Button } fr
 import { Favorite, FavoriteBorder, Close, DeleteForever } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { EmblaCarousel } from './EmblaCarousel';
+import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 import type { MediaItem } from 'src/types';
 import { useProfileQuery } from 'src/hooks/useProfileQueries';
 import { useAdminQueries } from 'src/hooks/useAdminQueries';
@@ -76,8 +77,9 @@ export const Lightbox = ({
                         <Box key={item.id} sx={{ minWidth: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', p: { xs: 0, md: 8 } }}>
                             {item.type === 'photo' ? (
                                 <img
-                                    src={item.url}
+                                    src={getOptimizedImageUrl(item.url)}
                                     alt={`Lightbox photo ${idx + 1}`}
+                                    crossOrigin="anonymous"
                                     style={{
                                         maxWidth: '100%',
                                         maxHeight: '100%',

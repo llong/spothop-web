@@ -4,7 +4,6 @@ import react from '@vitejs/plugin-react'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import { VitePWA } from 'vite-plugin-pwa'
-import mkcert from 'vite-plugin-mkcert'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -47,12 +46,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        navigateFallbackDenylist: [/^\/api/],
+        navigateFallbackDenylist: [/^\/api/, /maps\.googleapis\.com/],
         runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/maps\.googleapis\.com\/maps\/api\/mapsjs\/gen_204.*/i,
-            handler: 'NetworkOnly',
-          },
           {
             urlPattern: /^https:\/\/maps\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
@@ -92,11 +87,14 @@ export default defineConfig({
         ]
       }
     }),
-    mkcert(),
   ],
   server: {
     port: 5000,
-    host: true
+    host: true,
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    },
   },
   build: {
     assetsInlineLimit: 0, // Prevent inlining assets to keep CSS small
