@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
-import { Button, Box, Typography, IconButton, Card, Stack, Dialog } from '@mui/material';
+import { Button, Box, Typography, IconButton, Card, Stack, Dialog, DialogTitle, DialogContent, DialogActions, Fab } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VideoFileIcon from '@mui/icons-material/VideoFile';
 import ImageIcon from '@mui/icons-material/Image';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import CloseIcon from '@mui/icons-material/Close';
 import { v4 as uuidv4 } from 'uuid';
 import type { VideoAsset } from 'src/types';
 import { VideoThumbnailSelector } from './VideoThumbnailSelector';
@@ -20,6 +22,10 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
     // Trimmer state
     const [trimmerOpen, setTrimmerOpen] = useState(false);
     const [pendingFile, setPendingFile] = useState<File | null>(null);
+
+    // Video preview state
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewVideo, setPreviewVideo] = useState<VideoAsset | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -158,6 +164,16 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
         }
     };
 
+    const handleOpenPreview = (asset: VideoAsset) => {
+        setPreviewVideo(asset);
+        setPreviewOpen(true);
+    };
+
+    const handleClosePreview = () => {
+        setPreviewOpen(false);
+        setPreviewVideo(null);
+    };
+
     const activeVideo = selectedVideos.find(v => v.id === activeVideoId)?.file || null;
 
     return (
@@ -191,41 +207,82 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
                 <Stack spacing={2} sx={{ mt: 2 }}>
                     {selectedVideos.map((asset) => (
                         <Card key={asset.id} sx={{ p: 2 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, overflow: 'hidden' }}>
-                                    <VideoFileIcon color="primary" />
-                                    <Typography noWrap sx={{ maxWidth: 200 }}>{asset.file.name}</Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 2, flex: 1, minWidth: 0 }}>
+                                    <Box
+                                        onClick={() => asset.thumbnail && handleOpenPreview(asset)}
+                                        sx={{
+                                            position: 'relative',
+                                            width: 227,
+                                            height: 128,
+                                            borderRadius: 1,
+                                            overflow: 'hidden',
+                                            cursor: asset.thumbnail ? 'pointer' : 'default',
+                                            bgcolor: 'grey.200',
+                                            flexShrink: 0
+                                        }}
+                                    >
+                                        {asset.thumbnail ? (
+                                            <>
+                                                <Box
+                                                    component="img"
+                                                    src={URL.createObjectURL(asset.thumbnail)}
+                                                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                />
+                                                <Box
+                                                    sx={{
+                                                        position: 'absolute',
+                                                        inset: 0,
+                                                        bgcolor: 'rgba(0, 0, 0, 0.3)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <Fab
+                                                        size="medium"
+                                                        sx={{
+                                                            width: 48,
+                                                            height: 48,
+                                                            bgcolor: 'rgba(255, 255, 255, 0.7)',
+                                                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' },
+                                                            '& .MuiSvgIcon-root': { fontSize: 28, color: 'black' }
+                                                        }}
+                                                    >
+                                                        <PlayArrowIcon />
+                                                    </Fab>
+                                                </Box>
+                                            </>
+                                        ) : (
+                                            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <ImageIcon fontSize="large" color="disabled" />
+                                            </Box>
+                                        )}
+                                    </Box>
+
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden' }}>
+                                            <VideoFileIcon color="primary" />
+                                            <Typography noWrap variant="body2">{asset.file.name}</Typography>
+                                        </Box>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {asset.thumbnail ? 'Thumbnail generated' : 'Generating thumbnail...'}
+                                        </Typography>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() => handleOpenThumbnailSelector(asset.id)}
+                                            disabled={!asset.thumbnail}
+                                            sx={{ width: 'fit-content', mt: 'auto' }}
+                                        >
+                                            {asset.thumbnail ? 'Change Thumbnail' : 'Generating...'}
+                                        </Button>
+                                    </Box>
                                 </Box>
-                                <IconButton onClick={() => handleRemove(asset.id)} color="error">
+
+                                <IconButton onClick={() => handleRemove(asset.id)} color="error" sx={{ flexShrink: 0 }}>
                                     <DeleteIcon />
                                 </IconButton>
-                            </Box>
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    {asset.thumbnail ? (
-                                        <Box
-                                            component="img"
-                                            src={URL.createObjectURL(asset.thumbnail)}
-                                            sx={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 1 }}
-                                        />
-                                    ) : (
-                                        <Box sx={{ width: 40, height: 40, bgcolor: 'grey.200', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <ImageIcon fontSize="small" color="disabled" />
-                                        </Box>
-                                    )}
-                                    <Typography variant="caption" color="text.secondary">
-                                        {asset.thumbnail ? 'Thumbnail generated' : 'Generating thumbnail...'}
-                                    </Typography>
-                                </Box>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    onClick={() => handleOpenThumbnailSelector(asset.id)}
-                                    disabled={!asset.thumbnail}
-                                >
-                                    {asset.thumbnail ? 'Change Thumbnail' : 'Generating...'}
-                                </Button>
                             </Box>
                         </Card>
                     ))}
@@ -257,6 +314,45 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
                 videoFile={activeVideo}
                 onSelectThumbnail={handleThumbnailSelected}
             />
+
+            <Dialog
+                open={previewOpen}
+                onClose={handleClosePreview}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle>
+                    Video Preview
+                    <IconButton
+                        onClick={handleClosePreview}
+                        sx={{ position: 'absolute', right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    {previewVideo && (
+                        <Box sx={{ position: 'relative', width: '100%', pt: '56.25%', bgcolor: 'black', borderRadius: 1, overflow: 'hidden' }}>
+                            <video
+                                src={URL.createObjectURL(previewVideo.file)}
+                                controls
+                                autoPlay
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClosePreview}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

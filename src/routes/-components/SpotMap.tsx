@@ -1,5 +1,5 @@
 import { Box, Button, Typography, Fab, CircularProgress } from "@mui/material";
-import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, useMapEvents, Circle } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { MyLocation } from '@mui/icons-material';
 import { Map as LeafletMap } from 'leaflet';
@@ -27,6 +27,15 @@ Icon.Default.mergeOptions({
     iconRetinaUrl: markerIcon2x,
     shadowUrl: markerShadow,
 });
+
+const injectPulseAnimation = () => {
+    if (!document.getElementById('location-pulse-animation')) {
+        const style = document.createElement('style');
+        style.id = 'location-pulse-animation';
+        style.textContent = ``;
+        document.head.appendChild(style);
+    }
+};
 
 const DEFAULT_CENTER = [3.1319, 101.6841] as [number, number];
 
@@ -65,6 +74,10 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
     const [moved, setMoved] = useState(false);
     const [newSpot, setNewSpot] = useState<{ latlng: L.LatLng, address: string } | null>(null);
     const [initialCenterFound, setInitialCenterFound] = useState(false);
+    const [userLocation, setUserLocation] = useState<{ lat: number, lng: number, accuracy: number } | null>(null);
+    const [pulseRings, setPulseRings] = useState<Array<{ id: number, radius: number, opacity: number }>>([]);
+    const [mapZoom, setMapZoom] = useState<number>(12);
+    const [circleSize, setCircleSize] = useState<number>(25);
 
     const setMapAtom = useSetAtom(mapAtom);
     const setBoundsAtom = useSetAtom(boundsAtom);
@@ -76,6 +89,7 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
         import('leaflet/dist/leaflet.css');
         import('leaflet.markercluster/dist/MarkerCluster.css');
         import('leaflet.markercluster/dist/MarkerCluster.Default.css');
+        injectPulseAnimation();
     }, []);
 
     useEffect(() => {
@@ -84,8 +98,14 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
             const bounds = map.getBounds();
             setBoundsAtom(bounds);
             getSpots(bounds);
+            const zoom = map.getZoom();
+            setMapZoom(zoom);
+            
+            // Adjust circle size based on zoom level to maintain consistent screen size
+            const newSize = Math.max(25, Math.min(35, 25 * Math.pow(2, 17 - zoom)));
+            setCircleSize(newSize);
         }
-    }, [map, setMapAtom, setBoundsAtom, getSpots]);
+    }, [map, setMapAtom, setBoundsAtom, getSpots, setMapZoom, setCircleSize]);
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -134,6 +154,62 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
         }
     }, [lat, lng, map, getSpots]);
 
+    useEffect(() => {
+        if ('watchPosition' in navigator.geolocation && map) {
+            const watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy || 100
+                    });
+                },
+                (error) => {
+                    console.error('Geolocation watch error:', error);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 5000
+                }
+            );
+
+            return () => {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                }
+            };
+        }
+    }, [map]);
+
+    useEffect(() => {
+        if (!userLocation) {
+            setPulseRings([]);
+            return;
+        }
+
+        const addRing = () => {
+            const id = Date.now();
+            setPulseRings(prev => [...prev, { id, radius: circleSize, opacity: 0.6 }]);
+        };
+
+        const interval = setInterval(addRing, 2000);
+
+        return () => clearInterval(interval);
+    }, [userLocation]);
+
+    useEffect(() => {
+        const animationInterval = setInterval(() => {
+            setPulseRings(prev => prev.map(ring => ({
+                ...ring,
+                radius: Math.min(ring.radius + (circleSize / 25), (circleSize * 2.2)),
+                opacity: Math.max(ring.opacity - 0.012, 0)
+            })).filter(ring => ring.opacity > 0));
+        }, 50);
+
+        return () => clearInterval(animationInterval);
+    }, [mapZoom, circleSize]);
+
     const handleSearchArea = () => {
         if (map) {
             getSpots(map.getBounds());
@@ -155,6 +231,37 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
             >
                 <MapEvents onMove={onMove} onRightClick={onRightClick} />
                 <TileLayer url={currentTheme.url} attribution='' />
+
+                {userLocation && (
+                    <>
+                        <Circle
+                            center={[userLocation.lat, userLocation.lng]}
+                            radius={circleSize * 0.48}
+                            pathOptions={{
+                                color: '#4285F4',
+                                fillColor: '#4285F4',
+                                fillOpacity: 1,
+                                weight: 0,
+                                opacity: 1,
+                            }}
+                        />
+                        {pulseRings.map(ring => (
+                            <Circle
+                                key={ring.id}
+                                center={[userLocation.lat, userLocation.lng]}
+                                radius={circleSize * (ring.radius / 25)}
+                                pathOptions={{
+                                    color: 'transparent',
+                                    fillColor: '#4285F4',
+                                    fillOpacity: ring.opacity,
+                                    weight: 0,
+                                    opacity: 1,
+                                }}
+                            />
+                        ))}
+                    </>
+                )}
+
                 <MarkerClusterGroup
                     key={`cluster-${spots.length}-${JSON.stringify(filters)}`}
                     chunkedLoading

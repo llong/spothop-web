@@ -21,9 +21,11 @@ export const useMediaUploadMutation = ({ user, spotId }: UseMediaUploadMutationP
             await uploadMedia(spotId, photos, videos);
             return { photosCount: photos.length, videosCount: videos.length };
         },
-        onSuccess: () => {
-            // Invalidate spot details to refresh media gallery
-            queryClient.invalidateQueries({ queryKey: spotKeys.details(spotId) });
+        onSuccess: async () => {
+            // Force refetch of spot details to refresh media gallery
+            await queryClient.refetchQueries({ 
+                queryKey: spotKeys.details(spotId)
+            });
         }
     });
 };

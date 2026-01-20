@@ -32,6 +32,7 @@ export const VideoTrimmer: React.FC<VideoTrimmerProps> = ({
     const [isPlaying, setIsPlaying] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
+    const abortControllerRef = useRef<AbortController | null>(null); // Added AbortController ref
 
     const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -88,22 +89,43 @@ export const VideoTrimmer: React.FC<VideoTrimmerProps> = ({
     };
 
     const handleProcess = async () => {
+        abortControllerRef.current = new AbortController(); // Create new AbortController
         setIsProcessing(true);
+        setProgress(0); // Reset progress on start
         try {
             const trimmedData = await trimVideo(
                 file,
                 range[0],
                 range[1] - range[0],
-                (p) => setProgress(p)
+                (p) => setProgress(p),
+                abortControllerRef.current.signal // Pass the signal
             );
             const blob = new Blob([Uint8Array.from(trimmedData)], { type: 'video/mp4' });
             onTrimmed(blob);
+            abortControllerRef.current = null; // Clear controller on success
         } catch (error) {
             console.error('Trimming failed:', error);
-            alert('Video processing failed. Your browser might not support this feature or is out of memory.');
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                alert('Video processing cancelled.');
+            } else {
+                alert('Video processing failed. Your browser might not support this feature or is out of memory.');
+            }
         } finally {
             setIsProcessing(false);
+            // If not already cleared by success, clear controller on error/cancellation
+            if (abortControllerRef.current) {
+                abortControllerRef.current = null;
+            }
         }
+    };
+
+    const handleCancelProcessing = () => {
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort(); // Abort the ongoing operation
+            setIsProcessing(false); // Immediately stop the loading indicator
+            setProgress(0); // Reset progress
+        }
+        onCancel(); // Call the original onCancel prop
     };
 
     return (
@@ -163,7 +185,7 @@ export const VideoTrimmer: React.FC<VideoTrimmerProps> = ({
                 />
 
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                    <Button onClick={onCancel} disabled={isProcessing}>
+                    <Button onClick={handleCancelProcessing} disabled={!isProcessing}> {/* Updated onClick and disabled */}
                         Cancel
                     </Button>
                     <Button
