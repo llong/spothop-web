@@ -82,12 +82,11 @@ define(['./workbox-fbb422ed'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.h19v1k08i8g"
+    "revision": "0.plk7dbgeqao"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
-    allowlist: [/^\/$/],
-    denylist: [/^\/api/, /maps\.googleapis\.com/]
+    allowlist: [/^\/$/]
   }));
   workbox.registerRoute(/^https:\/\/maps\.googleapis\.com\/.*/i, new workbox.CacheFirst({
     "cacheName": "google-maps-cache",
