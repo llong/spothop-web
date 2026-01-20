@@ -74,7 +74,7 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = memo(({ spot
                                 crossOrigin="anonymous"
                                 loading={priority ? "eager" : "lazy"}
                                 decoding="async"
-                                {...(priority ? { fetchpriority: "high" } : {})}
+                                {...(priority ? { fetchPriority: "high" } : {})}
                                 sx={{
                                     position: 'absolute',
                                     top: 0,
