@@ -34,11 +34,11 @@ export const profileService = {
             return { followerCount: 0, followingCount: 0 };
         }
 
-        const [stats] = data;
-        return { 
-            followerCount: Number(stats.follower_count), 
-            followingCount: Number(stats.following_count)
-        };
+    const [stats] = data;
+    return { 
+        followerCount: Number(stats.follower_count) || 0, 
+        followingCount: Number(stats.following_count) || 0
+    };
     },
 
     /**
