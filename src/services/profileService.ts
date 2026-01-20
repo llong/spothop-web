@@ -24,20 +24,111 @@ export const profileService = {
     },
 
     /**
-     * Fetches follower/following counts.
+     * Fetches follower/following counts using optimized RPC.
      */
     async fetchFollowStats(userId: string): Promise<{ followerCount: number, followingCount: number }> {
-        const { data, error } = await supabase
-            .from("user_followers")
-            .select("follower_id, following_id")
-            .or(`follower_id.eq.${userId},following_id.eq.${userId}`);
+        const { data, error } = await supabase.rpc('get_user_follow_stats', { p_user_id: userId });
+
+        if (error) throw error;
+        if (!data || data.length === 0) {
+            return { followerCount: 0, followingCount: 0 };
+        }
+
+        const [stats] = data;
+        return { 
+            followerCount: Number(stats.follower_count), 
+            followingCount: Number(stats.following_count)
+        };
+    },
+
+    /**
+     * Fetches user followers with efficient cursor-based pagination.
+     */
+    async fetchUserFollowers(userId: string, cursor?: string | null, limit = 20): Promise<{
+        followers: Array<{
+            user_id: string;
+            username: string;
+            avatar_url: string | null;
+        }>;
+        cursor: string | null;
+        hasMore: boolean;
+    }> {
+        const { data, error } = await supabase.rpc('get_user_followers_batch', {
+            p_user_id: userId,
+            p_cursor: cursor || null,
+            p_limit: limit
+        });
 
         if (error) throw error;
 
-        const followerCount = (data || []).filter(f => f.following_id === userId).length;
-        const followingCount = (data || []).filter(f => f.follower_id === userId).length;
+        if (!data || data.length === 0) {
+            return {
+                followers: [],
+                cursor: null,
+                hasMore: false
+            };
+        }
 
-        return { followerCount, followingCount };
+        const followers = data.map((row: any) => ({
+            user_id: row.user_id,
+            username: row.username,
+            avatar_url: row.avatar_url
+        }));
+
+        const lastFollower = data[data.length - 1];
+        const nextCursor = lastFollower?.cursor || null;
+        const hasMore = data.length > limit;
+
+        return {
+            followers,
+            cursor: nextCursor,
+            hasMore
+        };
+    },
+
+    /**
+     * Fetches users that current user is following with efficient cursor-based pagination.
+     */
+    async fetchUserFollowing(userId: string, cursor?: string | null, limit = 20): Promise<{
+        following: Array<{
+            user_id: string;
+            username: string;
+            avatar_url: string | null;
+        }>;
+        cursor: string | null;
+        hasMore: boolean;
+    }> {
+        const { data, error } = await supabase.rpc('get_user_following_batch', {
+            p_user_id: userId,
+            p_cursor: cursor || null,
+            p_limit: limit
+        });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            return {
+                following: [],
+                cursor: null,
+                hasMore: false
+            };
+        }
+
+        const following = data.map((row: any) => ({
+            user_id: row.user_id,
+            username: row.username,
+            avatar_url: row.avatar_url
+        }));
+
+        const lastFollowing = data[data.length - 1];
+        const nextCursor = lastFollowing?.cursor || null;
+        const hasMore = data.length > limit;
+
+        return {
+            following,
+            cursor: nextCursor,
+            hasMore
+        };
     },
 
     /**
