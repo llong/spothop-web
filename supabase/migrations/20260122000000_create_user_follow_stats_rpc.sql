@@ -1,13 +1,13 @@
--- Sprint 9 RPC Function for User Follower Stats (Clean Version)
--- Returns follower and following counts in a single efficient query
--- Uses PostgreSQL CTE for better readability and performance
+-- Sprint 9 RPC Function for User Follower Stats (Fixed Version)
+-- Simple, reliable function that doesn't rely on complex CTE syntax
 
 CREATE OR REPLACE FUNCTION get_user_follow_stats(p_user_id uuid)
 RETURNS TABLE (
     follower_count bigint,
     following_count bigint
-) LANGUAGE sql AS $$
+) LANGUAGE plpgsql AS $$
 BEGIN
+    -- Simple, direct query approach
     RETURN QUERY
     SELECT 
         (SELECT COUNT(*) FROM user_followers WHERE follower_id = p_user_id) as follower_count,
