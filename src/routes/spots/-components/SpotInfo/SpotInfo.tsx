@@ -1,5 +1,5 @@
 import { Paper, Typography, Box, Divider, Chip, Stack, Button } from '@mui/material';
-import { Skateboarding, DeleteForever } from '@mui/icons-material';
+import { Skateboarding } from '@mui/icons-material';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import FavoriteIcon from '@mui/icons-material/Favorite';
