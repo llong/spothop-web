@@ -9,7 +9,7 @@ import {
     Button,
 } from "@mui/material";
 import { PhotoCamera } from "@mui/icons-material";
-import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
+import ReactCrop from 'react-image-crop';
 import type { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useAtom } from "jotai";
@@ -41,23 +41,6 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
             reader.readAsDataURL(e.target.files[0]);
             setOpenCrop(true);
         }
-    };
-
-    const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-        const { width, height } = e.currentTarget;
-        setCrop(centerCrop(
-            makeAspectCrop(
-                {
-                    unit: '%',
-                    width: 90,
-                },
-                1,
-                width,
-                height,
-            ),
-            width,
-            height,
-        ));
     };
 
     const uploadAvatar = async () => {
