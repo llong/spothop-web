@@ -1,0 +1,30 @@
+# Project Roadmap
+
+## Phase 1: Foundation (Sprints 1-3) - COMPLETED
+- Initial web app setup and feature parity with mobile.
+- Core spot management (map, list, creation).
+- Basic media handling and authentication.
+
+## Phase 2: Engagement & Social (Sprints 4-9) - COMPLETED/IN PROGRESS
+- Direct and group messaging.
+- Real-time notifications.
+- User following system and social stats.
+- Advanced media processing (FFmpeg integration).
+- Performance and query optimizations.
+
+## Phase 3: Global Feed & Discovery (Sprints 10-11) - PLANNED
+- **Sprint 10: Minimum Viable Feed (MVF)**
+  - Transition to a content-first entry point.
+  - Infinite scroll media feed with core interactions (Like, Comment, Favorite).
+  - Automated content ranking.
+- **Sprint 11: Advanced Filtering & Personalization**
+  - Robust filtering (Social, Location, Content types).
+  - Geographic discovery (Near Me).
+  - Recommendation engine foundations.
+
+## Phase 4: Monetization & Growth (Sprints 12+) - BACKLOG
+- **Enhanced Analytics**: Detailed tracking of user journeys and content performance.
+- **Advanced Onboarding**: Tutorial-driven introduction to the platform.
+- **Brand Partnerships**: Integration of sponsored content and brand profiles (target: 500+ users).
+- **Ad Integration**: Strategic placement of in-feed advertisements.
+- **Premium Features**: Exclusive content access or enhanced profile capabilities for power users.

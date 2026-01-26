@@ -22,3 +22,31 @@
 
 ### 1. Server-side Follower Stats (RPC)
 *   **Concept:** Move follower/following count logic from TypeScript to a server-side PostgreSQL function (RPC) to handle large-scale growth.
+
+## Global Feed & Engagement (Deferred)
+
+### 1. Analytics for Feed-to-Map Transition
+*   **Concept:** Track user journeys from the feed to the map and spot details.
+*   **Metrics:** Scroll depth, time spent, likes per session, comments per session, click-through rate to map/details.
+
+### 2. Error Handling (Frontend - Detailed)
+*   **Concept:** Robust, user-friendly error handling for individual media items in the feed.
+*   **Requirements:** Graceful fallback for broken links or failed video loads without breaking the entire scroll experience.
+
+### 3. Improved User Onboarding
+*   **Concept:** Choose a unique username (disallowing spaces/special characters other than dashes/underscores) and present comprehensive tutorials on app features.
+
+### 4. Feed Metrics & Optimizations
+*   **Concept:** Further deep dive into performance metrics and ongoing optimizations for the feed based on user data.
+
+### 5. Ad Placement Optimization
+*   **Concept:** Research and optimize ad placements and formats for maximum effectiveness and minimal intrusion.
+
+### 6. Monetization Analytics
+*   **Concept:** Track specific data points to optimize ad performance and inform future premium feature development.
+
+### 7. Brand Partnerships
+*   **Concept:** Plan and execute brand partnerships once a user base of 500 active users is reached.
+
+### 8. Automated Test Data Generation
+*   **Concept:** Develop a test function and integrate it into the admin dashboard for generating diverse test data (spots, media, likes, comments) for the feed.
