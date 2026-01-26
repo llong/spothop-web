@@ -6,11 +6,12 @@ import type { UserProfile } from "src/types";
 
 interface ProfileHeaderProps {
     profile: UserProfile;
+    socialStats?: { followerCount: number; followingCount: number; favorites?: any[]; likes?: any[] } | null;
     formData: UserProfile;
     onAvatarUpload: (url: string) => Promise<void>;
 }
 
-export const ProfileHeader = ({ profile, formData, onAvatarUpload }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ profile, socialStats, formData, onAvatarUpload }: ProfileHeaderProps) => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <AvatarUpload
@@ -25,11 +26,11 @@ export const ProfileHeader = ({ profile, formData, onAvatarUpload }: ProfileHead
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, my: 1, justifyContent: 'center' }}>
                 <Box>
-                    <Typography variant="h6">{profile?.followerCount || 0}</Typography>
+                    <Typography variant="h6">{socialStats?.followerCount || 0}</Typography>
                     <Typography variant="caption" color="text.secondary">Followers</Typography>
                 </Box>
                 <Box>
-                    <Typography variant="h6">{profile?.followingCount || 0}</Typography>
+                    <Typography variant="h6">{socialStats?.followingCount || 0}</Typography>
                     <Typography variant="caption" color="text.secondary">Following</Typography>
                 </Box>
             </Box>

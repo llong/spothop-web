@@ -87,12 +87,31 @@ describe('useComments', () => {
     });
 
     it('adds a new comment', async () => {
-        const mockNewComment = { id: 'c2', content: 'new' };
-        vi.mocked(supabase.from).mockReturnValue({
+        const mockNewComment = { id: 'c2', content: 'new', user_id: 'u1', created_at: '2025-01-01' };
+        const mockFrom = vi.mocked(supabase.from);
+
+        // 1. insert
+        mockFrom.mockReturnValueOnce({
             insert: vi.fn().mockReturnValue({
                 select: vi.fn().mockReturnValue({
                     single: vi.fn().mockResolvedValue({ data: mockNewComment, error: null })
                 })
+            })
+        } as any);
+
+        // 2. fetchComments (spot_comments)
+        mockFrom.mockReturnValueOnce({
+            select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                    order: vi.fn().mockResolvedValue({ data: [mockNewComment], error: null })
+                })
+            })
+        } as any);
+
+        // 3. fetchComments (profiles)
+        mockFrom.mockReturnValueOnce({
+            select: vi.fn().mockReturnValue({
+                in: vi.fn().mockResolvedValue({ data: [{ id: 'u1', username: 'user1' }], error: null })
             })
         } as any);
 
@@ -108,9 +127,28 @@ describe('useComments', () => {
     });
 
     it('deletes a comment', async () => {
-        vi.mocked(supabase.from).mockReturnValue({
+        const mockFrom = vi.mocked(supabase.from);
+
+        // 1. delete
+        mockFrom.mockReturnValueOnce({
             delete: vi.fn().mockReturnValue({
                 eq: vi.fn().mockResolvedValue({ error: null })
+            })
+        } as any);
+
+        // 2. fetchComments (spot_comments)
+        mockFrom.mockReturnValueOnce({
+            select: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                    order: vi.fn().mockResolvedValue({ data: [], error: null })
+                })
+            })
+        } as any);
+
+        // 3. fetchComments (profiles)
+        mockFrom.mockReturnValueOnce({
+            select: vi.fn().mockReturnValue({
+                in: vi.fn().mockResolvedValue({ data: [], error: null })
             })
         } as any);
 

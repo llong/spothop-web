@@ -134,19 +134,13 @@ describe('profileService', () => {
 
     describe('fetchFollowStats', () => {
         it('calculates counts correctly', async () => {
-            const mockData = [
-                { follower_id: '1', following_id: '2' },
-                { follower_id: '3', following_id: '1' }
-            ];
-
-            vi.mocked(supabase.from).mockReturnValue({
-                select: vi.fn().mockReturnValue({
-                    or: vi.fn().mockResolvedValue({ data: mockData, error: null })
-                })
-            } as any);
+            (supabase.rpc as any) = vi.fn().mockResolvedValue({
+                data: [{ follower_count: '2', following_count: '1' }],
+                error: null
+            });
 
             const stats = await profileService.fetchFollowStats('1');
-            expect(stats).toEqual({ followerCount: 1, followingCount: 1 });
+            expect(stats).toEqual({ followerCount: 2, followingCount: 1 });
         });
     });
 });

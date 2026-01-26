@@ -4,8 +4,10 @@ import { Container, Box, Typography, Avatar, Card, CardContent, Grid, Divider, B
 import { useAtomValue } from 'jotai';
 import { userAtom } from '../../atoms/auth';
 import { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { UserContentGallery } from './-components/UserContentGallery';
-import { profileKeys, useProfileQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
+import { UserListDialog } from './-components/UserListDialog';
+import { profileKeys, useProfileQuery, useSocialStatsQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
 import { profileService } from 'src/services/profileService';
 import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 import { chatService, blockService } from 'src/services/chatService';
@@ -52,11 +54,21 @@ const loader = async ({ params, context }: { params: { username: string }, conte
 
 const PublicProfileComponent = () => {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { userId } = Route.useLoaderData();
+    const [userListConfig, setUserListConfig] = useState<{ open: boolean; type: 'followers' | 'following' }>({
+        open: false,
+        type: 'followers'
+    });
     const user = useAtomValue(userAtom);
 
     // Use Query hooks (they will pull from cache populated by loader)
     const { data: profile } = useProfileQuery(userId);
+    const { data: socialStats, isLoading: socialStatsLoading } = useSocialStatsQuery(userId, true);
+
+
+
+
     const { data: contentData } = useUserContentQuery(userId);
 
     const createdSpots = contentData?.createdSpots || [];
@@ -72,8 +84,10 @@ const PublicProfileComponent = () => {
                     .select('*')
                     .eq('follower_id', user.user.id)
                     .eq('following_id', profile.id)
-                    .single();
+                    .maybeSingle();
                 setIsFollowing(!!data);
+            } else {
+                setIsFollowing(false);
             }
         };
         checkFollowing();
@@ -99,6 +113,8 @@ const PublicProfileComponent = () => {
                     });
                 setIsFollowing(true);
             }
+            // Invalidate the social stats query to refresh follower counts
+            await queryClient.invalidateQueries({ queryKey: profileKeys.social(profile.id) });
         } catch (error) {
             console.error('Error toggling follow:', error);
         } finally {
@@ -115,6 +131,8 @@ const PublicProfileComponent = () => {
     }
 
     const isOwnProfile = user?.user.id === profile.id;
+
+
 
     return (
         <Container sx={{ mt: 5 }}>
@@ -133,15 +151,32 @@ const PublicProfileComponent = () => {
                             <Typography variant="body1" component="p" color="text.secondary">{profile.city}, {profile.country}</Typography>
 
                             <Box sx={{ display: 'flex', gap: 4, my: 2 }}>
-                                <Box>
-                                    <Typography variant="h5" fontWeight={700}>{profile.followerCount || 0}</Typography>
+                                <Box
+                                    sx={{ cursor: 'pointer', textAlign: 'center' }}
+                                    onClick={() => setUserListConfig({ open: true, type: 'followers' })}
+                                >
+                                    <Typography variant="h5" fontWeight={700}>
+                                        {socialStatsLoading ? '...' : (socialStats?.followerCount || 0)}
+                                    </Typography>
                                     <Typography variant="caption" color="text.secondary">Followers</Typography>
                                 </Box>
-                                <Box>
-                                    <Typography variant="h5" fontWeight={700}>{profile.followingCount || 0}</Typography>
+                                <Box
+                                    sx={{ cursor: 'pointer', textAlign: 'center' }}
+                                    onClick={() => setUserListConfig({ open: true, type: 'following' })}
+                                >
+                                    <Typography variant="h5" fontWeight={700}>
+                                        {socialStatsLoading ? '...' : (socialStats?.followingCount || 0)}
+                                    </Typography>
                                     <Typography variant="caption" color="text.secondary">Following</Typography>
                                 </Box>
                             </Box>
+
+                            <UserListDialog
+                                open={userListConfig.open}
+                                onClose={() => setUserListConfig(prev => ({ ...prev, open: false }))}
+                                userId={userId}
+                                type={userListConfig.type}
+                            />
 
                             {user?.user && !isOwnProfile && (
                                 <Stack direction="row" spacing={1} sx={{ mt: 2 }}>

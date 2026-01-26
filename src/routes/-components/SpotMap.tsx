@@ -100,7 +100,7 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
             getSpots(bounds);
             const zoom = map.getZoom();
             setMapZoom(zoom);
-            
+
             // Adjust circle size based on zoom level to maintain consistent screen size
             const newSize = Math.max(25, Math.min(35, 25 * Math.pow(2, 17 - zoom)));
             setCircleSize(newSize);
@@ -155,7 +155,7 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
     }, [lat, lng, map, getSpots]);
 
     useEffect(() => {
-        if ('watchPosition' in navigator.geolocation && map) {
+        if (navigator.geolocation && 'watchPosition' in navigator.geolocation && map) {
             const watchId = navigator.geolocation.watchPosition(
                 (position) => {
                     setUserLocation({

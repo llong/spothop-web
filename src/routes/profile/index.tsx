@@ -33,11 +33,11 @@ export const Route = createFileRoute("/profile/")({
                 queryClient.ensureQueryData({
                     queryKey: profileKeys.social(userId),
                     queryFn: async () => {
-                        const [favorites, likes, stats] = await Promise.all([
+                        const [favorites, likes] = await Promise.all([
                             profileService.fetchFavoriteSpots(userId),
-                            profileService.fetchLikedMedia(userId),
-                            profileService.fetchFollowStats(userId)
+                            profileService.fetchLikedMedia(userId)
                         ]);
+                        const stats = await profileService.fetchFollowStats(userId);
                         return { favorites, likes, ...stats };
                     },
                 }),

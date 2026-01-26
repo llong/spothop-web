@@ -66,6 +66,7 @@ function ProfileComponent() {
                         <CardContent>
                             <ProfileHeader
                                 profile={profile!}
+                                socialStats={socialData}
                                 formData={formData!}
                                 onAvatarUpload={async (url) => {
                                     await updateProfile({ ...formData!, avatarUrl: url });

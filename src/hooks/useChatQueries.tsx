@@ -23,28 +23,27 @@ export function useConversationsQuery(userId?: string) {
     });
 
     // Real-time updates for the inbox
+    // Optimized: instead of listening to ALL conversations and messages (which causes 3M+ system calls),
+    // we listen to the notifications table which is already filtered by userId.
     useEffect(() => {
         if (!userId) return;
 
         const channel = supabase
-            .channel(`inbox_updates_${userId}`)
+            .channel(`inbox_trigger_${userId}`)
             .on(
                 'postgres_changes',
                 {
-                    event: '*',
+                    event: 'INSERT',
                     schema: 'public',
-                    table: 'conversations'
+                    table: 'notifications',
+                    filter: `user_id=eq.${userId}`
                 },
-                () => queryClient.invalidateQueries({ queryKey: chatKeys.inbox(userId) })
-            )
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'messages'
-                },
-                () => queryClient.invalidateQueries({ queryKey: chatKeys.inbox(userId) })
+                (payload: any) => {
+                    // Only invalidate if the notification is related to chat
+                    if (payload.new.type === 'new_message' || payload.new.type === 'chat') {
+                        queryClient.invalidateQueries({ queryKey: chatKeys.inbox(userId) });
+                    }
+                }
             )
             .subscribe();
 

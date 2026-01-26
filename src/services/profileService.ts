@@ -27,18 +27,23 @@ export const profileService = {
      * Fetches follower/following counts using optimized RPC.
      */
     async fetchFollowStats(userId: string): Promise<{ followerCount: number, followingCount: number }> {
+        console.log('🚀 fetchFollowStats called for userId:', userId);
         const { data, error } = await supabase.rpc('get_user_follow_stats_simple', { p_user_id: userId });
+        console.log('📊 RPC Response:', data, error);
 
         if (error) throw error;
         if (!data || data.length === 0) {
+            console.log('⚠️ No data returned from RPC');
             return { followerCount: 0, followingCount: 0 };
         }
-
-        const [stats] = data;
-        return { 
-            followerCount: Number(stats.follower_count) || 0, 
+        // Handle single row result (works)
+        const stats = Array.isArray(data) ? data[0] : data;
+        const result = {
+            followerCount: Number(stats.follower_count) || 0,
             followingCount: Number(stats.following_count) || 0
         };
+        console.log('✅ Returning stats:', result);
+        return result;
     },
 
     /**

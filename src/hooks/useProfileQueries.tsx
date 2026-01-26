@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { profileService } from '../services/profileService';
 import { useEffect } from 'react';
 
@@ -6,6 +6,8 @@ export const profileKeys = {
     all: ['profile'] as const,
     detail: (userId: string) => [...profileKeys.all, 'detail', userId] as const,
     social: (userId: string) => [...profileKeys.all, 'social', userId] as const,
+    followers: (userId: string) => [...profileKeys.all, 'followers', userId] as const,
+    following: (userId: string) => [...profileKeys.all, 'following', userId] as const,
     content: (userId: string) => [...profileKeys.all, 'content', userId] as const,
     notifications: (userId: string) => [...profileKeys.all, 'notifications', userId] as const,
 };
@@ -28,10 +30,9 @@ export function useProfileQuery(userId?: string) {
 export function useSocialStatsQuery(userId?: string, enabled = true) {
     const queryClient = useQueryClient();
 
-    // Force refresh follower counts when userId changes (RPC function was deployed)
+    // Auto-invalidate when entering a profile to ensure fresh counts
     useEffect(() => {
         if (userId) {
-            // Invalidate the social stats query to force fresh data
             queryClient.invalidateQueries({ queryKey: profileKeys.social(userId) });
         }
     }, [userId, queryClient]);
@@ -73,5 +74,47 @@ export function useNotificationsQuery(userId?: string) {
         queryFn: () => userId ? profileService.fetchNotifications(userId) : null,
         enabled: !!userId,
         staleTime: 1000 * 15, // 15 seconds
+    });
+}
+
+/**
+ * Hook for fetching followers list with infinite pagination.
+ */
+export function useUserFollowersQuery(userId?: string) {
+    return useInfiniteQuery({
+        queryKey: userId ? profileKeys.followers(userId) : ['profile', 'followers', 'none'],
+        queryFn: async ({ pageParam }) => {
+            const data = await profileService.fetchUserFollowers(userId!, pageParam);
+            return {
+                items: data.followers,
+                cursor: data.cursor,
+                hasMore: data.hasMore
+            };
+        },
+        initialPageParam: null as string | null,
+        getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.cursor : undefined,
+        enabled: !!userId,
+        staleTime: 1000 * 60 * 5,
+    });
+}
+
+/**
+ * Hook for fetching following list with infinite pagination.
+ */
+export function useUserFollowingQuery(userId?: string) {
+    return useInfiniteQuery({
+        queryKey: userId ? profileKeys.following(userId) : ['profile', 'following', 'none'],
+        queryFn: async ({ pageParam }) => {
+            const data = await profileService.fetchUserFollowing(userId!, pageParam);
+            return {
+                items: data.following,
+                cursor: data.cursor,
+                hasMore: data.hasMore
+            };
+        },
+        initialPageParam: null as string | null,
+        getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.cursor : undefined,
+        enabled: !!userId,
+        staleTime: 1000 * 60 * 5,
     });
 }
