@@ -11,7 +11,7 @@ interface ProfileHeaderProps {
     onAvatarUpload: (url: string) => Promise<void>;
 }
 
-export const ProfileHeader = ({ profile, socialStats, formData, onAvatarUpload }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ socialStats, formData, onAvatarUpload }: ProfileHeaderProps) => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
             <AvatarUpload
