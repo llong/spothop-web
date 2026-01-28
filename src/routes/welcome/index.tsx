@@ -113,7 +113,7 @@ const WelcomeComponent = () => {
             }
 
             // Success! Go to home
-            navigate({ to: '/' });
+            navigate({ to: '/feed' });
         } catch (err: any) {
             console.error('Onboarding error:', err);
             setError(err.message || 'Failed to save profile.');

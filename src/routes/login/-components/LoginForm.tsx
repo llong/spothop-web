@@ -27,7 +27,7 @@ export function LoginForm() {
 
     useEffect(() => {
         if (user?.user.aud) {
-            navigate({ to: '/' })
+            navigate({ to: '/feed' })
         }
     }, [user])
 
@@ -42,7 +42,7 @@ export function LoginForm() {
         if (error) {
             setError(error.message)
         } else if (data) {
-            navigate({ to: '/' })
+            navigate({ to: '/feed' })
         }
     };
 

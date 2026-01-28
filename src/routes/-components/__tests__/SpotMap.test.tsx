@@ -9,6 +9,9 @@ vi.mock('react-leaflet', () => ({
     MapContainer: ({ children }: any) => <div data-testid="map-container">{children}</div>,
     TileLayer: () => <div data-testid="tile-layer" />,
     useMapEvents: () => ({}),
+    Circle: ({ children }: any) => <div data-testid="map-circle">{children}</div>,
+    Marker: ({ children }: any) => <div data-testid="map-marker">{children}</div>,
+    Popup: ({ children }: any) => <div data-testid="map-popup">{children}</div>,
 }));
 
 vi.mock('react-leaflet-cluster', () => ({

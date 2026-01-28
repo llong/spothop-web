@@ -52,7 +52,7 @@ export default function SearchAppBar() {
     const isLoaded = useAtomValue(isGoogleMapsLoadedAtom);
     const navigate = useNavigate();
     const location = useLocation();
-    const isRootPage = location.pathname === '/';
+    const isSpotsPage = location.pathname === '/spots';
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
     const inputRef = useRef<HTMLInputElement>(null!);
@@ -80,14 +80,14 @@ export default function SearchAppBar() {
         console.log('Lat/Lng:', lat, lng);
         if (lat && lng) {
             if (map) {
-                map.flyTo([lat, lng], 12, {
+                map.flyTo([lat, lng], 13, {
                     duration: 1
                 });
                 if (getSpots) {
                     map.once('moveend', () => getSpots(map.getBounds()));
                 }
             }
-            navigate({ to: '/', search: { lat, lng } });
+            navigate({ to: '/spots', search: { lat, lng } });
         }
         if (inputRef.current) {
             inputRef.current.value = '';
@@ -105,7 +105,7 @@ export default function SearchAppBar() {
                 noWrap
                 component="div"
                 sx={{ mr: 2, cursor: 'pointer', flexShrink: 0 }}
-                onClick={() => navigate({ to: '/' })}
+                onClick={() => navigate({ to: '/feed' })}
             >
                 SpotHop
             </Typography>
@@ -122,7 +122,7 @@ export default function SearchAppBar() {
                         />
                     </Tooltip>
                 )}
-                {isOnline && isRootPage &&
+                {isOnline && isSpotsPage &&
                     <Search onClick={() => inputRef.current?.focus()}>
                         <SearchIconWrapper aria-label="Search icon">
                             <SearchIcon />
@@ -154,7 +154,7 @@ export default function SearchAppBar() {
                         />
                     </Search>
                 }
-                {isOnline && isMobile && isRootPage && (
+                {isOnline && isMobile && isSpotsPage && (
                     <IconButton
                         color="inherit"
                         onClick={() => setView(view === 'map' ? 'list' : 'map')}

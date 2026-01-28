@@ -97,6 +97,21 @@ export interface MediaLike {
     created_at: string;
 }
 
+export interface MediaComment {
+    id: string;
+    user_id: string;
+    photo_id?: string;
+    video_id?: string;
+    media_type: 'photo' | 'video';
+    content: string;
+    created_at: string;
+    updated_at: string;
+    author?: {
+        username: string | null;
+        avatarUrl: string | null;
+    };
+}
+
 export interface MediaItem {
     id: string;
     url: string;
@@ -110,6 +125,26 @@ export interface MediaItem {
     };
     likeCount: number;
     isLiked: boolean;
+}
+
+export interface FeedItem {
+    media_id: string;
+    spot_id: string;
+    uploader_id: string;
+    media_url: string;
+    thumbnail_url?: string;
+    media_type: 'photo' | 'video';
+    created_at: string;
+    spot_name: string;
+    city?: string;
+    country?: string;
+    uploader_username: string | null;
+    uploader_avatar_url: string | null;
+    like_count: number;
+    comment_count: number;
+    popularity_score: number;
+    is_liked_by_user?: boolean;
+    is_favorited_by_user?: boolean;
 }
 
 export interface LikedMediaItem {

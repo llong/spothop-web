@@ -11,10 +11,16 @@ const createTestRouter = () => {
         component: () => <BottomNav />,
     });
 
-    const indexRoute = createRoute({
+    const feedRoute = createRoute({
         getParentRoute: () => rootRoute,
-        path: '/',
-        component: () => <div>Home Page</div>,
+        path: '/feed',
+        component: () => <div>Feed Page</div>,
+    });
+
+    const spotsRoute = createRoute({
+        getParentRoute: () => rootRoute,
+        path: '/spots',
+        component: () => <div>Spots Page</div>,
     });
 
     const profileRoute = createRoute({
@@ -23,9 +29,9 @@ const createTestRouter = () => {
         component: () => <div>Profile Page</div>,
     });
 
-    const routeTree = rootRoute.addChildren([indexRoute, profileRoute]);
+    const routeTree = rootRoute.addChildren([feedRoute, spotsRoute, profileRoute]);
 
-    const history = createMemoryHistory({ initialEntries: ['/'] });
+    const history = createMemoryHistory({ initialEntries: ['/feed'] });
 
     const router = createRouter({
         routeTree,
@@ -41,6 +47,7 @@ describe("BottomNav", () => {
         render(<RouterProvider router={router} />);
 
         await waitFor(() => {
+            expect(screen.getByText("Feed")).toBeInTheDocument();
             expect(screen.getByText("Spots")).toBeInTheDocument();
             expect(screen.getByText("Profile")).toBeInTheDocument();
         });
@@ -61,7 +68,14 @@ describe("BottomNav", () => {
         fireEvent.click(spotsLink);
 
         await waitFor(() => {
-            expect(router.state.location.pathname).toBe("/");
+            expect(router.state.location.pathname).toBe("/spots");
+        });
+
+        const feedLink = await screen.findByText("Feed");
+        fireEvent.click(feedLink);
+
+        await waitFor(() => {
+            expect(router.state.location.pathname).toBe("/feed");
         });
     });
 });

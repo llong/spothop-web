@@ -14,7 +14,7 @@ vi.mock('@react-google-maps/api', () => ({
 
 vi.mock('@tanstack/react-router', () => ({
     useNavigate: () => vi.fn(),
-    useLocation: () => ({ pathname: '/' }),
+    useLocation: () => ({ pathname: '/spots' }),
 }));
 
 vi.mock('jotai', async (importOriginal) => {
@@ -67,7 +67,7 @@ describe('SearchAppBar', () => {
         vi.clearAllMocks();
     });
 
-    it('renders logo and search components when online', () => {
+    it('renders logo and search components when online on spots page', () => {
         (useMediaQuery as any).mockReturnValue(false); // Desktop
         render(
             <QueryClientProvider client={queryClient}>

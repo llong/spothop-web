@@ -12,11 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as WelcomeIndexRouteImport } from './routes/welcome/index'
 import { Route as UpdatePasswordIndexRouteImport } from './routes/update-password/index'
+import { Route as SpotsIndexRouteImport } from './routes/spots/index'
 import { Route as SignupIndexRouteImport } from './routes/signup/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as NotificationsIndexRouteImport } from './routes/notifications/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ForgotPasswordIndexRouteImport } from './routes/forgot-password/index'
+import { Route as FeedIndexRouteImport } from './routes/feed/index'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SpotsNewRouteImport } from './routes/spots/new'
@@ -28,7 +30,7 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+} as any)
 const WelcomeIndexRoute = WelcomeIndexRouteImport.update({
   id: '/welcome/',
   path: '/welcome/',
@@ -39,6 +41,11 @@ const UpdatePasswordIndexRoute = UpdatePasswordIndexRouteImport.update({
   path: '/update-password/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpotsIndexRoute = SpotsIndexRouteImport.update({
+  id: '/spots/',
+  path: '/spots/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/spots/index.lazy').then((d) => d.Route))
 const SignupIndexRoute = SignupIndexRouteImport.update({
   id: '/signup/',
   path: '/signup/',
@@ -64,6 +71,11 @@ const ForgotPasswordIndexRoute = ForgotPasswordIndexRouteImport.update({
   path: '/forgot-password/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedIndexRoute = FeedIndexRouteImport.update({
+  id: '/feed/',
+  path: '/feed/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/feed/index.lazy').then((d) => d.Route))
 const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -103,11 +115,13 @@ export interface FileRoutesByFullPath {
   '/spots/new': typeof SpotsNewRoute
   '/admin': typeof AdminIndexRoute
   '/chat': typeof ChatIndexRoute
+  '/feed': typeof FeedIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
   '/notifications': typeof NotificationsIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/signup': typeof SignupIndexRoute
+  '/spots': typeof SpotsIndexRoute
   '/update-password': typeof UpdatePasswordIndexRoute
   '/welcome': typeof WelcomeIndexRoute
 }
@@ -119,11 +133,13 @@ export interface FileRoutesByTo {
   '/spots/new': typeof SpotsNewRoute
   '/admin': typeof AdminIndexRoute
   '/chat': typeof ChatIndexRoute
+  '/feed': typeof FeedIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
   '/notifications': typeof NotificationsIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/signup': typeof SignupIndexRoute
+  '/spots': typeof SpotsIndexRoute
   '/update-password': typeof UpdatePasswordIndexRoute
   '/welcome': typeof WelcomeIndexRoute
 }
@@ -136,11 +152,13 @@ export interface FileRoutesById {
   '/spots/new': typeof SpotsNewRoute
   '/admin/': typeof AdminIndexRoute
   '/chat/': typeof ChatIndexRoute
+  '/feed/': typeof FeedIndexRoute
   '/forgot-password/': typeof ForgotPasswordIndexRoute
   '/login/': typeof LoginIndexRoute
   '/notifications/': typeof NotificationsIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/signup/': typeof SignupIndexRoute
+  '/spots/': typeof SpotsIndexRoute
   '/update-password/': typeof UpdatePasswordIndexRoute
   '/welcome/': typeof WelcomeIndexRoute
 }
@@ -154,11 +172,13 @@ export interface FileRouteTypes {
     | '/spots/new'
     | '/admin'
     | '/chat'
+    | '/feed'
     | '/forgot-password'
     | '/login'
     | '/notifications'
     | '/profile'
     | '/signup'
+    | '/spots'
     | '/update-password'
     | '/welcome'
   fileRoutesByTo: FileRoutesByTo
@@ -170,11 +190,13 @@ export interface FileRouteTypes {
     | '/spots/new'
     | '/admin'
     | '/chat'
+    | '/feed'
     | '/forgot-password'
     | '/login'
     | '/notifications'
     | '/profile'
     | '/signup'
+    | '/spots'
     | '/update-password'
     | '/welcome'
   id:
@@ -186,11 +208,13 @@ export interface FileRouteTypes {
     | '/spots/new'
     | '/admin/'
     | '/chat/'
+    | '/feed/'
     | '/forgot-password/'
     | '/login/'
     | '/notifications/'
     | '/profile/'
     | '/signup/'
+    | '/spots/'
     | '/update-password/'
     | '/welcome/'
   fileRoutesById: FileRoutesById
@@ -203,11 +227,13 @@ export interface RootRouteChildren {
   SpotsNewRoute: typeof SpotsNewRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ChatIndexRoute: typeof ChatIndexRoute
+  FeedIndexRoute: typeof FeedIndexRoute
   ForgotPasswordIndexRoute: typeof ForgotPasswordIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
   NotificationsIndexRoute: typeof NotificationsIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
   SignupIndexRoute: typeof SignupIndexRoute
+  SpotsIndexRoute: typeof SpotsIndexRoute
   UpdatePasswordIndexRoute: typeof UpdatePasswordIndexRoute
   WelcomeIndexRoute: typeof WelcomeIndexRoute
 }
@@ -233,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/update-password'
       fullPath: '/update-password'
       preLoaderRoute: typeof UpdatePasswordIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spots/': {
+      id: '/spots/'
+      path: '/spots'
+      fullPath: '/spots'
+      preLoaderRoute: typeof SpotsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup/': {
@@ -268,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feed/': {
+      id: '/feed/'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/': {
@@ -323,11 +363,13 @@ const rootRouteChildren: RootRouteChildren = {
   SpotsNewRoute: SpotsNewRoute,
   AdminIndexRoute: AdminIndexRoute,
   ChatIndexRoute: ChatIndexRoute,
+  FeedIndexRoute: FeedIndexRoute,
   ForgotPasswordIndexRoute: ForgotPasswordIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
   NotificationsIndexRoute: NotificationsIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
   SignupIndexRoute: SignupIndexRoute,
+  SpotsIndexRoute: SpotsIndexRoute,
   UpdatePasswordIndexRoute: UpdatePasswordIndexRoute,
   WelcomeIndexRoute: WelcomeIndexRoute,
 }

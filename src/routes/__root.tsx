@@ -74,7 +74,7 @@ export function RootComponent() {
 
         // Anti-Loop: If profile IS complete but user is on /welcome, send them home
         if (profile.displayName && isWelcomePage) {
-            navigate({ to: '/' });
+            navigate({ to: '/feed' });
         }
     }, [auth, !!profile?.displayName, isProfileLoading, location.pathname, navigate]);
 

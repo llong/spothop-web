@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { z } from 'zod';
 
 const indexSearchSchema = z.object({
@@ -8,4 +8,7 @@ const indexSearchSchema = z.object({
 
 export const Route = createFileRoute('/')({
     validateSearch: (search) => indexSearchSchema.parse(search),
+    beforeLoad: () => {
+        throw redirect({ to: '/feed' });
+    },
 });

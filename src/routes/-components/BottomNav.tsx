@@ -1,12 +1,13 @@
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import { Home, AccountCircle, ChatBubble, Notifications } from '@mui/icons-material';
+import { Home, AccountCircle, ChatBubble, Notifications, DynamicFeed } from '@mui/icons-material';
 import { Link, useLocation } from '@tanstack/react-router';
 
 export const BottomNav = () => {
     const location = useLocation();
 
     const menuItems = [
-        { label: 'Spots', to: '/', icon: <Home /> },
+        { label: 'Feed', to: '/feed', icon: <DynamicFeed /> },
+        { label: 'Spots', to: '/spots', icon: <Home /> },
         { label: 'Inbox', to: '/chat', icon: <ChatBubble /> },
         { label: 'Alerts', to: '/notifications', icon: <Notifications /> },
         { label: 'Profile', to: '/profile', icon: <AccountCircle /> },
