@@ -9,10 +9,8 @@ import {
     IconButton,
     Typography,
     Stack,
-    Chip,
-    Button
+    Chip
 } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -26,6 +24,7 @@ import type { FeedItem as FeedItemType } from 'src/types';
 import { useToggleMediaLike } from 'src/hooks/useFeedQueries';
 import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
 import { FeedCommentDialog } from './FeedCommentDialog';
+import { MediaCarousel } from 'src/routes/spots/-components/MediaCarousel';
 
 interface FeedItemCardProps {
     item: FeedItemType;
@@ -37,9 +36,25 @@ interface FeedItemCardProps {
  * Renamed to avoid collision with the FeedItem type from src/types.
  */
 export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) => {
-    const [showVideo, setShowVideo] = useState(false);
+    const [activeSlide, setActiveSlide] = useState(0);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const toggleLikeMutation = useToggleMediaLike();
+
+    // Convert single feed item media to array for carousel
+    const media = useMemo(() => [{
+        id: item.media_id,
+        url: item.media_url,
+        type: item.media_type,
+        thumbnailUrl: item.thumbnail_url,
+        createdAt: item.created_at,
+        author: {
+            id: item.uploader_id,
+            username: item.uploader_username,
+            avatarUrl: item.uploader_avatar_url
+        },
+        likeCount: item.like_count,
+        isLiked: item.is_liked_by_user || false
+    }], [item]);
 
     // Minimal spot object for useSpotFavorites
     const spot = useMemo(() => ({
@@ -107,78 +122,11 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
                 subheader={formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
             />
 
-            <Box sx={{ position: 'relative', width: '100%', pt: '100%', bgcolor: 'black' }}>
-                {item.media_type === 'photo' ? (
-                    <Box
-                        component="img"
-                        src={item.media_url}
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain'
-                        }}
-                    />
-                ) : !showVideo ? (
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            bgcolor: 'black',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            cursor: 'pointer'
-                        }}
-                        onClick={() => setShowVideo(true)}
-                    >
-                        <Box
-                            component="img"
-                            src={item.thumbnail_url || item.media_url} // Fallback to media_url if thumbnail missing (though less optimal)
-                            alt="Video thumbnail"
-                            sx={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain',
-                                opacity: 0.7
-                            }}
-                        />
-                        <Button
-                            variant="contained"
-                            startIcon={<PlayArrowIcon />}
-                            sx={{
-                                position: 'absolute',
-                                borderRadius: 10,
-                                textTransform: 'none',
-                                fontWeight: 700,
-                                zIndex: 2
-                            }}
-                        >
-                            Show Video
-                        </Button>
-                    </Box>
-                ) : (
-                    <Box
-                        component="video"
-                        src={item.media_url}
-                        controls
-                        autoPlay
-                        sx={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'contain'
-                        }}
-                    />
-                )}
-            </Box>
+            <MediaCarousel 
+                media={media}
+                activeSlide={activeSlide}
+                onSlideChange={setActiveSlide}
+            />
 
             <CardContent>
                 <Stack direction="row" justifyContent="space-between" alignItems="flex-start">

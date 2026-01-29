@@ -27,7 +27,7 @@ This sprint focuses on delivering a TikTok/Instagram-like global feed as the pri
 
 ### 3. Components & UI
 - [x] Develop `FeedItem` component using MUI and Material Design 3.
-- [ ] Integrate `MediaCarousel` into `FeedItem`.
+- [x] Integrate `MediaCarousel` into `FeedItem`.
 - [x] Implement "Favorite Spot" action in feed.
 - [x] Implement "Like Media" action in feed (optimistic UI).
 - [x] Implement "Comment" modal/overlay for feed items.
@@ -36,12 +36,12 @@ This sprint focuses on delivering a TikTok/Instagram-like global feed as the pri
 - [x] Implement offline message banner (no feed caching).
 
 ### 4. User Flow & Onboarding
-- [ ] Update signup flow to redirect to `/feed` after username creation.
+- [x] Update signup flow to redirect to `/feed` after username creation.
 - [x] Implement empty feed fallback with spot creation tutorial and redirection to `/spots`.
 
 ### 5. Quality Assurance
 - [ ] Conduct performance testing on various devices and network conditions.
-- [ ] Implement unit and integration tests for feed features (Target: 80% coverage).
+- [x] Implement unit and integration tests for feed features (Target: 80% coverage).
 - [ ] Conduct UAT with closed beta group.
 
 ## Outcome

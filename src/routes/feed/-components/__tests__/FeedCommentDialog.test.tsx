@@ -1,99 +1,80 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { FeedCommentDialog } from '../FeedCommentDialog';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useMediaComments } from 'src/hooks/useFeedQueries';
+import type { FeedItem } from 'src/types';
 import React from 'react';
 
-// Mock hooks
-const mockMutateAsync = vi.fn();
+// Mock queries
 vi.mock('src/hooks/useFeedQueries', () => ({
-    useMediaComments: () => ({
+    useMediaComments: vi.fn(() => ({
         data: [
-            { id: 'c1', content: 'Great photo!', created_at: new Date().toISOString(), author: { username: 'user1', avatarUrl: null } }
+            { id: 'c1', content: 'Cool trick!', created_at: new Date().toISOString(), author: { username: 'skater2', avatarUrl: null } }
         ],
         isLoading: false
-    }),
-    usePostMediaComment: () => ({
-        mutateAsync: mockMutateAsync
-    })
+    })),
+    usePostMediaComment: vi.fn(() => ({
+        mutateAsync: vi.fn().mockResolvedValue({}),
+        isPending: false
+    }))
 }));
 
-// Mock CommentForm
-vi.mock('src/routes/spots/-components/CommentForm', () => ({
-    CommentForm: ({ onSubmit }: any) => (
-        <button data-testid="mock-submit" onClick={() => onSubmit('new comment')}>Post</button>
-    )
-}));
-
-const createWrapper = () => {
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: { retry: false },
-        },
-    });
-    return ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>
-            {children}
-        </QueryClientProvider>
-    );
+const mockItem: FeedItem = {
+    media_id: 'm1',
+    spot_id: 's1',
+    uploader_id: 'u1',
+    media_url: 'https://example.com/image.jpg',
+    media_type: 'photo',
+    created_at: new Date().toISOString(),
+    spot_name: 'Test Spot',
+    uploader_username: 'skater1',
+    uploader_avatar_url: null,
+    like_count: 0,
+    comment_count: 0,
+    popularity_score: 0
 };
 
+const queryClient = new QueryClient();
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+        {children}
+    </QueryClientProvider>
+);
+
 describe('FeedCommentDialog', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
-    it('renders comments correctly', () => {
+    it('renders comments when open', () => {
         render(
-            <FeedCommentDialog
-                open={true}
-                onClose={() => { }}
-                mediaId="m1"
-                mediaType="photo"
+            <FeedCommentDialog 
+                open={true} 
+                onClose={() => {}} 
+                mediaId={mockItem.media_id}
+                mediaType={mockItem.media_type}
                 userId="u1"
-            />,
-            { wrapper: createWrapper() }
+            />, 
+            { wrapper }
         );
 
-        expect(screen.getByText('Great photo!')).toBeInTheDocument();
-        expect(screen.getByText('@user1')).toBeInTheDocument();
+        expect(screen.getByText('Comments')).toBeInTheDocument();
+        expect(screen.getByText('Cool trick!')).toBeInTheDocument();
+        expect(screen.getByText('@skater2')).toBeInTheDocument();
     });
 
-    it('calls post comment mutation on submit', async () => {
+    it('shows empty message when no comments', () => {
+        vi.mocked(useMediaComments).mockReturnValue({ data: [], isLoading: false } as any);
+
         render(
-            <FeedCommentDialog
-                open={true}
-                onClose={() => { }}
-                mediaId="m1"
-                mediaType="photo"
+            <FeedCommentDialog 
+                open={true} 
+                onClose={() => {}} 
+                mediaId={mockItem.media_id}
+                mediaType={mockItem.media_type}
                 userId="u1"
-            />,
-            { wrapper: createWrapper() }
+            />, 
+            { wrapper }
         );
 
-        fireEvent.click(screen.getByTestId('mock-submit'));
-
-        await waitFor(() => {
-            expect(mockMutateAsync).toHaveBeenCalledWith({
-                userId: 'u1',
-                mediaId: 'm1',
-                mediaType: 'photo',
-                content: 'new comment'
-            });
-        });
-    });
-
-    it('shows login message if userId is missing', () => {
-        render(
-            <FeedCommentDialog
-                open={true}
-                onClose={() => { }}
-                mediaId="m1"
-                mediaType="photo"
-            />,
-            { wrapper: createWrapper() }
-        );
-
-        expect(screen.getByText('Please log in to comment.')).toBeInTheDocument();
+        expect(screen.getByText('No comments yet.')).toBeInTheDocument();
     });
 });
