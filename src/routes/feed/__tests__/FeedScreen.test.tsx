@@ -85,7 +85,7 @@ describe('FeedScreen', () => {
             </Provider>
         );
 
-        expect(screen.getByText('Global Feed')).toBeInTheDocument();
+        expect(screen.getByText('Home')).toBeInTheDocument();
         expect(screen.getByText('Test Spot')).toBeInTheDocument();
     });
 });

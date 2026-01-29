@@ -11,14 +11,12 @@ import {
     IconButton,
     Paper,
     Chip,
-    FormGroup
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface FeedFilters {
     nearMe: boolean;
     maxDistKm: number;
-    followingOnly: boolean;
     spotTypes: string[];
     difficulties: string[];
     riderTypes: string[];
@@ -42,7 +40,6 @@ export const FeedFilterPanel = ({ filters: initialFilters, onApply, onClose }: F
         const reset = { 
             nearMe: false, 
             maxDistKm: 50, 
-            followingOnly: false,
             spotTypes: [],
             difficulties: [],
             riderTypes: [],
@@ -72,28 +69,6 @@ export const FeedFilterPanel = ({ filters: initialFilters, onApply, onClose }: F
             </Stack>
 
             <Stack spacing={4}>
-                <Box>
-                    <Typography variant="subtitle2" fontWeight={700} gutterBottom>
-                        Discovery Mode
-                    </Typography>
-                    <Stack spacing={1}>
-                        <FormControlLabel
-                            control={
-                                <Switch 
-                                    checked={tempFilters.followingOnly}
-                                    onChange={(e) => setTempFilters(f => ({ ...f, followingOnly: e.target.checked }))}
-                                />
-                            }
-                            label="Following Only"
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                            Only show content from people you follow.
-                        </Typography>
-                    </Stack>
-                </Box>
-
-                <Divider />
-
                 <Box>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
                         <Typography variant="subtitle2" fontWeight={700}>
@@ -138,7 +113,7 @@ export const FeedFilterPanel = ({ filters: initialFilters, onApply, onClose }: F
                                 label={type.replace('_', ' ').toUpperCase()}
                                 onClick={() => setTempFilters(f => ({ ...f, spotTypes: toggleArrayItem(f.spotTypes, type) }))}
                                 color={tempFilters.spotTypes.includes(type) ? "primary" : "default"}
-                                variant={tempFilters.spotTypes.includes(type) ? "contained" : "outlined"}
+                                variant={tempFilters.spotTypes.includes(type) ? "filled" : "outlined"}
                                 size="small"
                             />
                         ))}
@@ -156,7 +131,7 @@ export const FeedFilterPanel = ({ filters: initialFilters, onApply, onClose }: F
                                 label={diff.toUpperCase()}
                                 onClick={() => setTempFilters(f => ({ ...f, difficulties: toggleArrayItem(f.difficulties, diff) }))}
                                 color={tempFilters.difficulties.includes(diff) ? "primary" : "default"}
-                                variant={tempFilters.difficulties.includes(diff) ? "contained" : "outlined"}
+                                variant={tempFilters.difficulties.includes(diff) ? "filled" : "outlined"}
                                 size="small"
                             />
                         ))}
@@ -174,7 +149,7 @@ export const FeedFilterPanel = ({ filters: initialFilters, onApply, onClose }: F
                                 label={type.toUpperCase()}
                                 onClick={() => setTempFilters(f => ({ ...f, riderTypes: toggleArrayItem(f.riderTypes, type) }))}
                                 color={tempFilters.riderTypes.includes(type) ? "primary" : "default"}
-                                variant={tempFilters.riderTypes.includes(type) ? "contained" : "outlined"}
+                                variant={tempFilters.riderTypes.includes(type) ? "filled" : "outlined"}
                                 size="small"
                             />
                         ))}

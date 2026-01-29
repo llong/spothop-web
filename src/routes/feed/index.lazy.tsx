@@ -9,6 +9,8 @@ import {
     Paper,
     Drawer,
     IconButton,
+    Tabs,
+    Tab,
 } from '@mui/material';
 import { useFeedQuery } from 'src/hooks/useFeedQueries';
 import { FeedItemCard } from './-components/FeedItem';
@@ -28,7 +30,6 @@ export const Route = createLazyFileRoute('/feed/')({
 interface FeedFilters {
     nearMe: boolean;
     maxDistKm: number;
-    followingOnly: boolean;
     spotTypes: string[];
     difficulties: string[];
     riderTypes: string[];
@@ -38,7 +39,6 @@ interface FeedFilters {
 const INITIAL_FILTERS: FeedFilters = {
     nearMe: false,
     maxDistKm: 50,
-    followingOnly: false,
     spotTypes: [],
     difficulties: [],
     riderTypes: [],
@@ -49,11 +49,11 @@ export function FeedScreen() {
     const user = useAtomValue(userAtom);
     const userLocation = useAtomValue(userLocationAtom);
     const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState(0);
     const [filters, setFilters] = useState<FeedFilters>(INITIAL_FILTERS);
 
     const hasActiveFilters = useMemo(() => {
         return filters.nearMe || 
-               filters.followingOnly || 
                filters.spotTypes.length > 0 || 
                filters.difficulties.length > 0 || 
                filters.riderTypes.length > 0 ||
@@ -64,12 +64,12 @@ export function FeedScreen() {
         lat: filters.nearMe ? userLocation?.latitude : undefined,
         lng: filters.nearMe ? userLocation?.longitude : undefined,
         maxDistKm: filters.nearMe ? filters.maxDistKm : undefined,
-        followingOnly: filters.followingOnly,
+        followingOnly: activeTab === 1,
         spotTypes: filters.spotTypes.length > 0 ? filters.spotTypes : undefined,
         difficulties: filters.difficulties.length > 0 ? filters.difficulties : undefined,
         riderTypes: filters.riderTypes.length > 0 ? filters.riderTypes : undefined,
         maxRisk: filters.maxRisk < 5 ? filters.maxRisk : undefined,
-    }), [filters, userLocation]);
+    }), [filters, userLocation, activeTab]);
 
     const {
         data,
@@ -94,11 +94,19 @@ export function FeedScreen() {
 
     if (isLoading) {
         return (
-            <Box sx={{ py: 4, bgcolor: 'grey.50', minHeight: '100vh' }}>
-                <Container maxWidth="sm">
-                    <Typography variant="h4" fontWeight={900} sx={{ mb: 4, px: 2 }}>
-                        Global Feed
-                    </Typography>
+            <Box sx={{ py: 0, bgcolor: 'background.paper', minHeight: '100vh' }}>
+                <Box sx={{ position: 'sticky', top: 0, zIndex: 1100, bgcolor: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
+                    <Container maxWidth="sm">
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 2, pb: 1, px: 2 }}>
+                            <Typography variant="h5" fontWeight={900}>Home</Typography>
+                        </Stack>
+                        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} variant="fullWidth">
+                            <Tab label="For you" sx={{ textTransform: 'none', fontWeight: 700 }} />
+                            <Tab label="Following" sx={{ textTransform: 'none', fontWeight: 700 }} />
+                        </Tabs>
+                    </Container>
+                </Box>
+                <Container maxWidth="sm" sx={{ py: 2 }}>
                     <Stack spacing={0}>
                         {[...Array(3)].map((_, i) => (
                             <FeedItemSkeleton key={i} />
@@ -124,67 +132,124 @@ export function FeedScreen() {
 
     if (allItems.length === 0) {
         return (
-            <Container maxWidth="sm" sx={{ py: 8 }}>
-                <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 4, border: '2px dashed', borderColor: 'grey.300', bgcolor: 'grey.50' }}>
-                    {hasActiveFilters ? (
-                        <>
-                            <FilterListIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
-                            <Typography variant="h5" fontWeight={700} gutterBottom>No matches found</Typography>
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                                We couldn't find any spots matching your current filters. Try using broader settings to see more content.
-                            </Typography>
-                            <Button 
-                                variant="contained" 
-                                size="large" 
-                                onClick={() => setFilters(INITIAL_FILTERS)}
-                                sx={{ borderRadius: 10 }}
-                            >
-                                Clear All Filters
-                            </Button>
-                        </>
-                    ) : (
-                        <>
-                            <AddLocationIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
-                            <Typography variant="h5" fontWeight={700} gutterBottom>No spots yet!</Typography>
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                                The global feed is currently empty. Be the first to share a skate spot with the community!
-                            </Typography>
-                            <Stack spacing={2}>
-                                <Typography variant="subtitle2" fontWeight={700}>Quick Tutorial:</Typography>
-                                <Typography variant="body2">1. Go to the Spots page</Typography>
-                                <Typography variant="body2">2. Long press on the map</Typography>
-                                <Typography variant="body2">3. Add details and media</Typography>
-                                <Link to="/" search={{}}>
-                                    <Button variant="contained" size="large" sx={{ mt: 2, borderRadius: 10 }}>
-                                        Go to Spots Map
-                                    </Button>
-                                </Link>
-                            </Stack>
-                        </>
-                    )}
-                </Paper>
-            </Container>
+            <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+                <Box sx={{ position: 'sticky', top: 0, zIndex: 1100, bgcolor: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid', borderColor: 'divider' }}>
+                    <Container maxWidth="sm">
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 2, pb: 1, px: 2 }}>
+                            <Typography variant="h5" fontWeight={900}>Home</Typography>
+                            <IconButton onClick={() => setFilterDrawerOpen(true)} color={hasActiveFilters ? "primary" : "default"}>
+                                <FilterListIcon />
+                            </IconButton>
+                        </Stack>
+                        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} variant="fullWidth">
+                            <Tab label="For you" sx={{ textTransform: 'none', fontWeight: 700 }} />
+                            <Tab label="Following" sx={{ textTransform: 'none', fontWeight: 700 }} />
+                        </Tabs>
+                    </Container>
+                </Box>
+                <Container maxWidth="sm" sx={{ py: 8 }}>
+                    <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 4, border: '2px dashed', borderColor: 'grey.300', bgcolor: 'grey.50' }}>
+                        {hasActiveFilters ? (
+                            <>
+                                <FilterListIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+                                <Typography variant="h5" fontWeight={700} gutterBottom>No matches found</Typography>
+                                <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                                    We couldn't find any spots matching your current filters. Try using broader settings to see more content.
+                                </Typography>
+                                <Button variant="contained" size="large" onClick={() => setFilters(INITIAL_FILTERS)} sx={{ borderRadius: 10 }}>
+                                    Clear All Filters
+                                </Button>
+                            </>
+                        ) : (
+                            <>
+                                <AddLocationIcon sx={{ fontSize: 64, color: 'grey.400', mb: 2 }} />
+                                <Typography variant="h5" fontWeight={700} gutterBottom>No spots yet!</Typography>
+                                <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                                    {activeTab === 1 ? "You aren't following anyone yet, or they haven't posted any spots." : "The global feed is currently empty. Be the first to share a skate spot with the community!"}
+                                </Typography>
+                                <Stack spacing={2}>
+                                    <Typography variant="subtitle2" fontWeight={700}>Quick Tutorial:</Typography>
+                                    <Typography variant="body2">1. Go to the Spots page</Typography>
+                                    <Typography variant="body2">2. Long press on the map</Typography>
+                                    <Typography variant="body2">3. Add details and media</Typography>
+                                    <Link to="/" search={{}}>
+                                        <Button variant="contained" size="large" sx={{ mt: 2, borderRadius: 10 }}>
+                                            Go to Spots Map
+                                        </Button>
+                                    </Link>
+                                </Stack>
+                            </>
+                        )}
+                    </Paper>
+                </Container>
+            </Box>
         );
     }
 
     return (
-        <Box sx={{ py: 4, bgcolor: 'grey.50', minHeight: '100vh' }}>
-            <Container maxWidth="sm">
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4, px: 2 }}>
-                    <Typography variant="h4" fontWeight={900}>
-                        Global Feed
-                    </Typography>
-                    <IconButton
-                        onClick={() => setFilterDrawerOpen(true)}
-                        color={hasActiveFilters ? "primary" : "default"}
-                        sx={{ 
-                            bgcolor: hasActiveFilters ? 'primary.light' : 'transparent',
-                            '&:hover': { bgcolor: hasActiveFilters ? 'primary.light' : 'grey.200' }
+        <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+            <Box sx={{ 
+                position: 'sticky', 
+                top: 0, 
+                zIndex: 1100, 
+                bgcolor: 'rgba(255, 255, 255, 0.85)', 
+                backdropFilter: 'blur(12px)',
+                borderBottom: '1px solid',
+                borderColor: 'divider'
+            }}>
+                <Container maxWidth="sm">
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 2, pb: 1, px: 2 }}>
+                        <Typography variant="h5" fontWeight={900}>
+                            Home
+                        </Typography>
+                        <IconButton
+                            onClick={() => setFilterDrawerOpen(true)}
+                            color={hasActiveFilters ? "primary" : "default"}
+                            sx={{ 
+                                bgcolor: hasActiveFilters ? 'primary.light' : 'transparent',
+                                '&:hover': { bgcolor: hasActiveFilters ? 'primary.light' : 'grey.200' }
+                            }}
+                        >
+                            <FilterListIcon />
+                        </IconButton>
+                    </Stack>
+                    <Tabs 
+                        value={activeTab} 
+                        onChange={(_, newValue) => setActiveTab(newValue)}
+                        variant="fullWidth"
+                        sx={{
+                            '& .MuiTabs-indicator': {
+                                height: 4,
+                                borderRadius: '4px 4px 0 0',
+                                minWidth: 56,
+                                width: '56px !important',
+                                left: 'calc(25% - 28px) !important',
+                            },
+                            borderBottom: 'none'
                         }}
                     >
-                        <FilterListIcon />
-                    </IconButton>
-                </Stack>
+                        <Tab 
+                            label="For you" 
+                            sx={{ 
+                                textTransform: 'none', 
+                                fontWeight: activeTab === 0 ? 700 : 500,
+                                fontSize: '0.9375rem'
+                            }} 
+                        />
+                        <Tab 
+                            label="Following" 
+                            disabled={!user}
+                            sx={{ 
+                                textTransform: 'none', 
+                                fontWeight: activeTab === 1 ? 700 : 500,
+                                fontSize: '0.9375rem'
+                            }} 
+                        />
+                    </Tabs>
+                </Container>
+            </Box>
+
+            <Container maxWidth="sm" sx={{ py: 2 }}>
 
                 {allItems.map((item, index) => (
                     <div

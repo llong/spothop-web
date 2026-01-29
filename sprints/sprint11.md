@@ -23,7 +23,7 @@ Once the core feed is established, this sprint adds layers of intelligence and c
 - [x] Add "Follow/Unfollow" actions directly in feed items.
 
 ### 3. Personalization & Discovery
-- [x] Implement "Following Only" feed toggle.
+- [x] Implement Tab-based feed splitting (For You / Following).
 - [x] Add "Near Me" feed toggle.
 - [x] Implement Rider Type filtering (multiple selection).
 - [ ] Develop personalized content suggestions based on user interaction history.
