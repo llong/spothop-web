@@ -29,6 +29,7 @@ export interface Spot {
     city?: string;
     state?: string;
     country?: string;
+    status?: string;
     created_at?: string;
     updated_at?: string;
     types?: string[];
@@ -36,6 +37,8 @@ export interface Spot {
     postalCode?: string;
     videoUrl?: string;
     photoUrl?: string;
+    upvotes?: number;
+    downvotes?: number;
     favoriteCount?: number;
     flagCount?: number;
     isFavorited?: boolean;
@@ -102,6 +105,7 @@ export interface MediaComment {
     user_id: string;
     photo_id?: string;
     video_id?: string;
+    parent_id?: string | null;
     media_type: 'photo' | 'video';
     content: string;
     created_at: string;
@@ -109,6 +113,10 @@ export interface MediaComment {
     author?: {
         username: string | null;
         avatarUrl: string | null;
+    };
+    reactions?: {
+        likes: number;
+        userReaction: 'like' | null;
     };
 }
 
@@ -139,7 +147,9 @@ export interface FeedItem {
     city?: string;
     country?: string;
     uploader_username: string | null;
+    uploader_display_name: string | null;
     uploader_avatar_url: string | null;
+    is_followed_by_user: boolean;
     like_count: number;
     comment_count: number;
     popularity_score: number;

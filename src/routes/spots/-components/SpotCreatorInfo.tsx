@@ -36,13 +36,13 @@ export const SpotCreatorInfo = ({ createdAt, username, createdBy }: SpotCreatorI
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
             <Box>
                 {createdAt && (
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" component="div">
                         Added on {formattedDate}
                     </Typography>
                 )}
 
                 {username && (
-                    <Typography variant="body2">
+                    <Typography variant="body2" component="div">
                         Created by{' '}
                         <Link
                             to="/profile/$username"

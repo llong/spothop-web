@@ -8,6 +8,9 @@ getSpotsAtom.debugLabel = 'getSpots';
 export const boundsAtom = atom<LatLngBounds | null>(null);
 boundsAtom.debugLabel = 'bounds';
 
+export const userLocationAtom = atom<{ latitude: number; longitude: number } | null>(null);
+userLocationAtom.debugLabel = 'userLocation';
+
 export const viewAtom = atom<'map' | 'list'>('map');
 viewAtom.debugLabel = 'view';
 

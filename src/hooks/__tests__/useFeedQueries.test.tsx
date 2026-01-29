@@ -1,9 +1,23 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock AsyncStorage MUST be before other imports that use it
+vi.mock('@react-native-async-storage/async-storage', () => ({
+    default: {
+        getItem: vi.fn(() => Promise.resolve(null)),
+        setItem: vi.fn(() => Promise.resolve()),
+        removeItem: vi.fn(() => Promise.resolve()),
+    },
+    getItem: vi.fn(() => Promise.resolve(null)),
+    setItem: vi.fn(() => Promise.resolve()),
+    removeItem: vi.fn(() => Promise.resolve()),
+}));
+
+import { renderHook, waitFor } from '@testing-library/react';
 import { useFeedQuery, useToggleMediaLike, useMediaComments, usePostMediaComment } from '../useFeedQueries';
 import { feedService } from '../../services/feedService';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
+import { Provider } from 'jotai';
 
 vi.mock('../../services/feedService', () => ({
     feedService: {
@@ -23,9 +37,11 @@ const createWrapper = () => {
         },
     });
     return ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>
-            {children}
-        </QueryClientProvider>
+        <Provider>
+            <QueryClientProvider client={queryClient}>
+                {children}
+            </QueryClientProvider>
+        </Provider>
     );
 };
 
@@ -45,7 +61,8 @@ describe('useFeedQueries', () => {
 
             await waitFor(() => expect(result.current.isSuccess).toBe(true));
             expect(result.current.data?.pages[0]).toEqual(mockData);
-            expect(feedService.fetchGlobalFeed).toHaveBeenCalledWith(10, 0, 'u1');
+            // Updated expectation to match actual call including the filters param (undefined)
+            expect(feedService.fetchGlobalFeed).toHaveBeenCalledWith(10, 0, 'u1', undefined);
         });
     });
 
@@ -92,7 +109,7 @@ describe('useFeedQueries', () => {
             });
 
             expect(newComment).toEqual(mockComment);
-            expect(feedService.postMediaComment).toHaveBeenCalledWith('m1', 'photo', 'new');
+            expect(feedService.postMediaComment).toHaveBeenCalledWith('m1', 'photo', 'new', undefined);
         });
     });
 });

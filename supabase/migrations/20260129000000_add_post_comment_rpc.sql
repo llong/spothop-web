@@ -4,7 +4,8 @@
 CREATE OR REPLACE FUNCTION public.post_comment(
     p_media_id UUID,
     p_media_type TEXT,
-    p_content TEXT
+    p_content TEXT,
+    p_parent_id UUID DEFAULT NULL
 )
 RETURNS UUID
 LANGUAGE plpgsql
@@ -33,12 +34,12 @@ BEGIN
 
     -- 4. Insert comment based on media type
     IF p_media_type = 'photo' THEN
-        INSERT INTO public.media_comments (user_id, photo_id, media_type, content)
-        VALUES (v_user_id, p_media_id, 'photo'::media_type_enum, p_content)
+        INSERT INTO public.media_comments (user_id, photo_id, media_type, content, parent_id)
+        VALUES (v_user_id, p_media_id, 'photo'::media_type_enum, p_content, p_parent_id)
         RETURNING id INTO v_comment_id;
     ELSIF p_media_type = 'video' THEN
-        INSERT INTO public.media_comments (user_id, video_id, media_type, content)
-        VALUES (v_user_id, p_media_id, 'video'::media_type_enum, p_content)
+        INSERT INTO public.media_comments (user_id, video_id, media_type, content, parent_id)
+        VALUES (v_user_id, p_media_id, 'video'::media_type_enum, p_content, p_parent_id)
         RETURNING id INTO v_comment_id;
     ELSE
         RAISE EXCEPTION 'Invalid media type';

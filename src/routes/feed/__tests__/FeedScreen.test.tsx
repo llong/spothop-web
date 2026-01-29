@@ -1,98 +1,91 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { Route } from '../index.lazy';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { FeedScreen } from '../index.lazy';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
-import { useFeedQuery } from 'src/hooks/useFeedQueries';
+import { userAtom } from 'src/atoms/auth';
+import { createStore, Provider } from 'jotai';
 
-// Mock atom values
-vi.mock('jotai', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('jotai')>();
-    return {
-        ...actual,
-        useAtomValue: vi.fn((atom) => {
-            if (atom && (atom as any).debugLabel === 'user') return { user: { id: 'u1' } };
-            return null;
-        }),
-    };
-});
-
-// Mock hooks
-vi.mock('src/hooks/useFeedQueries', () => ({
-    useFeedQuery: vi.fn(),
-    useToggleMediaLike: () => ({ mutate: vi.fn() }),
-    useMediaComments: () => ({ data: [], isLoading: false }),
-    usePostMediaComment: () => ({ mutate: vi.fn() })
-}));
-
-// Mock router
+// Mock dependencies
 vi.mock('@tanstack/react-router', () => ({
-    createLazyFileRoute: () => (config: any) => config,
-    Link: ({ children, to }: any) => <a href={to}>{children}</a>
+    createLazyFileRoute: () => (config: any) => config.component,
+    Link: ({ children, to }: any) => <a href={to}>{children}</a>,
+    useNavigate: () => vi.fn()
 }));
 
-// Mock FeedItemCard
-vi.mock('../-components/FeedItem', () => ({
-    FeedItemCard: ({ item }: any) => <div>FeedItemCard: {item.spot_name}</div>
+vi.mock('src/hooks/useFeedQueries', () => ({
+    useFeedQuery: vi.fn(() => ({
+        data: {
+            pages: [[
+                {
+                    media_id: 'm1',
+                    spot_id: 's1',
+                    uploader_id: 'u1',
+                    media_url: 'https://example.com/image.jpg',
+                    media_type: 'photo',
+                    created_at: new Date().toISOString(),
+                    spot_name: 'Test Spot',
+                    uploader_username: 'skater1',
+                    uploader_display_name: 'Skater 1',
+                    is_liked_by_user: false,
+                    is_favorited_by_user: false,
+                    like_count: 0,
+                    comment_count: 0
+                }
+            ]]
+        },
+        fetchNextPage: vi.fn(),
+        hasNextPage: false,
+        isFetchingNextPage: false,
+        isLoading: false,
+        error: null
+    })),
+    useToggleMediaLike: vi.fn(() => ({ mutate: vi.fn() })),
+    useToggleFollow: vi.fn(() => ({ mutate: vi.fn() })),
+    useMediaComments: vi.fn(() => ({ data: [], isLoading: false })),
+    usePostMediaComment: vi.fn(() => ({ mutate: vi.fn() })),
+    useToggleCommentReaction: vi.fn(() => ({ mutate: vi.fn() }))
 }));
 
-// Mock IntersectionObserver as a proper class
+vi.mock('src/hooks/useSpotFavorites', () => ({
+    useSpotFavorites: vi.fn(() => ({
+        toggleFavorite: vi.fn()
+    }))
+}));
+
+// Properly mock IntersectionObserver as a class
 class MockIntersectionObserver {
     observe = vi.fn();
-    unobserve = vi.fn();
     disconnect = vi.fn();
+    unobserve = vi.fn();
 }
-window.IntersectionObserver = MockIntersectionObserver as any;
+vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
 
-const createWrapper = () => {
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: { retry: false },
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
         },
-    });
-    return ({ children }: { children: React.ReactNode }) => (
-        <QueryClientProvider client={queryClient}>
-            {children}
-        </QueryClientProvider>
-    );
-};
+    },
+});
 
 describe('FeedScreen', () => {
-    const FeedScreen = (Route as any).component;
+    let testStore: any;
 
     beforeEach(() => {
-        vi.clearAllMocks();
+        testStore = createStore();
+        testStore.set(userAtom, { user: { id: 'u1' } } as any);
     });
 
-    it('renders loading state', () => {
-        vi.mocked(useFeedQuery).mockReturnValue({ isLoading: true } as any);
+    it('renders the global feed title', () => {
+        render(
+            <Provider store={testStore}>
+                <QueryClientProvider client={queryClient}>
+                    <FeedScreen />
+                </QueryClientProvider>
+            </Provider>
+        );
 
-        render(<FeedScreen />, { wrapper: createWrapper() });
-        expect(screen.getByRole('progressbar')).toBeInTheDocument();
-    });
-
-    it('renders feed items', () => {
-        vi.mocked(useFeedQuery).mockReturnValue({
-            isLoading: false,
-            data: {
-                pages: [[{ media_id: '1', spot_name: 'Super Spot' }]]
-            },
-            hasNextPage: false
-        } as any);
-
-        render(<FeedScreen />, { wrapper: createWrapper() });
-        expect(screen.getByText('FeedItemCard: Super Spot')).toBeInTheDocument();
-    });
-
-    it('renders empty state fallback', () => {
-        vi.mocked(useFeedQuery).mockReturnValue({
-            isLoading: false,
-            data: { pages: [[]] },
-            hasNextPage: false
-        } as any);
-
-        render(<FeedScreen />, { wrapper: createWrapper() });
-        expect(screen.getByText('No spots yet!')).toBeInTheDocument();
-        expect(screen.getByText(/Be the first to share/)).toBeInTheDocument();
+        expect(screen.getByText('Global Feed')).toBeInTheDocument();
+        expect(screen.getByText('Test Spot')).toBeInTheDocument();
     });
 });

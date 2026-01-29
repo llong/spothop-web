@@ -2,12 +2,15 @@ import { useState, useCallback, useEffect } from 'react';
 import type { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
 import { useGeolocation } from './useGeolocation';
+import { useSetAtom } from 'jotai';
+import { userLocationAtom } from 'src/atoms/map';
 
 export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngBounds) => void, lat?: number, lng?: number) => {
     const [moved, setMoved] = useState(false);
     const [isFollowingUser, setIsFollowingUser] = useState(true);
     const [circleSize, setCircleSize] = useState(25);
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
+    const setGlobalUserLocation = useSetAtom(userLocationAtom);
 
     const { centerMapOnUser } = useGeolocation(map);
 
@@ -38,6 +41,7 @@ export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngB
                         accuracy: position.coords.accuracy || 100
                     };
                     setUserLocation(coords);
+                    setGlobalUserLocation({ latitude: coords.lat, longitude: coords.lng });
                     if (isFollowingUser && !lat && !lng) {
                         map.panTo([coords.lat, coords.lng]);
                     }

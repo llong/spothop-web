@@ -9,7 +9,8 @@ import {
     IconButton,
     Typography,
     Stack,
-    Chip
+    Chip,
+    Button
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -21,7 +22,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
 import type { FeedItem as FeedItemType } from 'src/types';
-import { useToggleMediaLike } from 'src/hooks/useFeedQueries';
+import { useToggleMediaLike, useToggleFollow } from 'src/hooks/useFeedQueries';
 import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
 import { FeedCommentDialog } from './FeedCommentDialog';
 import { MediaCarousel } from 'src/routes/spots/-components/MediaCarousel';
@@ -39,6 +40,7 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
     const [activeSlide, setActiveSlide] = useState(0);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const toggleLikeMutation = useToggleMediaLike();
+    const toggleFollowMutation = useToggleFollow();
 
     // Convert single feed item media to array for carousel
     const media = useMemo(() => [{
@@ -79,6 +81,10 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
         toggleFavorite();
     };
 
+    const handleFollow = () => {
+        toggleFollowMutation.mutate(item.uploader_id);
+    };
+
     const handleShare = () => {
         if (navigator.share) {
             navigator.share({
@@ -110,19 +116,32 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
                         <Avatar src={item.uploader_avatar_url || undefined} sx={{ cursor: 'pointer' }} />
                     </Link>
                 }
+                action={
+                    currentUserId && currentUserId !== item.uploader_id && (
+                        <Button
+                            size="small"
+                            onClick={handleFollow}
+                            variant={item.is_followed_by_user ? "outlined" : "contained"}
+                            sx={{ borderRadius: 10, px: 2 }}
+                            disabled={toggleFollowMutation.isPending}
+                        >
+                            {item.is_followed_by_user ? 'Unfollow' : 'Follow'}
+                        </Button>
+                    )
+                }
                 title={
                     <Link
                         to="/profile/$username"
                         params={{ username: item.uploader_username || '' }}
-                        style={{ textDecoration: 'none', color: 'inherit', fontWeight: 700 }}
+                        style={{ color: 'inherit', textDecoration: 'none' }}
                     >
-                        @{item.uploader_username || 'unknown'}
+                        @{item.uploader_username}
                     </Link>
                 }
                 subheader={formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
             />
 
-            <MediaCarousel 
+            <MediaCarousel
                 media={media}
                 activeSlide={activeSlide}
                 onSlideChange={setActiveSlide}
@@ -186,8 +205,7 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
             <FeedCommentDialog
                 open={commentDialogOpen}
                 onClose={() => setCommentDialogOpen(false)}
-                mediaId={item.media_id}
-                mediaType={item.media_type}
+                item={item}
                 userId={currentUserId}
             />
         </Card>

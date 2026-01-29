@@ -11,20 +11,21 @@ Once the core feed is established, this sprint adds layers of intelligence and c
 ## Tasks
 
 ### 1. Backend Enhancements (Supabase)
-- [ ] Extend `get_global_feed_content` RPC with filtering parameters (`spot_type`, `difficulty`, `risk`, etc.).
-- [ ] Implement distance-based filtering using PostGIS (`ST_DWithin`).
-- [ ] Implement "Following" filter by joining with user follow data.
+- [x] Extend `get_global_feed_content` RPC with filtering parameters (`spot_type`, `difficulty`, `risk`, etc.).
+- [x] Implement distance-based filtering using PostGIS (`ST_DWithin`).
+- [x] Implement "Following" filter by joining with user follow data.
 - [ ] Research and begin implementing simple recommendation logic (collaborative filtering).
 
 ### 2. Frontend Filtering UI
-- [ ] Develop a comprehensive Filter UI (Bottom Sheet/Dedicated Screen).
+- [x] Develop a comprehensive Filter UI (Bottom Sheet/Dedicated Screen).
 - [ ] Implement Search within the feed context.
-- [ ] Update `FeedScreen` to handle filter state and re-fetching.
-- [ ] Add "Follow/Unfollow" actions directly in feed items.
+- [x] Update `FeedScreen` to handle filter state and re-fetching.
+- [x] Add "Follow/Unfollow" actions directly in feed items.
 
 ### 3. Personalization & Discovery
-- [ ] Implement "Following Only" feed toggle.
-- [ ] Add "Near Me" feed toggle.
+- [x] Implement "Following Only" feed toggle.
+- [x] Add "Near Me" feed toggle.
+- [x] Implement Rider Type filtering (multiple selection).
 - [ ] Develop personalized content suggestions based on user interaction history.
 
 ### 4. User Onboarding Improvements
@@ -32,8 +33,8 @@ Once the core feed is established, this sprint adds layers of intelligence and c
 - [ ] Add interactive tutorials for core features (create spot, add media, etc.).
 
 ### 5. Quality Assurance
-- [ ] Test complex filter combinations and edge cases.
-- [ ] Verify distance accuracy for location-based filters.
+- [x] Test complex filter combinations and edge cases.
+- [x] Verify distance accuracy for location-based filters.
 - [ ] Conduct UAT on personalization relevance.
 
 ## Outcome

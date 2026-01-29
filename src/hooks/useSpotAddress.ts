@@ -34,6 +34,7 @@ export const useSpotAddress = (spot: Spot | undefined) => {
                 setIsLoading(true);
                 try {
                     const info = await reverseGeocode(spot.latitude, spot.longitude);
+                    if (!info) return;
 
                     // Build a clean address: "123 Street Name, City, State"
                     const streetInfo = [info.streetNumber, info.street].filter(Boolean).join(' ');

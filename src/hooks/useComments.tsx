@@ -29,7 +29,7 @@ export function useComments(spotId: string) {
                 const authorIds = [...new Set(data.map((c: any) => c.user_id))];
                 const { data: profiles } = await supabase
                     .from('profiles')
-                    .select('id, username, "avatarUrl"')
+                    .select('id, username, "displayName", "avatarUrl"')
                     .in('id', authorIds);
 
                 const profileMap = new Map(profiles?.map(p => [p.id, p]));
@@ -45,6 +45,7 @@ export function useComments(spotId: string) {
                         ...c,
                         author: {
                             username: author?.username || 'unknown',
+                            displayName: author?.displayName || null,
                             avatarUrl: author?.avatarUrl || null
                         },
                         reactions: { likes, dislikes, userReaction }

@@ -1,8 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useSetAtom } from 'jotai';
-import { useEffect } from 'react';
 import { feedService } from '../services/feedService';
-import { feedPersistenceAtom } from '../atoms/feed';
 
 export const feedKeys = {
     all: ['feed'] as const,
@@ -13,25 +10,30 @@ export const feedKeys = {
 /**
  * Hook for fetching paginated global feed content.
  */
-export function useFeedQuery(userId?: string, limit: number = 10) {
-    const setFeedPersistence = useSetAtom(feedPersistenceAtom);
-
+export function useFeedQuery(
+    userId?: string, 
+    limit: number = 10,
+    filters?: { 
+        lat?: number; 
+        lng?: number; 
+        maxDistKm?: number; 
+        followingOnly?: boolean;
+        spotTypes?: string[];
+        difficulties?: string[];
+        minRisk?: number;
+        maxRisk?: number;
+        riderTypes?: string[];
+    }
+) {
     const query = useInfiniteQuery({
-        queryKey: feedKeys.global(),
-        queryFn: ({ pageParam = 0 }) => feedService.fetchGlobalFeed(limit, pageParam, userId),
+        queryKey: [...feedKeys.global(), filters],
+        queryFn: ({ pageParam = 0 }) => feedService.fetchGlobalFeed(limit, pageParam, userId, filters),
         getNextPageParam: (lastPage, allPages) => {
             return lastPage.length === limit ? allPages.length * limit : undefined;
         },
         initialPageParam: 0,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
-
-    useEffect(() => {
-        if (query.data) {
-            const allItems = query.data.pages.flat();
-            setFeedPersistence(allItems);
-        }
-    }, [query.data, setFeedPersistence]);
 
     return query;
 }
@@ -53,13 +55,44 @@ export function useToggleMediaLike() {
 }
 
 /**
+ * Hook for toggling follow status for a user.
+ */
+export function useToggleFollow() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (followingId: string) => feedService.toggleFollow(followingId),
+        onSuccess: () => {
+            // Invalidate feed to show updated follow status across all items from this uploader
+            queryClient.invalidateQueries({ queryKey: feedKeys.all });
+        },
+    });
+}
+
+/**
  * Hook for fetching comments for a specific media item.
  */
-export function useMediaComments(mediaId: string, mediaType: 'photo' | 'video') {
+export function useMediaComments(mediaId: string, mediaType: 'photo' | 'video', userId?: string) {
     return useQuery({
-        queryKey: feedKeys.comments(mediaId),
-        queryFn: () => feedService.fetchMediaComments(mediaId, mediaType),
+        queryKey: [...feedKeys.comments(mediaId), userId],
+        queryFn: () => feedService.fetchMediaComments(mediaId, mediaType, userId),
         enabled: !!mediaId,
+    });
+}
+
+/**
+ * Hook for toggling a reaction on a comment.
+ */
+export function useToggleCommentReaction() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ commentId, reactionType }: { commentId: string; reactionType?: string }) =>
+            feedService.toggleCommentReaction(commentId, reactionType),
+        onSuccess: () => {
+            // Invalidate comments for all media to ensure UI consistency
+            queryClient.invalidateQueries({ queryKey: ['feed', 'comments'] });
+        },
     });
 }
 
@@ -70,11 +103,11 @@ export function usePostMediaComment() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ mediaId, mediaType, content }: { mediaId: string; mediaType: 'photo' | 'video', content: string }) =>
-            feedService.postMediaComment(mediaId, mediaType, content),
-        onSuccess: (_, variables) => {
+        mutationFn: ({ mediaId, mediaType, content, parentId }: { mediaId: string; mediaType: 'photo' | 'video', content: string, parentId?: string }) =>
+            feedService.postMediaComment(mediaId, mediaType, content, parentId),
+        onSuccess: (_, { mediaId }) => {
             // Invalidate comments for this media and the feed (for comment count)
-            queryClient.invalidateQueries({ queryKey: feedKeys.comments(variables.mediaId) });
+            queryClient.invalidateQueries({ queryKey: feedKeys.comments(mediaId) });
             queryClient.invalidateQueries({ queryKey: feedKeys.global() });
         },
     });

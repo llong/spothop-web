@@ -6,8 +6,8 @@ import { userAtom } from '../../atoms/auth';
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserContentGallery } from './-components/UserContentGallery';
-import { UserListDialog } from './-components/UserListDialog';
-import { profileKeys, useProfileQuery, useSocialStatsQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
+import { profileKeys, useProfileQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
+import { UserStats } from './-components/UserStats';
 import { profileService } from 'src/services/profileService';
 import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 import { chatService, blockService } from 'src/services/chatService';
@@ -56,18 +56,10 @@ const PublicProfileComponent = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { userId } = Route.useLoaderData();
-    const [userListConfig, setUserListConfig] = useState<{ open: boolean; type: 'followers' | 'following' }>({
-        open: false,
-        type: 'followers'
-    });
     const user = useAtomValue(userAtom);
 
     // Use Query hooks (they will pull from cache populated by loader)
     const { data: profile } = useProfileQuery(userId);
-    const { data: socialStats, isLoading: socialStatsLoading } = useSocialStatsQuery(userId, true);
-
-
-
 
     const { data: contentData } = useUserContentQuery(userId);
 
@@ -150,33 +142,9 @@ const PublicProfileComponent = () => {
                             <Typography variant="subtitle1" component="p" color="text.secondary" gutterBottom>@{profile.username}</Typography>
                             <Typography variant="body1" component="p" color="text.secondary">{profile.city}, {profile.country}</Typography>
 
-                            <Box sx={{ display: 'flex', gap: 4, my: 2 }}>
-                                <Box
-                                    sx={{ cursor: 'pointer', textAlign: 'center' }}
-                                    onClick={() => setUserListConfig({ open: true, type: 'followers' })}
-                                >
-                                    <Typography variant="h5" fontWeight={700}>
-                                        {socialStatsLoading ? '...' : (socialStats?.followerCount || 0)}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">Followers</Typography>
-                                </Box>
-                                <Box
-                                    sx={{ cursor: 'pointer', textAlign: 'center' }}
-                                    onClick={() => setUserListConfig({ open: true, type: 'following' })}
-                                >
-                                    <Typography variant="h5" fontWeight={700}>
-                                        {socialStatsLoading ? '...' : (socialStats?.followingCount || 0)}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">Following</Typography>
-                                </Box>
+                            <Box sx={{ my: 2, width: '100%' }}>
+                                <UserStats userId={userId} />
                             </Box>
-
-                            <UserListDialog
-                                open={userListConfig.open}
-                                onClose={() => setUserListConfig(prev => ({ ...prev, open: false }))}
-                                userId={userId}
-                                type={userListConfig.type}
-                            />
 
                             {user?.user && !isOwnProfile && (
                                 <Stack direction="row" spacing={1} sx={{ mt: 2 }}>

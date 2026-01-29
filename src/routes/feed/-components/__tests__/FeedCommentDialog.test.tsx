@@ -17,6 +17,10 @@ vi.mock('src/hooks/useFeedQueries', () => ({
     usePostMediaComment: vi.fn(() => ({
         mutateAsync: vi.fn().mockResolvedValue({}),
         isPending: false
+    })),
+    useToggleCommentReaction: vi.fn(() => ({
+        mutate: vi.fn(),
+        isPending: false
     }))
 }));
 
@@ -29,7 +33,9 @@ const mockItem: FeedItem = {
     created_at: new Date().toISOString(),
     spot_name: 'Test Spot',
     uploader_username: 'skater1',
+    uploader_display_name: 'Skater 1',
     uploader_avatar_url: null,
+    is_followed_by_user: false,
     like_count: 0,
     comment_count: 0,
     popularity_score: 0
@@ -49,8 +55,7 @@ describe('FeedCommentDialog', () => {
             <FeedCommentDialog 
                 open={true} 
                 onClose={() => {}} 
-                mediaId={mockItem.media_id}
-                mediaType={mockItem.media_type}
+                item={mockItem}
                 userId="u1"
             />, 
             { wrapper }
@@ -68,8 +73,7 @@ describe('FeedCommentDialog', () => {
             <FeedCommentDialog 
                 open={true} 
                 onClose={() => {}} 
-                mediaId={mockItem.media_id}
-                mediaType={mockItem.media_type}
+                item={mockItem}
                 userId="u1"
             />, 
             { wrapper }

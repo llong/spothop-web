@@ -5,10 +5,35 @@ export const feedService = {
     /**
      * Fetches paginated global feed content.
      */
-    async fetchGlobalFeed(limit: number = 10, offset: number = 0, userId?: string) {
+    async fetchGlobalFeed(
+        limit: number = 10, 
+        offset: number = 0, 
+        userId?: string,
+        filters?: {
+            lat?: number;
+            lng?: number;
+            maxDistKm?: number;
+            followingOnly?: boolean;
+            spotTypes?: string[];
+            difficulties?: string[];
+            minRisk?: number;
+            maxRisk?: number;
+            riderTypes?: string[];
+        }
+    ) {
         const { data, error } = await supabase.rpc('get_global_feed_content', {
             p_limit: limit,
-            p_offset: offset
+            p_offset: offset,
+            p_user_id: userId || null,
+            p_lat: filters?.lat || null,
+            p_lng: filters?.lng || null,
+            p_max_dist_km: filters?.maxDistKm || null,
+            p_following_only: filters?.followingOnly || false,
+            p_spot_types: filters?.spotTypes || null,
+            p_difficulties: filters?.difficulties || null,
+            p_min_risk: filters?.minRisk || null,
+            p_max_risk: filters?.maxRisk || null,
+            p_rider_types: filters?.riderTypes || null
         });
 
         if (error) throw error;
@@ -52,6 +77,17 @@ export const feedService = {
     },
 
     /**
+     * Toggles follow for a user.
+     */
+    async toggleFollow(followingId: string) {
+        const { error } = await supabase.rpc('handle_user_follow', {
+            p_following_id: followingId
+        });
+
+        if (error) throw error;
+    },
+
+    /**
      * Toggles a like on a media item.
      */
     async toggleMediaLike(mediaId: string, mediaType: 'photo' | 'video') {
@@ -64,16 +100,33 @@ export const feedService = {
     },
 
     /**
+     * Toggles a reaction on a comment.
+     */
+    async toggleCommentReaction(commentId: string, reactionType: string = 'like') {
+        const { error } = await supabase.rpc('handle_media_comment_reaction', {
+            p_comment_id: commentId,
+            p_reaction_type: reactionType
+        });
+
+        if (error) throw error;
+    },
+
+    /**
      * Fetches comments for a specific media item.
      */
-    async fetchMediaComments(mediaId: string, mediaType: 'photo' | 'video') {
+    async fetchMediaComments(mediaId: string, mediaType: 'photo' | 'video', userId?: string): Promise<MediaComment[]> {
         let query = supabase
             .from('media_comments')
             .select(`
                 *,
                 author:profiles (
                     username,
+                    "displayName",
                     "avatarUrl"
+                ),
+                media_comment_reactions (
+                    user_id,
+                    reaction_type
                 )
             `)
             .order('created_at', { ascending: true });
@@ -86,18 +139,35 @@ export const feedService = {
 
         const { data, error } = await query;
         if (error) throw error;
-        return data as MediaComment[];
+
+        // Aggregate reactions for each comment
+        return (data || []).map((comment: any) => {
+            const reactions = comment.media_comment_reactions || [];
+            const likes = reactions.filter((r: any) => r.reaction_type === 'like').length;
+            const userReaction = userId 
+                ? reactions.find((r: any) => r.user_id === userId)?.reaction_type || null
+                : null;
+
+            return {
+                ...comment,
+                reactions: {
+                    likes,
+                    userReaction
+                }
+            };
+        }) as MediaComment[];
     },
 
     /**
      * Posts a new comment on a media item.
      */
-    async postMediaComment(mediaId: string, mediaType: 'photo' | 'video', content: string) {
+    async postMediaComment(mediaId: string, mediaType: 'photo' | 'video', content: string, parentId?: string) {
         // Use the post_comment RPC which handles abuse prevention
         const { data: commentId, error: rpcError } = await supabase.rpc('post_comment', {
             p_media_id: mediaId,
             p_media_type: mediaType,
-            p_content: content
+            p_content: content,
+            p_parent_id: parentId || null
         });
 
         if (rpcError) throw rpcError;
@@ -109,6 +179,7 @@ export const feedService = {
                 *,
                 author:profiles (
                     username,
+                    "displayName",
                     "avatarUrl"
                 )
             `)

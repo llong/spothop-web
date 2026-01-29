@@ -18,6 +18,7 @@ CREATE TABLE public.media_comments (
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     photo_id UUID REFERENCES public.spot_photos(id) ON DELETE CASCADE,
     video_id UUID REFERENCES public.spot_videos(id) ON DELETE CASCADE,
+    parent_id UUID REFERENCES public.media_comments(id) ON DELETE CASCADE,
     media_type media_type_enum NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -75,7 +76,16 @@ ALTER TABLE public.media_likes ENABLE ROW LEVEL SECURITY;
 -- 5. Implement get_global_feed_content RPC
 CREATE OR REPLACE FUNCTION public.get_global_feed_content(
     p_limit INTEGER DEFAULT 10,
-    p_offset INTEGER DEFAULT 0
+    p_offset INTEGER DEFAULT 0,
+    p_user_id UUID DEFAULT NULL,
+    p_lat DOUBLE PRECISION DEFAULT NULL,
+    p_lng DOUBLE PRECISION DEFAULT NULL,
+    p_max_dist_km DOUBLE PRECISION DEFAULT NULL,
+    p_following_only BOOLEAN DEFAULT FALSE,
+    p_spot_types TEXT[] DEFAULT NULL,
+    p_difficulties TEXT[] DEFAULT NULL,
+    p_min_risk INTEGER DEFAULT NULL,
+    p_max_risk INTEGER DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -91,19 +101,36 @@ BEGIN
             sp.spot_id,
             sp.user_id AS uploader_id,
             sp.url AS media_url,
-            sp.thumbnailurl AS thumbnail_url, -- No underscore for photos
+            sp.thumbnailurl AS thumbnail_url,
             'photo'::media_type_enum AS media_type,
             sp.created_at,
             s.name AS spot_name,
             s.city,
             s.country,
             p.username AS uploader_username,
+            p."displayName" AS uploader_display_name,
             p."avatarUrl" AS uploader_avatar_url,
-            COALESCE((SELECT COUNT(*) FROM public.media_likes ml WHERE ml.photo_id = sp.id), 0) AS like_count,
-            COALESCE((SELECT COUNT(*) FROM public.media_comments mc WHERE mc.photo_id = sp.id), 0) AS comment_count
+            (
+                SELECT EXISTS (
+                    SELECT 1 FROM public.user_follows 
+                    WHERE follower_id = p_user_id AND following_id = p.id
+                )
+            ) AS is_followed_by_user,
+            COALESCE((SELECT COUNT(*)::int FROM public.media_likes ml WHERE ml.photo_id = sp.id), 0) AS like_count,
+            COALESCE((SELECT COUNT(*)::int FROM public.media_comments mc WHERE mc.photo_id = sp.id), 0) AS comment_count
         FROM public.spot_photos sp
         JOIN public.spots s ON sp.spot_id = s.id
         JOIN public.profiles p ON sp.user_id = p.id
+        WHERE (p_lat IS NULL OR p_lng IS NULL OR p_max_dist_km IS NULL OR
+               ST_DWithin(s.location::geography, ST_SetSRID(ST_MakePoint(p_lng, p_lat), 4326)::geography, p_max_dist_km * 1000))
+          AND (NOT p_following_only OR p_user_id IS NULL OR EXISTS (
+                SELECT 1 FROM public.user_follows 
+                WHERE follower_id = p_user_id AND following_id = p.id
+          ))
+          AND (p_spot_types IS NULL OR s.spot_type && p_spot_types)
+          AND (p_difficulties IS NULL OR s.difficulty = ANY(p_difficulties))
+          AND (p_min_risk IS NULL OR s.kickout_risk >= p_min_risk)
+          AND (p_max_risk IS NULL OR s.kickout_risk <= p_max_risk)
         
         UNION ALL
         
@@ -112,19 +139,36 @@ BEGIN
             sv.spot_id,
             sv.user_id AS uploader_id,
             sv.url AS media_url,
-            sv.thumbnail_url, -- Underscore for videos
+            sv.thumbnail_url, -- thumbnail_url for videos
             'video'::media_type_enum AS media_type,
             sv.created_at,
             s.name AS spot_name,
             s.city,
             s.country,
             p.username AS uploader_username,
+            p."displayName" AS uploader_display_name,
             p."avatarUrl" AS uploader_avatar_url,
-            COALESCE((SELECT COUNT(*) FROM public.media_likes ml WHERE ml.video_id = sv.id), 0) AS like_count,
-            COALESCE((SELECT COUNT(*) FROM public.media_comments mc WHERE mc.video_id = sv.id), 0) AS comment_count
+            (
+                SELECT EXISTS (
+                    SELECT 1 FROM public.user_follows 
+                    WHERE follower_id = p_user_id AND following_id = p.id
+                )
+            ) AS is_followed_by_user,
+            COALESCE((SELECT COUNT(*)::int FROM public.media_likes ml WHERE ml.video_id = sv.id), 0) AS like_count,
+            COALESCE((SELECT COUNT(*)::int FROM public.media_comments mc WHERE mc.video_id = sv.id), 0) AS comment_count
         FROM public.spot_videos sv
         JOIN public.spots s ON sv.spot_id = s.id
         JOIN public.profiles p ON sv.user_id = p.id
+        WHERE (p_lat IS NULL OR p_lng IS NULL OR p_max_dist_km IS NULL OR
+               ST_DWithin(s.location::geography, ST_SetSRID(ST_MakePoint(p_lng, p_lat), 4326)::geography, p_max_dist_km * 1000))
+          AND (NOT p_following_only OR p_user_id IS NULL OR EXISTS (
+                SELECT 1 FROM public.user_follows 
+                WHERE follower_id = p_user_id AND following_id = p.id
+          ))
+          AND (p_spot_types IS NULL OR s.spot_type && p_spot_types)
+          AND (p_difficulties IS NULL OR s.difficulty = ANY(p_difficulties))
+          AND (p_min_risk IS NULL OR s.kickout_risk >= p_min_risk)
+          AND (p_max_risk IS NULL OR s.kickout_risk <= p_max_risk)
     ),
     ranked_media AS (
         -- Apply basic ranking logic:recency + popularity (likes/comments)

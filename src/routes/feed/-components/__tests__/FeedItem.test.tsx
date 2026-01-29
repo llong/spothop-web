@@ -3,13 +3,26 @@ import { describe, it, expect, vi } from 'vitest';
 import { FeedItemCard } from '../FeedItem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { FeedItem } from 'src/types';
+import React from 'react';
 
 // Mock dependencies
+vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children, to }: any) => <a href={to}>{children}</a>,
+    useNavigate: () => vi.fn()
+}));
+
 vi.mock('src/hooks/useFeedQueries', () => ({
     useToggleMediaLike: vi.fn(() => ({
         mutate: vi.fn(),
         isPending: false
-    }))
+    })),
+    useToggleFollow: vi.fn(() => ({
+        mutate: vi.fn(),
+        isPending: false
+    })),
+    useMediaComments: vi.fn(() => ({ data: [], isLoading: false })),
+    usePostMediaComment: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
+    useToggleCommentReaction: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 
 vi.mock('src/hooks/useSpotFavorites', () => ({
@@ -29,7 +42,9 @@ const mockItem: FeedItem = {
     city: 'Test City',
     country: 'Test Country',
     uploader_username: 'skater1',
+    uploader_display_name: 'Skater 1',
     uploader_avatar_url: null,
+    is_followed_by_user: false,
     like_count: 5,
     comment_count: 2,
     popularity_score: 10,

@@ -1,8 +1,9 @@
 import { useState, useCallback, memo } from 'react';
-import { Box, IconButton, Typography } from '@mui/material';
+import { Box, IconButton, Typography, Button } from '@mui/material';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import MovieIcon from '@mui/icons-material/Movie';
 import type { MediaItem } from 'src/types';
 import React from 'react';
 
@@ -67,16 +68,37 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 cursor: 'pointer',
-                                position: 'relative'
+                                position: 'relative',
+                                bgcolor: 'black'
                             }}
                             onClick={() => toggleVideo(currentItem.id, true)}
                         >
-                            <Box
-                                component="img"
-                                src={currentItem.thumbnailUrl || currentItem.url}
-                                sx={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.7 }}
-                            />
-                            <PlayArrowIcon sx={{ position: 'absolute', fontSize: 64, color: 'white' }} />
+                            {currentItem.thumbnailUrl ? (
+                                <Box
+                                    component="img"
+                                    src={currentItem.thumbnailUrl}
+                                    sx={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.7 }}
+                                />
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'grey.500' }}>
+                                    <MovieIcon sx={{ fontSize: 64, mb: 1 }} />
+                                    <Typography variant="caption">No thumbnail</Typography>
+                                </Box>
+                            )}
+                            <Button
+                                variant="contained"
+                                startIcon={<PlayArrowIcon />}
+                                sx={{
+                                    position: 'absolute',
+                                    borderRadius: 10,
+                                    textTransform: 'none',
+                                    fontWeight: 700,
+                                    zIndex: 2,
+                                    boxShadow: 3
+                                }}
+                            >
+                                Show Video
+                            </Button>
                         </Box>
                     ) : (
                         <Box

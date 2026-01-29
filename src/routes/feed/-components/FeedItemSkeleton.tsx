@@ -11,6 +11,7 @@ import {
 
 export const FeedItemSkeleton = memo(() => {
     return (
+        <Box data-testid="feed-item-skeleton">
         <Card
             elevation={2}
             sx={{
@@ -48,5 +49,6 @@ export const FeedItemSkeleton = memo(() => {
                 <Skeleton animation="wave" variant="circular" width={24} height={24} />
             </CardActions>
         </Card>
+        </Box>
     );
 });
