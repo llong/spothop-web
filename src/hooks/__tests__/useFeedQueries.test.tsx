@@ -86,14 +86,13 @@ describe('useFeedQueries', () => {
             });
 
             const newComment = await result.current.mutateAsync({
-                userId: 'u1',
                 mediaId: 'm1',
                 mediaType: 'photo',
                 content: 'new'
             });
 
             expect(newComment).toEqual(mockComment);
-            expect(feedService.postMediaComment).toHaveBeenCalledWith('u1', 'm1', 'photo', 'new');
+            expect(feedService.postMediaComment).toHaveBeenCalledWith('m1', 'photo', 'new');
         });
     });
 });

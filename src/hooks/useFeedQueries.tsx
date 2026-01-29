@@ -1,5 +1,8 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSetAtom } from 'jotai';
+import { useEffect } from 'react';
 import { feedService } from '../services/feedService';
+import { feedPersistenceAtom } from '../atoms/feed';
 
 export const feedKeys = {
     all: ['feed'] as const,
@@ -11,7 +14,9 @@ export const feedKeys = {
  * Hook for fetching paginated global feed content.
  */
 export function useFeedQuery(userId?: string, limit: number = 10) {
-    return useInfiniteQuery({
+    const setFeedPersistence = useSetAtom(feedPersistenceAtom);
+
+    const query = useInfiniteQuery({
         queryKey: feedKeys.global(),
         queryFn: ({ pageParam = 0 }) => feedService.fetchGlobalFeed(limit, pageParam, userId),
         getNextPageParam: (lastPage, allPages) => {
@@ -20,6 +25,15 @@ export function useFeedQuery(userId?: string, limit: number = 10) {
         initialPageParam: 0,
         staleTime: 1000 * 60 * 5, // 5 minutes
     });
+
+    useEffect(() => {
+        if (query.data) {
+            const allItems = query.data.pages.flat();
+            setFeedPersistence(allItems);
+        }
+    }, [query.data, setFeedPersistence]);
+
+    return query;
 }
 
 /**
@@ -56,8 +70,8 @@ export function usePostMediaComment() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ userId, mediaId, mediaType, content }: { userId: string; mediaId: string; mediaType: 'photo' | 'video', content: string }) =>
-            feedService.postMediaComment(userId, mediaId, mediaType, content),
+        mutationFn: ({ mediaId, mediaType, content }: { mediaId: string; mediaType: 'photo' | 'video', content: string }) =>
+            feedService.postMediaComment(mediaId, mediaType, content),
         onSuccess: (_, variables) => {
             // Invalidate comments for this media and the feed (for comment count)
             queryClient.invalidateQueries({ queryKey: feedKeys.comments(variables.mediaId) });

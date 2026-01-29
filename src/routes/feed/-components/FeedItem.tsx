@@ -9,8 +9,10 @@ import {
     IconButton,
     Typography,
     Stack,
-    Chip
+    Chip,
+    Button
 } from '@mui/material';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
@@ -35,6 +37,7 @@ interface FeedItemCardProps {
  * Renamed to avoid collision with the FeedItem type from src/types.
  */
 export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) => {
+    const [showVideo, setShowVideo] = useState(false);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const toggleLikeMutation = useToggleMediaLike();
 
@@ -118,12 +121,53 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
                             objectFit: 'contain'
                         }}
                     />
+                ) : !showVideo ? (
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            bgcolor: 'black',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            cursor: 'pointer'
+                        }}
+                        onClick={() => setShowVideo(true)}
+                    >
+                        <Box
+                            component="img"
+                            src={item.thumbnail_url || item.media_url} // Fallback to media_url if thumbnail missing (though less optimal)
+                            alt="Video thumbnail"
+                            sx={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                                opacity: 0.7
+                            }}
+                        />
+                        <Button
+                            variant="contained"
+                            startIcon={<PlayArrowIcon />}
+                            sx={{
+                                position: 'absolute',
+                                borderRadius: 10,
+                                textTransform: 'none',
+                                fontWeight: 700,
+                                zIndex: 2
+                            }}
+                        >
+                            Show Video
+                        </Button>
+                    </Box>
                 ) : (
                     <Box
                         component="video"
                         src={item.media_url}
                         controls
-                        poster={item.thumbnail_url}
+                        autoPlay
                         sx={{
                             position: 'absolute',
                             top: 0,

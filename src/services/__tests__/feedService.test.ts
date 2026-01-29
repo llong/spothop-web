@@ -114,7 +114,7 @@ describe('feedService', () => {
                 })
             } as any);
 
-            const result = await feedService.postMediaComment('u1', 'p1', 'photo', 'new comment');
+            const result = await feedService.postMediaComment('p1', 'photo', 'new comment');
             expect(result).toEqual(mockComment);
             expect(supabase.from).toHaveBeenCalledWith('media_comments');
         });

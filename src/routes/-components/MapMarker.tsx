@@ -7,14 +7,20 @@ import { useNavigate } from "@tanstack/react-router";
 
 interface MapMarkerProps {
     spot: Spot;
+    onClick?: () => void;
 }
 
-export const MapMarker = memo(({ spot }: MapMarkerProps) => {
+export const MapMarker = memo(({ spot, onClick }: MapMarkerProps) => {
     const navigate = useNavigate();
 
     return (
         <Suspense fallback={null}>
-            <Marker position={[spot.latitude, spot.longitude]}>
+            <Marker 
+                position={[spot.latitude, spot.longitude]}
+                eventHandlers={{
+                    click: onClick,
+                }}
+            >
                 <Popup closeButton={false} autoPan={false}>
                     <Box
                         sx={{ cursor: "pointer", minWidth: 150 }}

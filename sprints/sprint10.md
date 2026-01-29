@@ -16,13 +16,13 @@ This sprint focuses on delivering a TikTok/Instagram-like global feed as the pri
 - [x] Create `media_comments` table with RLS.
 - [x] Implement `get_global_feed_content` RPC with automated ranking (views, likes, comments, recency).
 - [x] Implement `like_media` (as `handle_media_like`) RPC with basic abuse prevention.
-- [ ] Implement `post_comment` RPC with basic abuse prevention.
+- [x] Implement `post_comment` RPC with basic abuse prevention.
 - [x] Optimize database indexes for feed queries.
 
 ### 2. Frontend Infrastructure
 - [x] Create `/feed` route and set as default app entry point.
 - [x] Implement `FeedScreen` with infinite scroll and virtualization (PWA/Web optimized).
-- [ ] Integrate Jotai and `localStorage` for feed state persistence.
+- [x] Integrate Jotai and `localStorage` for feed state persistence.
 - [x] Implement "Add Spot" banner on `/spots` page with "Don't show again" logic.
 
 ### 3. Components & UI
@@ -32,7 +32,7 @@ This sprint focuses on delivering a TikTok/Instagram-like global feed as the pri
 - [x] Implement "Like Media" action in feed (optimistic UI).
 - [x] Implement "Comment" modal/overlay for feed items.
 - [x] Add navigation to uploader profile and associated spot details.
-- [ ] Implement skeleton loaders for feed items.
+- [x] Implement skeleton loaders for feed items.
 - [x] Implement offline message banner (no feed caching).
 
 ### 4. User Flow & Onboarding

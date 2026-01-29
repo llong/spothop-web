@@ -55,11 +55,12 @@ function MapEvents({ onMove, onRightClick }: { onMove: () => void, onRightClick:
 interface SpotMapProps {
     spots: Spot[];
     getSpots: (bounds: any) => void;
+    onMarkerClick?: (spot: Spot) => void;
     lat?: number;
     lng?: number;
 }
 
-const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
+const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapProps) => {
     const [map, setMap] = useState<LeafletMap | null>(null);
     const setMapAtom = useSetAtom(mapAtom);
     const isLoggedIn = useAtomValue(isLoggedInAtom);
@@ -119,7 +120,11 @@ const SpotMapComponent = ({ spots, getSpots, lat, lng }: SpotMapProps) => {
                     showCoverageOnHover={false}
                 >
                     {spots.map(spot => (
-                        <MapMarker key={spot.id} spot={spot} />
+                        <MapMarker 
+                            key={spot.id} 
+                            spot={spot} 
+                            onClick={() => onMarkerClick?.(spot)}
+                        />
                     ))}
                 </MarkerClusterGroup>
 

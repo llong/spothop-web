@@ -1,7 +1,14 @@
 -- Migration to standardize media comments and implement feed RPC
 -- Created at: 2026-01-27
 
--- 1. Standardize media_comments table
+-- 1. Create media type enum if not exists
+DO $$ BEGIN
+    CREATE TYPE media_type_enum AS ENUM ('photo', 'video');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+-- 2. Standardize media_comments table
 -- Drop existing table if it exists (it's empty)
 DROP TABLE IF EXISTS public.media_comments CASCADE;
 
@@ -28,7 +35,7 @@ CREATE INDEX idx_media_comments_photo_id ON public.media_comments(photo_id);
 CREATE INDEX idx_media_comments_video_id ON public.media_comments(video_id);
 CREATE INDEX idx_media_comments_created_at ON public.media_comments(created_at);
 
--- 2. Ensure media_likes has proper indexes and constraints
+-- 3. Ensure media_likes has proper indexes and constraints
 -- Since media_likes already has data, we just add constraints and indexes
 ALTER TABLE public.media_likes
 DROP CONSTRAINT IF EXISTS media_id_check;
@@ -43,7 +50,7 @@ CREATE INDEX IF NOT EXISTS idx_media_likes_user_id ON public.media_likes(user_id
 CREATE INDEX IF NOT EXISTS idx_media_likes_photo_id ON public.media_likes(photo_id);
 CREATE INDEX IF NOT EXISTS idx_media_likes_video_id ON public.media_likes(video_id);
 
--- 3. Enable RLS and add policies
+-- 4. Enable RLS and add policies
 ALTER TABLE public.media_comments ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read access to media comments"
@@ -65,7 +72,7 @@ CREATE POLICY "Allow users to delete their own comments"
 -- (Assuming media_likes already has RLS, but if not, enable it)
 ALTER TABLE public.media_likes ENABLE ROW LEVEL SECURITY;
 
--- 4. Implement get_global_feed_content RPC
+-- 5. Implement get_global_feed_content RPC
 CREATE OR REPLACE FUNCTION public.get_global_feed_content(
     p_limit INTEGER DEFAULT 10,
     p_offset INTEGER DEFAULT 0
@@ -84,7 +91,7 @@ BEGIN
             sp.spot_id,
             sp.user_id AS uploader_id,
             sp.url AS media_url,
-            sp.thumbnailurl AS thumbnail_url, -- CORRECTED: thumbnailurl for photos
+            sp.thumbnailurl AS thumbnail_url, -- No underscore for photos
             'photo'::media_type_enum AS media_type,
             sp.created_at,
             s.name AS spot_name,
@@ -105,7 +112,7 @@ BEGIN
             sv.spot_id,
             sv.user_id AS uploader_id,
             sv.url AS media_url,
-            sv.thumbnail_url, -- thumbnail_url for videos
+            sv.thumbnail_url, -- Underscore for videos
             'video'::media_type_enum AS media_type,
             sv.created_at,
             s.name AS spot_name,
@@ -136,28 +143,59 @@ BEGIN
 END;
 $$;
 
--- 5. Implement like_media and post_comment RPCs for unified handling
+-- 6. Implement handle_media_like RPC
 CREATE OR REPLACE FUNCTION public.handle_media_like(
     p_media_id UUID,
-    p_media_type media_type_enum
+    p_media_type TEXT
 )
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
+DECLARE
+    v_user_id UUID;
+    v_exists BOOLEAN;
 BEGIN
+    -- 1. Get authenticated user ID
+    v_user_id := auth.uid();
+    
+    -- 2. Basic Abuse Prevention: Check if user is authenticated
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Not authenticated';
+    END IF;
+
+    -- 3. Insert or Delete like based on media type
     IF p_media_type = 'photo' THEN
-        IF EXISTS (SELECT 1 FROM public.media_likes WHERE user_id = auth.uid() AND photo_id = p_media_id) THEN
-            DELETE FROM public.media_likes WHERE user_id = auth.uid() AND photo_id = p_media_id;
+        -- Check if already liked
+        SELECT EXISTS (
+            SELECT 1 FROM public.media_likes 
+            WHERE user_id = v_user_id AND photo_id = p_media_id
+        ) INTO v_exists;
+
+        IF v_exists THEN
+            DELETE FROM public.media_likes 
+            WHERE user_id = v_user_id AND photo_id = p_media_id;
         ELSE
-            INSERT INTO public.media_likes (user_id, photo_id, media_type) VALUES (auth.uid(), p_media_id, 'photo');
+            INSERT INTO public.media_likes (user_id, photo_id, media_type)
+            VALUES (v_user_id, p_media_id, 'photo'::media_type_enum);
+        END IF;
+
+    ELSIF p_media_type = 'video' THEN
+        -- Check if already liked
+        SELECT EXISTS (
+            SELECT 1 FROM public.media_likes 
+            WHERE user_id = v_user_id AND video_id = p_media_id
+        ) INTO v_exists;
+
+        IF v_exists THEN
+            DELETE FROM public.media_likes 
+            WHERE user_id = v_user_id AND video_id = p_media_id;
+        ELSE
+            INSERT INTO public.media_likes (user_id, video_id, media_type)
+            VALUES (v_user_id, p_media_id, 'video'::media_type_enum);
         END IF;
     ELSE
-        IF EXISTS (SELECT 1 FROM public.media_likes WHERE user_id = auth.uid() AND video_id = p_media_id) THEN
-            DELETE FROM public.media_likes WHERE user_id = auth.uid() AND video_id = p_media_id;
-        ELSE
-            INSERT INTO public.media_likes (user_id, video_id, media_type) VALUES (auth.uid(), p_media_id, 'video');
-        END IF;
+        RAISE EXCEPTION 'Invalid media type';
     END IF;
 END;
 $$;

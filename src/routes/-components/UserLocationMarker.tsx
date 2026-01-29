@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, memo } from "react";
 import { Circle } from "react-leaflet";
 
 interface UserLocationMarkerProps {

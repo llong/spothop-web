@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from '@tanstack/react-router';
+import { createLazyFileRoute, getRouteApi } from '@tanstack/react-router';
 import { Box, Grid, Typography, useTheme, useMediaQuery, CircularProgress, Drawer, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import useSpots from 'src/hooks/useSpots';
@@ -17,9 +17,11 @@ export const Route = createLazyFileRoute('/spots/')({
     component: SpotsIndex,
 });
 
+const routeApi = getRouteApi('/spots/');
+
 function SpotsIndex() {
     const isOnline = useOnlineStatus();
-    const { lat, lng } = Route.useSearch();
+    const { lat, lng } = routeApi.useSearch();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
     const [view] = useAtom(viewAtom);
@@ -59,13 +61,13 @@ function SpotsIndex() {
                                 <CircularProgress />
                             </Box>
                         }>
-                            <SpotMap
-                                spots={spots}
-                                getSpots={getSpots}
-                                onSpotClick={handleSpotClick}
-                                lat={lat}
-                                lng={lng}
-                            />
+                <SpotMap
+                    spots={spots}
+                    getSpots={getSpots}
+                    onMarkerClick={handleSpotClick}
+                    lat={lat}
+                    lng={lng}
+                />
                         </Suspense>
                     </Grid>
                 )}

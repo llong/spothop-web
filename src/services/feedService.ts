@@ -92,15 +92,19 @@ export const feedService = {
     /**
      * Posts a new comment on a media item.
      */
-    async postMediaComment(userId: string, mediaId: string, mediaType: 'photo' | 'video', content: string) {
+    async postMediaComment(mediaId: string, mediaType: 'photo' | 'video', content: string) {
+        // Use the post_comment RPC which handles abuse prevention
+        const { data: commentId, error: rpcError } = await supabase.rpc('post_comment', {
+            p_media_id: mediaId,
+            p_media_type: mediaType,
+            p_content: content
+        });
+
+        if (rpcError) throw rpcError;
+
+        // Fetch the created comment to return it with author details
         const { data, error } = await supabase
             .from('media_comments')
-            .insert({
-                user_id: userId,
-                [mediaType === 'photo' ? 'photo_id' : 'video_id']: mediaId,
-                media_type: mediaType,
-                content
-            })
             .select(`
                 *,
                 author:profiles (
@@ -108,6 +112,7 @@ export const feedService = {
                     "avatarUrl"
                 )
             `)
+            .eq('id', commentId)
             .single();
 
         if (error) throw error;

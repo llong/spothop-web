@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 import { useFeedQuery } from 'src/hooks/useFeedQueries';
 import { FeedItemCard } from './-components/FeedItem';
+import { FeedItemSkeleton } from './-components/FeedItemSkeleton';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { useRef, useCallback } from 'react';
@@ -44,8 +45,17 @@ function FeedScreen() {
 
     if (isLoading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <CircularProgress />
+            <Box sx={{ py: 4, bgcolor: 'grey.50', minHeight: '100vh' }}>
+                <Container maxWidth="sm">
+                    <Typography variant="h4" fontWeight={900} sx={{ mb: 4, px: 2 }}>
+                        Global Feed
+                    </Typography>
+                    <Stack spacing={0}>
+                        {[...Array(3)].map((_, i) => (
+                            <FeedItemSkeleton key={i} />
+                        ))}
+                    </Stack>
+                </Container>
             </Box>
         );
     }

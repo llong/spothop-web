@@ -38,7 +38,6 @@ export const FeedCommentDialog = ({
 
         try {
             await postCommentMutation.mutateAsync({
-                userId,
                 mediaId,
                 mediaType,
                 content
