@@ -33,7 +33,8 @@ describe('feedService', () => {
             p_difficulties: null,
             p_min_risk: null,
             p_max_risk: null,
-            p_rider_types: null
+            p_rider_types: null,
+            p_author_id: null
         });
         expect(result).toEqual(mockData);
     });

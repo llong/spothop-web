@@ -19,7 +19,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 interface PlaceAutocompleteProps {
     onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
-    inputRef: React.RefObject<HTMLInputElement>;
+    inputRef: React.RefObject<HTMLInputElement | null>;
     endAdornment?: React.ReactNode;
 }
 

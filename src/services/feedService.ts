@@ -19,6 +19,7 @@ export const feedService = {
             minRisk?: number;
             maxRisk?: number;
             riderTypes?: string[];
+            authorId?: string;
         }
     ) {
         const { data, error } = await supabase.rpc('get_global_feed_content', {
@@ -33,7 +34,8 @@ export const feedService = {
             p_difficulties: filters?.difficulties || null,
             p_min_risk: filters?.minRisk || null,
             p_max_risk: filters?.maxRisk || null,
-            p_rider_types: filters?.riderTypes || null
+            p_rider_types: filters?.riderTypes || null,
+            p_author_id: filters?.authorId || null
         });
 
         if (error) throw error;

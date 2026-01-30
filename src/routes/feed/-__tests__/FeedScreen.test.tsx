@@ -22,6 +22,10 @@ vi.mock('@tanstack/react-router', () => ({
     useNavigate: () => vi.fn()
 }));
 
+vi.mock('src/hooks/useConstructFeedFilters', () => ({
+    useConstructFeedFilters: vi.fn(() => ({}))
+}));
+
 vi.mock('src/hooks/useFeedQueries', () => ({
     useFeedQuery: vi.fn(() => ({
         data: {

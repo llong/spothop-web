@@ -293,5 +293,53 @@ export const profileService = {
                 }
             };
         });
+    },
+
+    /**
+     * Fetches a profile by username.
+     */
+    async fetchProfileByUsername(username: string): Promise<UserProfile | null> {
+        const { data, error } = await supabase
+            .from("profiles")
+            .select(PROFILE_SELECT)
+            .eq("username", username)
+            .single();
+
+        if (error) {
+            console.error('Error fetching profile by username:', error);
+            return null;
+        }
+
+        return data as UserProfile;
+    },
+
+    /**
+     * Searches for users by username or display name.
+     */
+    async searchUsers(query: string, limit: number = 5): Promise<Array<{ id: string, username: string, displayName: string, avatarUrl: string | null }>> {
+        const cleanQuery = query.trim().startsWith('@') ? query.trim().substring(1) : query.trim();
+        if (!cleanQuery || cleanQuery.length < 2) return [];
+
+        // PostgREST ilike inside .or() uses * as wildcard, not %
+        // We also use double quotes for column names to ensure case sensitivity matches DB schema
+        const orFilter = `"username".ilike.*${cleanQuery}*,"displayName".ilike.*${cleanQuery}*`;
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, username, "displayName", "avatarUrl"')
+            .or(orFilter)
+            .limit(limit);
+
+        if (error) {
+            console.error('Error searching users:', error);
+            return [];
+        }
+
+        return data.map((user: any) => ({
+            id: user.id,
+            username: user.username,
+            displayName: user.displayName,
+            avatarUrl: user.avatarUrl
+        }));
     }
 };
