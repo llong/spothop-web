@@ -2,7 +2,6 @@ import { createLazyFileRoute } from '@tanstack/react-router';
 import {
     Box,
     Container,
-    Typography,
     Button,
     Stack,
     Drawer,

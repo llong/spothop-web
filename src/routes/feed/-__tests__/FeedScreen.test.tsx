@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 vi.mock('jotai/utils', async () => {
     const { atom } = await vi.importActual<typeof import('jotai')>('jotai');
     return {
-        atomWithStorage: (key: any, initialValue: any) => atom(initialValue),
+        atomWithStorage: (_: any, initialValue: any) => atom(initialValue),
     };
 });
 
