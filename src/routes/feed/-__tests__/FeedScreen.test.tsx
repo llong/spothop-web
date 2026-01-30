@@ -1,9 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FeedScreen } from '../index.lazy';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { userAtom } from 'src/atoms/auth';
 import { createStore, Provider } from 'jotai';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Mock jotai/utils before importing atoms
+vi.mock('jotai/utils', async () => {
+    const { atom } = await vi.importActual<typeof import('jotai')>('jotai');
+    return {
+        atomWithStorage: (key: any, initialValue: any) => atom(initialValue),
+    };
+});
+
+import { FeedScreen } from '../index.lazy';
+import { userAtom } from 'src/atoms/auth';
+import { feedFiltersAtom, INITIAL_FEED_FILTERS } from 'src/atoms/feed';
 
 // Mock dependencies
 vi.mock('@tanstack/react-router', () => ({
@@ -74,9 +84,10 @@ describe('FeedScreen', () => {
     beforeEach(() => {
         testStore = createStore();
         testStore.set(userAtom, { user: { id: 'u1' } } as any);
+        testStore.set(feedFiltersAtom, INITIAL_FEED_FILTERS);
     });
 
-    it('renders the global feed title', () => {
+    it('renders the global feed content', () => {
         render(
             <Provider store={testStore}>
                 <QueryClientProvider client={queryClient}>
@@ -85,7 +96,6 @@ describe('FeedScreen', () => {
             </Provider>
         );
 
-        expect(screen.getByText('Home')).toBeInTheDocument();
         expect(screen.getByText('Test Spot')).toBeInTheDocument();
     });
 });

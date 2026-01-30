@@ -14,7 +14,14 @@ vi.mock('@react-native-async-storage/async-storage', () => ({
 }));
 
 import { renderHook, waitFor } from '@testing-library/react';
-import { useFeedQuery, useToggleMediaLike, useMediaComments, usePostMediaComment } from '../useFeedQueries';
+import { 
+    useFeedQuery, 
+    useToggleMediaLike, 
+    useMediaComments, 
+    usePostMediaComment,
+    useToggleFollow,
+    useToggleCommentReaction
+} from '../useFeedQueries';
 import { feedService } from '../../services/feedService';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'jotai';
@@ -24,7 +31,9 @@ vi.mock('../../services/feedService', () => ({
         fetchGlobalFeed: vi.fn(),
         toggleMediaLike: vi.fn(),
         fetchMediaComments: vi.fn(),
-        postMediaComment: vi.fn()
+        postMediaComment: vi.fn(),
+        toggleFollow: vi.fn(),
+        toggleCommentReaction: vi.fn()
     }
 }));
 
@@ -61,7 +70,6 @@ describe('useFeedQueries', () => {
 
             await waitFor(() => expect(result.current.isSuccess).toBe(true));
             expect(result.current.data?.pages[0]).toEqual(mockData);
-            // Updated expectation to match actual call including the filters param (undefined)
             expect(feedService.fetchGlobalFeed).toHaveBeenCalledWith(10, 0, 'u1', undefined);
         });
     });
@@ -76,6 +84,19 @@ describe('useFeedQueries', () => {
 
             await result.current.mutateAsync({ mediaId: 'm1', mediaType: 'photo' });
             expect(feedService.toggleMediaLike).toHaveBeenCalledWith('m1', 'photo');
+        });
+    });
+
+    describe('useToggleFollow', () => {
+        it('toggles follow status', async () => {
+            vi.mocked(feedService.toggleFollow).mockResolvedValue(undefined);
+
+            const { result } = renderHook(() => useToggleFollow(), {
+                wrapper: createWrapper()
+            });
+
+            await result.current.mutateAsync('u2');
+            expect(feedService.toggleFollow).toHaveBeenCalledWith('u2');
         });
     });
 
@@ -110,6 +131,19 @@ describe('useFeedQueries', () => {
 
             expect(newComment).toEqual(mockComment);
             expect(feedService.postMediaComment).toHaveBeenCalledWith('m1', 'photo', 'new', undefined);
+        });
+    });
+
+    describe('useToggleCommentReaction', () => {
+        it('toggles comment reaction', async () => {
+            vi.mocked(feedService.toggleCommentReaction).mockResolvedValue(undefined);
+
+            const { result } = renderHook(() => useToggleCommentReaction(), {
+                wrapper: createWrapper()
+            });
+
+            await result.current.mutateAsync({ commentId: 'c1', reactionType: 'like' });
+            expect(feedService.toggleCommentReaction).toHaveBeenCalledWith('c1', 'like');
         });
     });
 });

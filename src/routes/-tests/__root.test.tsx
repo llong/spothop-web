@@ -1,6 +1,6 @@
 import { render, screen, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { RootComponent, Route } from "./__root";
+import { RootComponent, Route } from "../__root";
 import { createRouter, RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import "@testing-library/jest-dom";
 import { Provider, createStore } from "jotai";

@@ -13,15 +13,8 @@ import {
     Chip,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-
-interface FeedFilters {
-    nearMe: boolean;
-    maxDistKm: number;
-    spotTypes: string[];
-    difficulties: string[];
-    riderTypes: string[];
-    maxRisk: number;
-}
+import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
+import type { FeedFilters } from 'src/atoms/feed';
 
 interface FeedFilterPanelProps {
     filters: FeedFilters;
@@ -37,16 +30,8 @@ export const FeedFilterPanel = ({ filters: initialFilters, onApply, onClose }: F
     };
 
     const handleReset = () => {
-        const reset = { 
-            nearMe: false, 
-            maxDistKm: 50, 
-            spotTypes: [],
-            difficulties: [],
-            riderTypes: [],
-            maxRisk: 5
-        };
-        setTempFilters(reset);
-        onApply(reset);
+        setTempFilters(INITIAL_FEED_FILTERS);
+        onApply(INITIAL_FEED_FILTERS);
     };
 
     const toggleArrayItem = (array: string[], item: string) => {

@@ -21,6 +21,7 @@ Once the core feed is established, this sprint adds layers of intelligence and c
 - [ ] Implement Search within the feed context.
 - [x] Update `FeedScreen` to handle filter state and re-fetching.
 - [x] Add "Follow/Unfollow" actions directly in feed items.
+- [x] Persist  filtering settings using Jotai and localstorage.
 
 ### 3. Personalization & Discovery
 - [x] Implement Tab-based feed splitting (For You / Following).
