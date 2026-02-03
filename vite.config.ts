@@ -3,6 +3,7 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,6 +14,35 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     react(),
+    VitePWA({
+      registerType: "autoUpdate",
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
+      },
+      manifest: {
+        name: "SpotHop",
+        short_name: "SpotHop",
+        description: "Discover and share skate spots",
+        theme_color: "#A3CDA5",
+        background_color: "#ffffff",
+        display: "standalone",
+        icons: [
+          {
+            src: "spothopIcon.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "spothopIcon.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+        ],
+      },
+    }),
   ],
   server: {
     port: 5000,
