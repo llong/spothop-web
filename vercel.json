@@ -1,5 +1,4 @@
 {
-    "cleanUrls": true,
     "rewrites": [
         {
             "source": "/robots.txt",
@@ -22,11 +21,15 @@
             "destination": "/sw.js"
         },
         {
+            "source": "/workbox-(.*).js",
+            "destination": "/workbox-$1.js"
+        },
+        {
             "source": "/assets/(.*)",
             "destination": "/assets/$1"
         },
         {
-            "source": "/((?!api/).*)",
+            "source": "/(.*)",
             "destination": "/index.html"
         }
     ]
