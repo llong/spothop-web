@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { useSpotFavorites } from '../useSpotFavorites';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
@@ -24,13 +24,13 @@ const wrapper = ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 
 describe('useSpotFavorites', () => {
-    let mockMutateAsync: vi.Mock;
+    let mockMutateAsync: Mock;
 
     beforeEach(() => {
         vi.clearAllMocks();
         // Reset the mock for each test
         mockMutateAsync = vi.fn();
-        (useToggleFavoriteMutation as vi.Mock).mockReturnValue({
+        (useToggleFavoriteMutation as Mock).mockReturnValue({
             mutateAsync: mockMutateAsync,
             isPending: false,
         });

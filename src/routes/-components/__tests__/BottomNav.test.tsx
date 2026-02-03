@@ -1,7 +1,7 @@
 import { BottomNav } from "../BottomNav";
 import { render, screen, waitFor } from "@testing-library/react";
 import { RouterProvider, createRouter, createMemoryHistory, createRootRoute, createRoute } from "@tanstack/react-router";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import "@testing-library/jest-dom";
 
 import { fireEvent } from "@testing-library/react";

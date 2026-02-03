@@ -1,4 +1,4 @@
-import { atomWithStorage } from 'jotai/utils';
+import { atomWithAsyncStorage } from "src/utils/cache";
 
 export interface FeedFilters {
     nearMe: boolean;
@@ -7,6 +7,17 @@ export interface FeedFilters {
     difficulties: string[];
     riderTypes: string[];
     maxRisk: number;
+    selectedLocation?: {
+        lat: number;
+        lng: number;
+        name: string;
+    };
+    author?: {
+        id: string;
+        username: string;
+        displayName: string;
+        avatarUrl?: string | null;
+    };
 }
 
 export const INITIAL_FEED_FILTERS: FeedFilters = {
@@ -18,7 +29,7 @@ export const INITIAL_FEED_FILTERS: FeedFilters = {
     maxRisk: 5,
 };
 
-export const feedFiltersAtom = atomWithStorage<FeedFilters>(
+export const feedFiltersAtom = atomWithAsyncStorage<FeedFilters>(
     'feedFilters',
     INITIAL_FEED_FILTERS
 );
