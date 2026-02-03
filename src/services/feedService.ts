@@ -22,14 +22,19 @@ export const feedService = {
             authorId?: string;
         }
     ) {
-        const { data, error } = await supabase.rpc('get_global_feed_content', {
+        console.error('[FeedService] Fetching feed. User:', userId, 'Filters:', JSON.stringify(filters));
+        
+        let response;
+        
+        console.log('[FeedService] Calling get_global_feed_content');
+        response = await supabase.rpc('get_global_feed_content', {
             p_limit: limit,
             p_offset: offset,
             p_user_id: userId || null,
             p_lat: filters?.lat || null,
             p_lng: filters?.lng || null,
             p_max_dist_km: filters?.maxDistKm || null,
-            p_following_only: filters?.followingOnly || false,
+            p_following_only: false,
             p_spot_types: filters?.spotTypes || null,
             p_difficulties: filters?.difficulties || null,
             p_min_risk: filters?.minRisk || null,
@@ -38,6 +43,7 @@ export const feedService = {
             p_author_id: filters?.authorId || null
         });
 
+        const { data, error } = response;
         if (error) throw error;
 
         let feedItems = (data as FeedItem[]) || [];
@@ -75,6 +81,56 @@ export const feedService = {
             }));
         }
 
+        return feedItems;
+    },
+
+    /**
+     * Fetches paginated following feed content.
+     */
+    async fetchFollowingFeed(limit: number = 10, offset: number = 0, userId: string) {
+        console.log('[FeedService] Calling get_following_feed_content');
+        const { data, error } = await supabase.rpc('get_following_feed_content', {
+            p_limit: limit,
+            p_offset: offset,
+            p_user_id: userId
+        });
+
+        if (error) throw error;
+
+        let feedItems = (data as FeedItem[]) || [];
+        
+        // Enrichment for following feed (similar to global)
+        if (userId && feedItems.length > 0) {
+             const photoIds = feedItems.filter(item => item.media_type === 'photo').map(item => item.media_id);
+            const videoIds = feedItems.filter(item => item.media_type === 'video').map(item => item.media_id);
+            const spotIds = feedItems.map(item => item.spot_id);
+
+            const [likesResult, favoritesResult] = await Promise.all([
+                supabase
+                    .from('media_likes')
+                    .select('photo_id, video_id')
+                    .eq('user_id', userId)
+                    .or(`photo_id.in.(${photoIds.join(',')}),video_id.in.(${videoIds.join(',')})`),
+                supabase
+                    .from('user_favorite_spots')
+                    .select('spot_id')
+                    .eq('user_id', userId)
+                    .in('spot_id', spotIds)
+            ]);
+
+            const likedPhotoIds = new Set(likesResult.data?.map(l => l.photo_id).filter(Boolean));
+            const likedVideoIds = new Set(likesResult.data?.map(l => l.video_id).filter(Boolean));
+            const favoritedSpotIds = new Set(favoritesResult.data?.map(f => f.spot_id));
+
+            feedItems = feedItems.map(item => ({
+                ...item,
+                is_liked_by_user: item.media_type === 'photo'
+                    ? likedPhotoIds.has(item.media_id)
+                    : likedVideoIds.has(item.media_id),
+                is_favorited_by_user: favoritedSpotIds.has(item.spot_id)
+            }));
+        }
+        
         return feedItems;
     },
 

@@ -16,7 +16,7 @@ export default function () {
         try {
             let query = supabase
                 .from('spots')
-                .select('*, spot_photos(url)')
+                .select('*, spot_photos(url), favorite_count:user_favorite_spots(count), comment_count:spot_comments(count)')
                 .gte('latitude', bounds.getSouth())
                 .lte('latitude', bounds.getNorth())
                 .gte('longitude', bounds.getWest())
@@ -53,7 +53,9 @@ export default function () {
             if (data) {
                 const formattedSpots = data.map((spot: any) => ({
                     ...spot,
-                    photoUrl: spot.spot_photos?.[0]?.url || null
+                    photoUrl: spot.spot_photos?.[0]?.url || null,
+                    favoriteCount: spot.favorite_count?.[0]?.count || 0,
+                    commentCount: spot.comment_count?.[0]?.count || 0
                 }));
 
                 setSpots(formattedSpots);

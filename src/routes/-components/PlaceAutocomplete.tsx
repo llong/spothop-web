@@ -21,9 +21,10 @@ interface PlaceAutocompleteProps {
     onPlaceSelect: (place: google.maps.places.PlaceResult) => void;
     inputRef: React.RefObject<HTMLInputElement | null>;
     endAdornment?: React.ReactNode;
+    placeholder?: string;
 }
 
-export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment }: PlaceAutocompleteProps) => {
+export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment, placeholder = "Search…" }: PlaceAutocompleteProps) => {
     const isLoaded = useAtomValue(isGoogleMapsLoadedAtom);
 
     useEffect(() => {
@@ -40,5 +41,5 @@ export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment }: Pla
         }
     }, [isLoaded, onPlaceSelect, inputRef]);
 
-    return <StyledInputBase placeholder="Search…" fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'Search spots', ref: inputRef }} />;
+    return <StyledInputBase placeholder={placeholder} fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'Search spots', ref: inputRef }} />;
 }

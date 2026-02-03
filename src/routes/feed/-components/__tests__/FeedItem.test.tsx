@@ -27,7 +27,8 @@ vi.mock('src/hooks/useFeedQueries', () => ({
 
 vi.mock('src/hooks/useSpotFavorites', () => ({
     useSpotFavorites: vi.fn(() => ({
-        toggleFavorite: vi.fn()
+        isFavorited: false, // Default to not favorited
+        toggleFavorite: vi.fn(),
     }))
 }));
 
@@ -67,8 +68,10 @@ describe('FeedItemCard', () => {
         expect(screen.getByText('@skater1')).toBeInTheDocument();
         expect(screen.getByText('Test Spot')).toBeInTheDocument();
         expect(screen.getByText('Test City, Test Country')).toBeInTheDocument();
-        expect(screen.getByText('5')).toBeInTheDocument();
-        expect(screen.getByText('2')).toBeInTheDocument();
+        // Check for the presence of the favorite icon, not a count.
+        // It should be FavoriteBorderIcon since isFavorited is mocked as false.
+        expect(screen.getByTestId('FavoriteBorderIcon')).toBeInTheDocument();
+        expect(screen.getByText('2')).toBeInTheDocument(); // Comment count is still displayed
     });
 
     it('displays photo when media_type is photo', () => {

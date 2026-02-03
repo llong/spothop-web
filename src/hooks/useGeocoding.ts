@@ -12,10 +12,43 @@ export const useGeocoding = () => {
         latitude?: number | null,
         longitude?: number | null
     ): Promise<string> => {
+        // Uniform location formatting: [Street], City, State, Country
+        // Prefer explicit components over raw address strings to ensure consistency
+        
+        let streetPart = '';
+        let statePart = '';
+        let countryCode = country === 'United States' ? 'US' : (country || 'US');
+
         if (address) {
-            return address;
+            const addressParts = address.split(',').map(p => p.trim());
+            // Extract street (usually the first part)
+            streetPart = addressParts[0];
+
+            // If city matches a part, check the NEXT part for a state code
+            if (city) {
+                const cityIdx = addressParts.indexOf(city);
+                if (cityIdx !== -1 && addressParts[cityIdx + 1]) {
+                    const possibleState = addressParts[cityIdx + 1].split(' ')[0];
+                    if (possibleState.length === 2 && possibleState === possibleState.toUpperCase()) {
+                        statePart = possibleState;
+                    }
+                }
+            }
         }
 
+        // Combine parts into canonical format
+        const finalParts = [
+            streetPart,
+            city,
+            statePart,
+            countryCode
+        ].filter(Boolean);
+
+        if (finalParts.length > 1) {
+            return finalParts.join(', ');
+        }
+
+        // Fallback to reverse geocoding if critical parts are missing
         if (latitude && longitude) {
             setIsLoading(true);
             setError(null);

@@ -19,6 +19,11 @@ export interface Spot {
     name: string;
     description: string;
     created_by?: string;
+    creator?: {
+        username: string | null;
+        avatarUrl: string | null;
+        displayName: string | null;
+    };
     difficulty?: 'beginner' | 'intermediate' | 'advanced';
     is_lit?: boolean;
     kickout_risk?: number;
@@ -40,11 +45,18 @@ export interface Spot {
     upvotes?: number;
     downvotes?: number;
     favoriteCount?: number;
+    commentCount?: number;
     flagCount?: number;
     isFavorited?: boolean;
     favoritedBy?: string[];
+    favoritedByUsers?: {
+        id: string;
+        username: string | null;
+        avatarUrl: string | null;
+    }[];
     thumbnail_small_url?: string;
     thumbnail_large_url?: string;
+    media?: MediaItem[];
 }
 
 export interface VideoAsset {
@@ -132,6 +144,7 @@ export interface MediaItem {
         avatarUrl: string | null;
     };
     likeCount: number;
+    commentCount?: number;
     isLiked: boolean;
 }
 

@@ -68,7 +68,12 @@ describe('SearchAppBar', () => {
     });
 
     it('renders logo and search components when online on spots page', () => {
-        (useMediaQuery as any).mockReturnValue(false); // Desktop
+        (useMediaQuery as any).mockReturnValue(true); // Simulate mobile view for this test
+        vi.mock('@tanstack/react-router', () => ({
+            useNavigate: () => vi.fn(),
+            useLocation: () => ({ pathname: '/spots' }), // Ensure isSpotsPage is true
+        }));
+
         render(
             <QueryClientProvider client={queryClient}>
                 <ThemeProvider theme={theme}>

@@ -1,10 +1,10 @@
-import { Box } from "@mui/material";
-import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import { Box, Typography, Button } from "@mui/material";
+import { MapContainer, TileLayer, useMapEvents, Marker as LeafletMarker, Popup } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Map as LeafletMap } from 'leaflet';
 import { useEffect, useState, memo } from 'react';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { boundsAtom, mapAtom } from 'src/atoms/map';
+import { useAtomValue, useSetAtom, useAtom } from 'jotai';
+import { boundsAtom, mapAtom, searchedLocationAtom } from 'src/atoms/map';
 import { filtersAtom } from 'src/atoms/spots';
 import { isLoggedInAtom } from 'src/atoms/auth';
 import type { Spot } from 'src/types';
@@ -63,6 +63,7 @@ interface SpotMapProps {
 const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapProps) => {
     const [map, setMap] = useState<LeafletMap | null>(null);
     const setMapAtom = useSetAtom(mapAtom);
+    const [searchedLocation, setSearchedLocation] = useAtom(searchedLocationAtom);
     const isLoggedIn = useAtomValue(isLoggedInAtom);
     const filters = useAtomValue(filtersAtom);
 
@@ -120,9 +121,9 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
                     showCoverageOnHover={false}
                 >
                     {spots.map(spot => (
-                        <MapMarker 
-                            key={spot.id} 
-                            spot={spot} 
+                        <MapMarker
+                            key={spot.id}
+                            spot={spot}
                             onClick={() => onMarkerClick?.(spot)}
                         />
                     ))}
@@ -130,6 +131,34 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
 
                 {newSpot && (
                     <NewSpotPopup newSpot={newSpot} onClose={() => setNewSpot(null)} />
+                )}
+
+                {/* Searched Location Indicator */}
+                {searchedLocation && (
+                    <LeafletMarker 
+                        position={[searchedLocation.lat, searchedLocation.lng]}
+                        zIndexOffset={1000}
+                    >
+                        <Popup autoPan={false}>
+                            <Box sx={{ p: 0.5 }}>
+                                <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                                    {searchedLocation.name}
+                                </Typography>
+                                <Button 
+                                    size="small" 
+                                    variant="contained" 
+                                    fullWidth
+                                    onClick={() => {
+                                        onRightClick(L.latLng(searchedLocation.lat, searchedLocation.lng));
+                                        setSearchedLocation(null);
+                                    }}
+                                    sx={{ borderRadius: 1.5, fontSize: '0.7rem', textTransform: 'none' }}
+                                >
+                                    Add New Spot Here
+                                </Button>
+                            </Box>
+                        </Popup>
+                    </LeafletMarker>
                 )}
             </MapContainer>
 

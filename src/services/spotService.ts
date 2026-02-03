@@ -11,7 +11,7 @@ export const spotService = {
         const spotPromise = supabase
             .from('spots')
             .select(`
-                id, name, description, latitude, longitude, address, city, state, country, created_by, created_at, 
+                id, name, description, latitude, longitude, address, city, state, country, created_by, created_at, difficulty, kickout_risk, is_lit, spot_type,
                 spot_photos (
                     id,
                     url,
@@ -19,6 +19,9 @@ export const spotService = {
                     user_id,
                     media_likes!photo_id (
                         user_id
+                    ),
+                    media_comments!photo_id (
+                        id
                     )
                 ),
                 spot_videos (
@@ -29,6 +32,9 @@ export const spotService = {
                     user_id,
                     media_likes!video_id (
                         user_id
+                    ),
+                    media_comments!video_id (
+                        id
                     )
                 )
             `)
@@ -49,20 +55,37 @@ export const spotService = {
             .select('user_id', { count: 'exact' })
             .eq('spot_id', spotId);
 
+        const commentCountPromise = supabase
+            .from('spot_comments')
+            .select('id', { count: 'exact' })
+            .eq('spot_id', spotId);
+
         const flagCountPromise = supabase
             .from('content_reports')
             .select('*', { count: 'exact' })
             .eq('target_id', spotId)
             .eq('target_type', 'spot');
 
-        const [spotResult, favoriteStatusResult, favoriteCountResult, flagCountResult] = await Promise.all([
+        const favoritedUsersPromise = supabase
+            .from('user_favorite_spots')
+            .select(`
+                user_id,
+                profiles (
+                    id,
+                    username,
+                    "avatarUrl"
+                )
+            `)
+            .eq('spot_id', spotId);
+
+        const [spotResult, favoriteStatusResult, favoriteCountResult, commentCountResult, flagCountResult, favoritedUsersResult] = await Promise.all([
             spotPromise,
             favoriteStatusPromise,
             favoriteCountPromise,
-            flagCountPromise
+            commentCountPromise,
+            flagCountPromise,
+            favoritedUsersPromise
         ]);
-
-        console.log(`[spotService] Fetching details for ${spotId}. Flags found: ${flagCountResult.count}`);
 
         if (spotResult.error) throw spotResult.error;
         const spotData = spotResult.data;
@@ -89,7 +112,7 @@ export const spotService = {
         ].filter((v, i, a) => v && a.indexOf(v) === i);
 
         const { data: profiles } = authorIds.length > 0
-            ? await supabase.from('profiles').select('id, username, "avatarUrl"').in('id', authorIds)
+            ? await supabase.from('profiles').select('id, username, "avatarUrl", "displayName"').in('id', authorIds)
             : { data: [] };
 
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
@@ -109,6 +132,7 @@ export const spotService = {
                     avatarUrl: author?.avatarUrl || null
                 },
                 likeCount: p.media_likes?.length || 0,
+                commentCount: p.media_comments?.length || 0,
                 isLiked: userId ? p.media_likes?.some((l: any) => l.user_id === userId) : false
             };
         });
@@ -127,6 +151,7 @@ export const spotService = {
                     avatarUrl: author?.avatarUrl || null
                 },
                 likeCount: v.media_likes?.length || 0,
+                commentCount: v.media_comments?.length || 0,
                 isLiked: userId ? v.media_likes?.some((l: any) => l.user_id === userId) : false
             };
         });
@@ -134,10 +159,55 @@ export const spotService = {
         return {
             ...spotData,
             media: [...photos, ...videos],
-            username: creatorProfile?.username || 'unknown',
+            creator: {
+                username: creatorProfile?.username || 'unknown',
+                avatarUrl: creatorProfile?.avatarUrl || null,
+                displayName: creatorProfile?.displayName || null,
+            },
+            username: creatorProfile?.username || 'unknown', // Keep for backward compatibility
             favoriteCount: favoriteCountResult.count || 0,
+            commentCount: commentCountResult.count || 0,
             flagCount: flagCountResult.count || 0,
-            isFavorited: !!(userId && favoriteStatusResult.data && favoriteStatusResult.data.length > 0)
+            isFavorited: !!(userId && favoriteStatusResult.data && favoriteStatusResult.data.length > 0),
+            favoritedByUsers: (favoritedUsersResult.data || []).map((f: any) => ({
+                id: f.user_id,
+                username: f.profiles?.username || 'unknown',
+                avatarUrl: f.profiles?.avatarUrl || null
+            }))
         };
+    },
+
+    /**
+     * Deletes a spot and its associated media/comments
+     */
+    async deleteSpot(spotId: string) {
+        const { error } = await supabase
+            .from('spots')
+            .delete()
+            .eq('id', spotId);
+
+        if (error) throw error;
+    },
+
+    /**
+     * Toggles favorite status for a spot
+     */
+    async toggleFavorite(spotId: string, userId: string, isFavorited: boolean) {
+        if (isFavorited) {
+            const { error } = await supabase
+                .from('user_favorite_spots')
+                .delete()
+                .eq('user_id', userId)
+                .eq('spot_id', spotId);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase
+                .from('user_favorite_spots')
+                .upsert(
+                    { user_id: userId, spot_id: spotId },
+                    { onConflict: 'user_id,spot_id', ignoreDuplicates: true }
+                );
+            if (error) throw error;
+        }
     }
 };

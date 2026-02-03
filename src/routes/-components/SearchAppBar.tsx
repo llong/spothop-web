@@ -1,40 +1,35 @@
-import { styled, alpha, useTheme } from '@mui/material/styles';
+import { useTheme, styled } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import SearchIcon from '@mui/icons-material/Search';
-import { Map, List, FilterList } from '@mui/icons-material';
-import { useRef, useState } from 'react';
-import { PlaceAutocomplete } from './PlaceAutocomplete';
+import { Map, List, Search as SearchIcon, FilterList as FilterListIcon } from '@mui/icons-material';
 import { NavigationItems } from './NavigationItems';
 import { NotificationBell } from './NotificationBell';
 import { userAtom } from 'src/atoms/auth';
 import { useProfile } from 'src/hooks/useProfile';
-import { getSpotsAtom, mapAtom, isGoogleMapsLoadedAtom } from 'src/atoms/map';
-import { useMediaQuery, Box, Badge } from '@mui/material';
+import { isGoogleMapsLoadedAtom, viewAtom } from 'src/atoms/map';
+import { useMediaQuery, Box, Badge, Stack } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useAtom, useAtomValue } from 'jotai';
 import { CloudOff } from '@mui/icons-material';
 import { Tooltip, Chip } from '@mui/material';
-import { viewAtom } from 'src/atoms/map';
-import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
 import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
+import { PlaceAutocomplete } from './PlaceAutocomplete';
 import { FilterBar } from './FilterBar';
+import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
+import { useRef, useState } from 'react';
+import { useMapSearch } from 'src/hooks/useMapSearch'; // Import new hook
 
-const Search = styled('div')(({ theme }) => ({
+const Search = styled('div')(() => ({
     position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.black, 0.05),
+    borderRadius: 9999,
+    backgroundColor: '#eff3f4',
     '&:hover': {
-        backgroundColor: alpha(theme.palette.common.black, 0.10),
+        backgroundColor: '#e2e8f0',
     },
-    marginLeft: 0,
-    flexGrow: 1,
-    [theme.breakpoints.up('sm')]: {
-        marginLeft: theme.spacing(3),
-        marginRight: theme.spacing(3),
-        width: 'auto',
-    },
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
 }));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
@@ -55,16 +50,16 @@ export default function SearchAppBar() {
     const isSpotsPage = location.pathname === '/spots';
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('lg'));
-    const inputRef = useRef<HTMLInputElement>(null!);
-    const map = useAtomValue(mapAtom);
-    const getSpots = useAtomValue(getSpotsAtom);
     const user = useAtomValue(userAtom);
     // AppBar only needs identity for avatar, NOT full social/content data.
     const { profile } = useProfile(undefined, false);
     const [view, setView] = useAtom(viewAtom);
+    
+    const { handlePlaceSelect } = useMapSearch(); // Use new hook
     const [isFiltersOpen, setIsFiltersOpen] = useAtom(isFiltersOpenAtom);
     const [filters, setFilters] = useAtom(filtersAtom);
     const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null!);
 
     const activeFilterCount = [
         filters.difficulty && filters.difficulty !== 'all',
@@ -73,43 +68,59 @@ export default function SearchAppBar() {
         filters.kickout_risk !== undefined && filters.kickout_risk < 10
     ].filter(Boolean).length;
 
-    const onPlaceSelect = (place: google.maps.places.PlaceResult) => {
-        console.log('Place selected:', place);
-        const lat = place.geometry?.location?.lat();
-        const lng = place.geometry?.location?.lng();
-        console.log('Lat/Lng:', lat, lng);
-        if (lat && lng) {
-            if (map) {
-                map.flyTo([lat, lng], 13, {
-                    duration: 1
-                });
-                if (getSpots) {
-                    map.once('moveend', () => getSpots(map.getBounds()));
-                }
-            }
-            navigate({ to: '/spots', search: { lat, lng } });
-        }
-        if (inputRef.current) {
-            inputRef.current.value = '';
-        }
-    };
-
     if (!isLoaded) {
         return <div>Loading...</div>;
     }
 
     return (
-        <Toolbar>
+        <Toolbar sx={{ gap: 1 }}>
             <Typography
                 variant="h6"
                 noWrap
                 component="div"
-                sx={{ mr: 2, cursor: 'pointer', flexShrink: 0 }}
+                sx={{ cursor: 'pointer', flexShrink: 0, fontWeight: 900 }}
                 onClick={() => navigate({ to: '/feed' })}
             >
                 SpotHop
             </Typography>
-            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+
+            {isMobile && isSpotsPage && (
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Search onClick={() => inputRef.current?.focus()}>
+                        <SearchIconWrapper>
+                            <SearchIcon />
+                        </SearchIconWrapper>
+                        <PlaceAutocomplete
+                            onPlaceSelect={handlePlaceSelect}
+                            inputRef={inputRef}
+                            placeholder="Search spots..."
+                            endAdornment={
+                                <Stack direction="row" alignItems="center" spacing={1} sx={{ pr: 1 }}>
+                                    <IconButton
+                                        size="small"
+                                        onClick={(e) => {
+                                            setFilterAnchorEl(e.currentTarget);
+                                            setIsFiltersOpen(!isFiltersOpen);
+                                        }}
+                                        aria-label="Toggle filters"
+                                    >
+                                        <Badge badgeContent={activeFilterCount} color="primary">
+                                            <FilterListIcon />
+                                        </Badge>
+                                    </IconButton>
+                                    <FilterBar
+                                        anchorEl={filterAnchorEl}
+                                        filters={filters}
+                                        onFiltersChange={setFilters}
+                                    />
+                                </Stack>
+                            }
+                        />
+                    </Search>
+                </Box>
+            )}
+
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1, flexShrink: 0 }}>
                 {!isOnline && (
                     <Tooltip title="You are currently offline. Some features may be limited.">
                         <Chip
@@ -122,38 +133,6 @@ export default function SearchAppBar() {
                         />
                     </Tooltip>
                 )}
-                {isOnline && isSpotsPage &&
-                    <Search onClick={() => inputRef.current?.focus()}>
-                        <SearchIconWrapper aria-label="Search icon">
-                            <SearchIcon />
-                        </SearchIconWrapper>
-                        <PlaceAutocomplete
-                            onPlaceSelect={onPlaceSelect}
-                            inputRef={inputRef}
-                            endAdornment={
-                                <>
-                                    <IconButton
-                                        size="small"
-                                        onClick={(e) => {
-                                            setFilterAnchorEl(e.currentTarget);
-                                            setIsFiltersOpen(!isFiltersOpen);
-                                        }}
-                                        aria-label="Toggle filters"
-                                    >
-                                        <Badge badgeContent={activeFilterCount} color="primary">
-                                            <FilterList />
-                                        </Badge>
-                                    </IconButton>
-                                    <FilterBar
-                                        anchorEl={filterAnchorEl}
-                                        filters={filters}
-                                        onFiltersChange={setFilters}
-                                    />
-                                </>
-                            }
-                        />
-                    </Search>
-                }
                 {isOnline && isMobile && isSpotsPage && (
                     <IconButton
                         color="inherit"

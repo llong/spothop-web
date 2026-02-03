@@ -6,6 +6,15 @@ import "@testing-library/jest-dom";
 
 import { fireEvent } from "@testing-library/react";
 
+// Mock jotai to simulate authenticated user
+vi.mock('jotai', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('jotai')>();
+    return {
+        ...actual,
+        useAtomValue: vi.fn(() => ({ user: { id: 'u1' } })),
+    };
+});
+
 const createTestRouter = () => {
     const rootRoute = createRootRoute({
         component: () => <BottomNav />,

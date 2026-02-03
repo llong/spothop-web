@@ -1,41 +1,41 @@
-import { useState, useMemo } from 'react';
-import supabase from 'src/supabase';
+import { useState, useEffect } from 'react';
 import type { Spot } from 'src/types';
+import { useToggleFavoriteMutation } from './useSpotQueries';
 
 export const useSpotFavorites = (spot: Spot | undefined, userId: string | undefined) => {
     const [isFavorited, setIsFavorited] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const toggleMutation = useToggleFavoriteMutation();
 
-    // Sync favorite state with spot data
-    useMemo(() => {
+    // Sync favorite state with spot data from props (e.g. query result)
+    useEffect(() => {
         if (spot) setIsFavorited(!!spot.isFavorited);
     }, [spot?.isFavorited]);
 
     const toggleFavorite = async () => {
-        if (!userId || !spot) return;
+        if (!userId || !spot || toggleMutation.isPending) return;
 
-        setIsLoading(true);
+        // Optimistic update
+        const previousState = isFavorited;
+        setIsFavorited(!previousState);
+
         try {
-            if (isFavorited) {
-                await supabase
-                    .from('user_favorite_spots')
-                    .delete()
-                    .eq('user_id', userId)
-                    .eq('spot_id', spot.id);
-            } else {
-                await supabase
-                    .from('user_favorite_spots')
-                    .insert({ user_id: userId, spot_id: spot.id });
-            }
-            setIsFavorited(!isFavorited);
-            return { success: true, message: isFavorited ? 'Removed from favorites' : 'Added to favorites' };
+            await toggleMutation.mutateAsync({
+                spotId: spot.id,
+                userId,
+                isFavorited: previousState
+            });
+            return { success: true, message: previousState ? 'Removed from favorites' : 'Added to favorites' };
         } catch (error) {
+            // Revert on error
+            setIsFavorited(previousState);
             console.error('Error toggling favorite:', error);
             return { success: false, message: 'Error updating favorite status' };
-        } finally {
-            setIsLoading(false);
         }
     };
 
-    return { isFavorited, toggleFavorite, isLoading };
+    return { 
+        isFavorited, 
+        toggleFavorite, 
+        isLoading: toggleMutation.isPending 
+    };
 };

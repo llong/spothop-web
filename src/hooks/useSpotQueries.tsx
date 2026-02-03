@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { spotService } from '../services/spotService';
 
 export const spotKeys = {
@@ -15,5 +15,37 @@ export function useSpotQuery(spotId: string, userId?: string) {
         queryFn: () => spotService.fetchSpotDetails(spotId, userId),
         enabled: !!spotId,
         staleTime: 1000 * 60 * 5, // 5 minutes (standard stale time)
+    });
+}
+
+/**
+ * Hook for deleting a spot.
+ */
+export function useDeleteSpotMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (spotId: string) => spotService.deleteSpot(spotId),
+        onSuccess: (_, spotId) => {
+            queryClient.invalidateQueries({ queryKey: spotKeys.all });
+            queryClient.removeQueries({ queryKey: spotKeys.details(spotId) });
+        },
+    });
+}
+
+/**
+ * Hook for toggling a spot as favorite.
+ */
+export function useToggleFavoriteMutation() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ spotId, userId, isFavorited }: { spotId: string, userId: string, isFavorited: boolean }) => 
+            spotService.toggleFavorite(spotId, userId, isFavorited),
+        onSuccess: (_, { spotId }) => {
+            queryClient.invalidateQueries({ queryKey: spotKeys.details(spotId) });
+            // Also invalidate global spots list if needed
+            queryClient.invalidateQueries({ queryKey: spotKeys.all });
+        },
     });
 }

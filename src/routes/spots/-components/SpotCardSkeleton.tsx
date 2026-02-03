@@ -1,4 +1,4 @@
-import { Card, CardContent, Skeleton, Box, Grid, Container, Divider } from "@mui/material";
+import { Card, CardContent, Skeleton, Box, Grid, Container, Divider, Stack } from "@mui/material";
 
 export const SpotCardSkeleton = () => {
     return (
@@ -63,6 +63,31 @@ export const SpotDetailSkeleton = () => {
                     </Grid>
                 </Grid>
             </Container>
+        </Box>
+    );
+};
+
+export const MediaSectionSkeleton = () => {
+    return (
+        <Box>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+                <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+                    <Skeleton variant="rectangular" width={80} height={30} sx={{ borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" width={80} height={30} sx={{ borderRadius: 1 }} />
+                </Stack>
+            </Box>
+            <Stack spacing={2}>
+                {[1, 2, 3].map((i) => (
+                    <Box key={i} sx={{ display: 'flex', gap: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+                        <Skeleton variant="rectangular" width={100} height={100} sx={{ borderRadius: 1 }} />
+                        <Box sx={{ flexGrow: 1 }}>
+                            <Skeleton variant="text" width="40%" height={24} />
+                            <Skeleton variant="text" width="100%" height={20} />
+                            <Skeleton variant="text" width="90%" height={20} />
+                        </Box>
+                    </Box>
+                ))}
+            </Stack>
         </Box>
     );
 };

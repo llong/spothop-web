@@ -95,7 +95,7 @@ const SpotsSpotIdRoute = SpotsSpotIdRouteImport.update({
   id: '/spots/$spotId',
   path: '/spots/$spotId',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/spots/$spotId.lazy').then((d) => d.Route))
+} as any)
 const ProfileUsernameRoute = ProfileUsernameRouteImport.update({
   id: '/profile/$username',
   path: '/profile/$username',

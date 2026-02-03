@@ -12,9 +12,10 @@ interface MediaCarouselProps {
     isLoading?: boolean;
     activeSlide: number;
     onSlideChange: (index: number) => void;
+    onItemClick?: (index: number) => void;
 }
 
-export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChange }: MediaCarouselProps) => {
+export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChange, onItemClick }: MediaCarouselProps) => {
     const [showVideo, setShowVideo] = useState<Record<string, boolean>>({});
 
     const handleNext = useCallback((e: React.MouseEvent) => {
@@ -42,19 +43,21 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
     const currentItem = media[activeSlide];
 
     return (
-        <Box sx={{ position: 'relative', width: '100%', pt: '100%', bgcolor: 'black', overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative', width: '100%', pt: '75%', bgcolor: 'grey.100', overflow: 'hidden' }}>
             {currentItem.type === 'photo' ? (
                 <Box
                     component="img"
                     src={currentItem.url}
                     alt="Spot media"
+                    onClick={() => onItemClick?.(activeSlide)}
                     sx={{
                         position: 'absolute',
                         top: 0,
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        objectFit: 'contain'
+                        objectFit: 'cover',
+                        cursor: onItemClick ? 'pointer' : 'default'
                     }}
                 />
             ) : (
@@ -71,13 +74,21 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                                 position: 'relative',
                                 bgcolor: 'black'
                             }}
-                            onClick={() => toggleVideo(currentItem.id, true)}
+                            onClick={(e) => {
+                                // If they click the button, play video. 
+                                // If they click elsewhere, open lightbox.
+                                if ((e.target as HTMLElement).closest('button')) {
+                                    toggleVideo(currentItem.id, true);
+                                } else {
+                                    onItemClick?.(activeSlide);
+                                }
+                            }}
                         >
                             {currentItem.thumbnailUrl ? (
                                 <Box
                                     component="img"
                                     src={currentItem.thumbnailUrl}
-                                    sx={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.7 }}
+                                    sx={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
                                 />
                             ) : (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'grey.500' }}>
@@ -90,11 +101,16 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                                 startIcon={<PlayArrowIcon />}
                                 sx={{
                                     position: 'absolute',
-                                    borderRadius: 10,
+                                    borderRadius: 9999,
                                     textTransform: 'none',
-                                    fontWeight: 700,
+                                    fontWeight: 800,
                                     zIndex: 2,
-                                    boxShadow: 3
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                                    bgcolor: 'white',
+                                    color: 'black',
+                                    px: 3,
+                                    py: 1,
+                                    '&:hover': { bgcolor: 'grey.100' }
                                 }}
                             >
                                 Show Video
@@ -106,7 +122,7 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                             src={currentItem.url}
                             controls
                             autoPlay
-                            sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                            sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         />
                     )}
                 </Box>
@@ -115,58 +131,62 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
             {media.length > 1 && (
                 <>
                     <IconButton
-                        size="small"
                         onClick={handleBack}
                         sx={{
                             position: 'absolute',
-                            left: 8,
+                            left: 16,
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            bgcolor: 'rgba(255,255,255,0.3)',
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.5)' },
-                            zIndex: 2
+                            bgcolor: 'rgba(255,255,255,0.8)',
+                            color: 'black',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            '&:hover': { bgcolor: 'white' },
+                            zIndex: 2,
+                            width: 40,
+                            height: 40
                         }}
                     >
                         <KeyboardArrowLeft />
                     </IconButton>
                     <IconButton
-                        size="small"
                         onClick={handleNext}
                         sx={{
                             position: 'absolute',
-                            right: 8,
+                            right: 16,
                             top: '50%',
                             transform: 'translateY(-50%)',
-                            bgcolor: 'rgba(255,255,255,0.3)',
-                            '&:hover': { bgcolor: 'rgba(255,255,255,0.5)' },
-                            zIndex: 2
+                            bgcolor: 'rgba(255,255,255,0.8)',
+                            color: 'black',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                            '&:hover': { bgcolor: 'white' },
+                            zIndex: 2,
+                            width: 40,
+                            height: 40
                         }}
                     >
                         <KeyboardArrowRight />
                     </IconButton>
+                    
                     <Box
                         sx={{
                             position: 'absolute',
                             bottom: 16,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            display: 'flex',
-                            gap: 1,
-                            zIndex: 2
+                            right: 16,
+                            bgcolor: 'rgba(255,255,255,0.9)',
+                            color: 'black',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 9999,
+                            fontSize: '0.7rem',
+                            fontWeight: 800,
+                            backdropFilter: 'blur(4px)',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                            zIndex: 2,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em'
                         }}
                     >
-                        {media.map((_, index) => (
-                            <Box
-                                key={index}
-                                sx={{
-                                    width: 8,
-                                    height: 8,
-                                    borderRadius: '50%',
-                                    bgcolor: index === activeSlide ? 'white' : 'rgba(255,255,255,0.5)',
-                                    boxShadow: 1
-                                }}
-                            />
-                        ))}
+                        {activeSlide + 1} / {media.length}
                     </Box>
                 </>
             )}

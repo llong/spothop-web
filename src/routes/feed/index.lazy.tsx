@@ -12,11 +12,12 @@ import {
     Chip,
 } from '@mui/material';
 import { Link as RouterLink } from '@tanstack/react-router';
-import { useFeedQuery } from 'src/hooks/useFeedQueries';
+import { useFeedQuery, useFollowingFeedQuery } from 'src/hooks/useFeedQueries';
 import { useConstructFeedFilters } from 'src/hooks/useConstructFeedFilters';
 import { useAtomValue, useAtom } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import { userLocationAtom } from 'src/atoms/map';
+import { useQueryClient } from '@tanstack/react-query';
 import { feedFiltersAtom, INITIAL_FEED_FILTERS } from 'src/atoms/feed';
 import { useRef, useCallback, useState, useMemo } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -28,7 +29,9 @@ export const Route = createLazyFileRoute('/feed/')({
 });
 
 export function FeedScreen() {
+    const queryClient = useQueryClient();
     const user = useAtomValue(userAtom);
+    console.log('[FeedScreen] Render. User:', user?.user?.id);
     const userLocation = useAtomValue(userLocationAtom);
     const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
@@ -44,69 +47,43 @@ export function FeedScreen() {
             !!filters.selectedLocation;
     }, [filters]);
 
-    const queryFilters = useConstructFeedFilters(filters, userLocation, activeTab);
-
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-        isLoading,
-        error
-    } = useFeedQuery(user?.user.id, 10, queryFilters);
-
-    const observer = useRef<IntersectionObserver | null>(null);
-    const lastElementRef = useCallback((node: HTMLDivElement | null) => {
-        if (isLoading) return;
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasNextPage) {
-                fetchNextPage();
-            }
-        });
-        if (node) observer.current.observe(node);
-    }, [isLoading, hasNextPage, fetchNextPage]);
-
-    const allItems = data?.pages.flat() || [];
-
     return (
         <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
-            <Box sx={{ 
-                position: 'sticky', 
-                top: 0, 
-                zIndex: 1100, 
-                bgcolor: 'rgba(255, 255, 255, 0.85)', 
+            <Box sx={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 1100,
+                bgcolor: 'rgba(255, 255, 255, 0.85)',
                 backdropFilter: 'blur(12px)',
-                borderBottom: '1px solid', 
+                borderBottom: '1px solid',
                 borderColor: 'divider'
             }}>
-                <Container maxWidth="sm">
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 2, px: 2 }}>
+                <Container maxWidth="sm" sx={{ px: 0 }}>
+                    <Box sx={{ pt: 2, px: 2, display: { lg: 'none' } }}>
                         <Typography variant="h5" fontWeight={900}>
                             SpotHop
                         </Typography>
-                    </Stack>
+                    </Box>
                     
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pb: 1, px: 2 }}>
-                        <Box sx={{ flex: 1, textAlign: 'left' }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ py: 1, px: 2 }}>
+                        <Typography variant="h6" sx={{ display: { xs: 'none', lg: 'block' } }}>
+                            Home
+                        </Typography>
+                        <Box sx={{ flexGrow: 1, textAlign: 'right' }}>
                             <Button
                                 onClick={() => setFilterDrawerOpen(true)}
                                 startIcon={<FilterListIcon />}
                                 color="inherit"
                                 sx={{
-                                    textTransform: 'uppercase',
+                                    textTransform: 'none',
                                     fontWeight: 700,
                                     fontSize: '0.875rem',
                                     color: hasActiveFilters ? 'primary.main' : 'text.secondary',
-                                    ml: -1
                                 }}
                             >
-                                FILTER RESULTS
+                                {hasActiveFilters ? 'Filters Active' : 'Filter'}
                             </Button>
-                        </Box>
-
-                        {hasActiveFilters && (
-                            <Box sx={{ flex: 1, textAlign: 'right' }}>
+                            {hasActiveFilters && (
                                 <Button
                                     variant="text"
                                     onClick={() => setFilters(INITIAL_FEED_FILTERS)}
@@ -114,22 +91,22 @@ export function FeedScreen() {
                                         color: 'primary.main',
                                         fontWeight: 700,
                                         textTransform: 'none',
-                                        p: 0,
+                                        ml: 1,
                                         '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
                                     }}
                                 >
-                                    Clear Filters
+                                    Clear
                                 </Button>
-                            </Box>
-                        )}
+                            )}
+                        </Box>
                     </Stack>
 
                     {/* Active Context Banner */}
                     {(filters.author || filters.selectedLocation) && (
                         <Stack direction="column" spacing={1} sx={{ px: 2, pb: 1.5 }}>
                             {filters.author && (
-                                <RouterLink 
-                                    to="/profile/$username" 
+                                <RouterLink
+                                    to="/profile/$username"
                                     params={{ username: filters.author.username }}
                                     style={{ textDecoration: 'none', width: '100%', flexShrink: 1 }}
                                 >
@@ -141,7 +118,7 @@ export function FeedScreen() {
                                         sx={{ 
                                             justifyContent: 'flex-start',
                                             textTransform: 'none',
-                                            borderRadius: 2.5,
+                                            borderRadius: 3,
                                             py: 1,
                                             px: 2,
                                             fontWeight: 700,
@@ -172,9 +149,15 @@ export function FeedScreen() {
                         </Stack>
                     )}
 
-                    <Tabs 
-                        value={activeTab} 
-                        onChange={(_, newValue) => newValue !== activeTab && setActiveTab(newValue)}
+                    <Tabs
+                        value={activeTab}
+                        onChange={(_, newValue) => {
+                            if (newValue !== activeTab) {
+                                setActiveTab(newValue);
+                                // Force immediate invalidation to trigger loading state
+                                queryClient.invalidateQueries({ queryKey: ['feed'] });
+                            }
+                        }}
                         variant="fullWidth"
                         TabIndicatorProps={{
                             children: <span className="MuiTabs-indicatorSpan" />,
@@ -194,22 +177,22 @@ export function FeedScreen() {
                             borderBottom: 'none'
                         }}
                     >
-                        <Tab 
-                            label="For you" 
-                            sx={{ 
-                                textTransform: 'none', 
+                        <Tab
+                            label="Latest"
+                            sx={{
+                                textTransform: 'none',
                                 fontWeight: activeTab === 0 ? 700 : 500,
                                 fontSize: '0.9375rem'
-                            }} 
+                            }}
                         />
                         {user && (
-                            <Tab 
-                                label="Following" 
-                                sx={{ 
-                                    textTransform: 'none', 
+                            <Tab
+                                label="Following"
+                                sx={{
+                                    textTransform: 'none',
                                     fontWeight: activeTab === 1 ? 700 : 500,
                                     fontSize: '0.9375rem'
-                                }} 
+                                }}
                             />
                         )}
                     </Tabs>
@@ -217,18 +200,17 @@ export function FeedScreen() {
             </Box>
 
             <Container maxWidth="sm" sx={{ py: 2 }}>
-                <FeedContent
-                    isLoading={isLoading}
-                    error={error}
-                    allItems={allItems}
-                    hasActiveFilters={hasActiveFilters}
-                    activeTab={activeTab}
-                    setFilters={setFilters}
-                    isFetchingNextPage={isFetchingNextPage}
-                    hasNextPage={hasNextPage}
-                    lastElementRef={lastElementRef}
-                    currentUserId={user?.user.id}
-                />
+                {activeTab === 0 ? (
+                    <GlobalFeed 
+                        userId={user?.user.id} 
+                        filters={filters} 
+                        userLocation={userLocation}
+                        setFilters={setFilters}
+                        hasActiveFilters={hasActiveFilters}
+                    />
+                ) : (
+                    <FollowingFeed userId={user?.user.id} />
+                )}
             </Container>
 
             <Drawer
@@ -249,5 +231,93 @@ export function FeedScreen() {
                 />
             </Drawer>
         </Box>
+    );
+}
+
+function GlobalFeed({ userId, filters, userLocation, setFilters, hasActiveFilters }: any) {
+    console.log('[GlobalFeed] Render. User:', userId);
+    // Only apply global filters
+    const queryFilters = useConstructFeedFilters(filters, userLocation, 0); 
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isFetching,
+        isLoading,
+        error
+    } = useFeedQuery(userId, 10, queryFilters);
+
+    const observer = useRef<IntersectionObserver | null>(null);
+    const lastElementRef = useCallback((node: HTMLDivElement | null) => {
+        if (isLoading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasNextPage) {
+                fetchNextPage();
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [isLoading, hasNextPage, fetchNextPage]);
+
+    const allItems = data?.pages.flat() || [];
+
+    return (
+        <FeedContent
+            isLoading={isLoading}
+            isFetching={isFetching}
+            error={error}
+            allItems={allItems}
+            hasActiveFilters={hasActiveFilters}
+            activeTab={0}
+            setFilters={setFilters}
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={hasNextPage}
+            lastElementRef={lastElementRef}
+            currentUserId={userId}
+        />
+    );
+}
+
+function FollowingFeed({ userId }: { userId?: string }) {
+    console.log('[FollowingFeed] Render. User:', userId);
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isFetching,
+        isLoading,
+        error
+    } = useFollowingFeedQuery(userId, 10);
+
+    const observer = useRef<IntersectionObserver | null>(null);
+    const lastElementRef = useCallback((node: HTMLDivElement | null) => {
+        if (isLoading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasNextPage) {
+                fetchNextPage();
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [isLoading, hasNextPage, fetchNextPage]);
+
+    const allItems = data?.pages.flat() || [];
+
+    return (
+        <FeedContent
+            isLoading={isLoading}
+            isFetching={isFetching}
+            error={error}
+            allItems={allItems}
+            hasActiveFilters={false}
+            activeTab={1}
+            setFilters={() => {}} // No filters for following feed
+            isFetchingNextPage={isFetchingNextPage}
+            hasNextPage={hasNextPage}
+            lastElementRef={lastElementRef}
+            currentUserId={userId}
+        />
     );
 }

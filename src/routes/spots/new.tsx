@@ -184,27 +184,12 @@ export const NewSpotComponent = () => {
                 </Box>
 
                 <Grid container spacing={3}>
-                    {/* Left Column: Location & Media */}
+                    {/* Left Column: Location Preview */}
                     <Grid size={{ xs: 12, md: 5 }}>
-                        <Stack spacing={3}>
-                            <LocationPreview lat={lat} lng={lng} address={address} />
-
-                            <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
-                                <Typography variant="h6" gutterBottom fontWeight="bold">Media</Typography>
-                                <Stack spacing={3}>
-                                    <Box>
-                                        <PhotoUpload onFilesSelect={setSelectedPhotos} />
-                                    </Box>
-                                    <Divider />
-                                    <Box>
-                                        <VideoUpload onFilesSelect={setSelectedVideos} />
-                                    </Box>
-                                </Stack>
-                            </Paper>
-                        </Stack>
+                        <LocationPreview lat={lat} lng={lng} address={address} />
                     </Grid>
 
-                    {/* Right Column: Details Form */}
+                    {/* Right Column: Details Form & Media */}
                     <Grid size={{ xs: 12, md: 7 }}>
                         <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
                             <Box component="form" onSubmit={handleSubmit} noValidate>
@@ -227,6 +212,21 @@ export const NewSpotComponent = () => {
                                         kickoutRisk={kickoutRisk}
                                         setKickoutRisk={setKickoutRisk}
                                     />
+
+                                    <Divider />
+
+                                    <Box>
+                                        <Typography variant="h6" gutterBottom fontWeight="bold">Media</Typography>
+                                        <Stack spacing={3} sx={{ mt: 1 }}>
+                                            <Box>
+                                                <PhotoUpload onFilesSelect={setSelectedPhotos} />
+                                            </Box>
+                                            <Divider />
+                                            <Box>
+                                                <VideoUpload onFilesSelect={setSelectedVideos} />
+                                            </Box>
+                                        </Stack>
+                                    </Box>
 
                                     <Button
                                         type="submit"

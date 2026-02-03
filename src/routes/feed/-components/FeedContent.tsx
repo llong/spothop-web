@@ -15,6 +15,7 @@ import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
 
 interface FeedContentProps {
     isLoading: boolean;
+    isFetching?: boolean;
     error: unknown;
     allItems: FeedItem[];
     hasActiveFilters: boolean;
@@ -28,6 +29,7 @@ interface FeedContentProps {
 
 export function FeedContent({
     isLoading,
+    isFetching,
     error,
     allItems,
     hasActiveFilters,
@@ -38,7 +40,7 @@ export function FeedContent({
     lastElementRef,
     currentUserId
 }: FeedContentProps) {
-    if (isLoading) {
+    if (isLoading || (isFetching && allItems.length === 0)) {
         return (
             <Stack spacing={0}>
                 {[...Array(3)].map((_, i) => (
@@ -67,9 +69,9 @@ export function FeedContent({
                         <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
                             We couldn't find any spots matching your current filters. Try using broader settings to see more content.
                         </Typography>
-                        <Button variant="contained" size="large" onClick={() => setFilters(INITIAL_FEED_FILTERS)} sx={{ borderRadius: 10 }}>
-                            Clear All Filters
-                        </Button>
+                                <Button variant="contained" size="large" onClick={() => setFilters(INITIAL_FEED_FILTERS)} sx={{ px: 4, py: 1.5 }}>
+                                    Clear All Filters
+                                </Button>
                     </>
                 ) : (
                     <>
@@ -83,9 +85,9 @@ export function FeedContent({
                             <Typography variant="body2">1. Go to the Spots page</Typography>
                             <Typography variant="body2">2. Long press on the map</Typography>
                             <Typography variant="body2">3. Add details and media</Typography>
-                            <Button variant="contained" size="large" sx={{ mt: 2, borderRadius: 10 }} href="/?search=">
-                                Go to Spots Map
-                            </Button>
+                <Button variant="contained" size="large" sx={{ mt: 2 }} href="/?search=">
+                    Go to Spots Map
+                </Button>
                         </Stack>
                     </>
                 )}

@@ -25,12 +25,11 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // Exclude FFmpeg.wasm related packages from Vite\"s dependency pre-bundling
+    // Exclude FFmpeg.wasm related packages from Vite's dependency pre-bundling
     // This is crucial for FFmpeg.wasm to load its workers correctly without corruption.
     // See: https://github.com/ffmpegwasm/ffmpeg.wasm/issues/772
     exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
   },
-  // Removed assetsInclude as it\"s likely redundant with public directory and ?url imports
   build: {
     assetsInlineLimit: 0, // Prevent inlining assets to keep CSS small
     rollupOptions: {

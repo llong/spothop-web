@@ -5,18 +5,16 @@ import supabase from '../supabase';
 // Mock Supabase
 vi.mock('../supabase', () => ({
     default: {
-        from: vi.fn(() => ({
-            select: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            in: vi.fn().mockReturnThis(),
-            maybeSingle: vi.fn(),
-        }))
+        from: vi.fn(),
+        auth: {
+            getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null })
+        }
     }
 }));
 
 // Mock geocoding
 vi.mock('../utils/geocoding', () => ({
-    reverseGeocode: vi.fn().mockResolvedValue({ city: 'Mock City', country: 'Mock Country' }),
+    reverseGeocode: vi.fn().mockResolvedValue({ city: 'Mock City', state: 'Mock State', country: 'Mock Country' }),
 }));
 
 describe('spotService', () => {
@@ -26,12 +24,12 @@ describe('spotService', () => {
 
     describe('fetchSpotDetails', () => {
         it('returns null if spot is not found', async () => {
-            const mockMaybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
-            (supabase.from as any).mockReturnValue({
+            const mockFrom = vi.mocked(supabase.from);
+            mockFrom.mockReturnValue({
                 select: vi.fn().mockReturnThis(),
                 eq: vi.fn().mockReturnThis(),
-                maybeSingle: mockMaybeSingle
-            });
+                maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null })
+            } as any);
 
             const result = await spotService.fetchSpotDetails('123');
             expect(result).toBeNull();
@@ -49,50 +47,63 @@ describe('spotService', () => {
                     url: 'url1',
                     user_id: 'user1',
                     created_at: '2025-01-01',
-                    media_likes: [{ user_id: 'user2' }]
+                    media_likes: [{ user_id: 'user2' }],
+                    media_comments: []
                 }],
-                spot_videos: []
+                spot_videos: [],
             };
 
             const mockProfiles = [
-                { id: 'user1', username: 'userone', avatarUrl: 'avatar1' }
+                { id: 'user1', username: 'userone', avatarUrl: 'avatar1', displayName: 'User One' }
             ];
 
-            // Setup complex chaining mock
-            const mockFrom = supabase.from as any;
+            const mockFrom = vi.mocked(supabase.from);
             mockFrom.mockImplementation((table: string) => {
+                const queryBuilder: any = {
+                    select: vi.fn().mockReturnThis(),
+                    eq: vi.fn().mockReturnThis(),
+                    in: vi.fn().mockReturnThis(),
+                    maybeSingle: vi.fn(),
+                    then: vi.fn().mockImplementation((onFulfilled) => {
+                        let result: any = { data: [], error: null, count: 0 };
+                        if (table === 'user_favorite_spots') {
+                            // Check if it's the count query or the profiles query
+                            const lastSelect = queryBuilder.select.mock.calls.at(-1);
+                            if (lastSelect?.[1]?.count === 'exact') {
+                                result = { count: 1, data: [], error: null };
+                            } else if (lastSelect?.[0]?.includes('profiles')) {
+                                result = { data: [{ user_id: 'user2', profiles: { username: 'userTwo', avatarUrl: 'avatar2' } }], error: null };
+                            } else {
+                                result = { data: [{ user_id: 'user2' }], error: null };
+                            }
+                        } else if (table === 'spot_comments') {
+                            result = { count: 2, data: [], error: null };
+                        } else if (table === 'content_reports') {
+                            result = { count: 0, data: [], error: null };
+                        } else if (table === 'profiles') {
+                            result = { data: mockProfiles, error: null };
+                        }
+                        return Promise.resolve(onFulfilled(result));
+                    })
+                };
+                
                 if (table === 'spots') {
-                    return {
-                        select: vi.fn().mockReturnThis(),
-                        eq: vi.fn().mockReturnThis(),
-                        maybeSingle: vi.fn().mockResolvedValue({ data: mockSpotData, error: null })
-                    };
+                    queryBuilder.maybeSingle.mockResolvedValue({ data: mockSpotData, error: null });
                 }
-                if (table === 'user_favorite_spots' || table === 'content_reports') {
-                    return {
-                        select: vi.fn().mockReturnThis(),
-                        eq: vi.fn().mockReturnThis(),
-                        // Simulate count and head
-                        then: (cb: any) => cb({ count: 5, data: [{ spot_id: '123' }], error: null })
-                    };
-                }
-                if (table === 'profiles') {
-                    return {
-                        select: vi.fn().mockReturnThis(),
-                        in: vi.fn().mockResolvedValue({ data: mockProfiles, error: null })
-                    };
-                }
-                return {};
+                
+                return queryBuilder;
             });
 
             const result = await spotService.fetchSpotDetails('123', 'user2');
 
             expect(result).not.toBeNull();
             expect(result?.name).toBe('Test Spot');
-            expect(result?.username).toBe('userone');
+            expect(result?.creator?.displayName).toBe('User One');
             expect(result?.media).toHaveLength(1);
             expect(result?.media[0].isLiked).toBe(true);
+            expect(result?.favoriteCount).toBe(1);
             expect(result?.isFavorited).toBe(true);
+            expect(result?.favoritedByUsers?.[0].username).toBe('userTwo');
         });
     });
 });

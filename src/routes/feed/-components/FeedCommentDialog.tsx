@@ -29,15 +29,24 @@ interface FeedCommentDialogProps {
     onClose: () => void;
     item: FeedItem;
     userId?: string;
+    spotId?: string; // Add spotId prop
 }
 
 export const FeedCommentDialog = memo(({
     open,
     onClose,
     item,
-    userId
+    userId,
+    spotId // Destructure spotId
 }: FeedCommentDialogProps) => {
-    const { media_id: mediaId, media_type: mediaType } = item;
+    // Ensure mediaId and mediaType are always defined to prevent destructuring errors
+    const mediaId = item?.media_id;
+    const mediaType = item?.media_type;
+    
+    if (!mediaId || !mediaType) {
+        console.error('FeedCommentDialog: mediaId or mediaType is missing from item', item);
+        return null; // Or render a fallback UI
+    }
     const { data: comments, isLoading } = useMediaComments(mediaId, mediaType, userId);
     const postCommentMutation = usePostMediaComment();
     const toggleReactionMutation = useToggleCommentReaction();
@@ -51,7 +60,8 @@ export const FeedCommentDialog = memo(({
             await postCommentMutation.mutateAsync({
                 mediaId,
                 mediaType,
-                content: newComment.trim()
+                content: newComment.trim(),
+                spotId // Pass spotId to the mutation
             });
             setNewComment('');
         } catch (error) {

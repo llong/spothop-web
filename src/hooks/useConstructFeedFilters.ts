@@ -10,6 +10,7 @@ export function useConstructFeedFilters(
     activeTab: number
 ) {
     return useMemo(() => {
+        console.log('[useConstructFeedFilters] ActiveTab:', activeTab, 'UserLoc:', userLocation);
         let lat = undefined;
         let lng = undefined;
         let maxDistKm = undefined;
@@ -24,7 +25,7 @@ export function useConstructFeedFilters(
             maxDistKm = filters.maxDistKm;
         }
 
-        return {
+        const constructedFilters = {
             lat,
             lng,
             maxDistKm,
@@ -35,5 +36,8 @@ export function useConstructFeedFilters(
             maxRisk: filters.maxRisk < 5 ? filters.maxRisk : undefined,
             authorId: filters.author?.id,
         };
+
+        console.log('[useConstructFeedFilters] Result:', constructedFilters);
+        return constructedFilters;
     }, [filters, userLocation, activeTab]);
 }
