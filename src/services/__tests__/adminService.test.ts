@@ -15,7 +15,7 @@ const mockChain: any = {
     maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
     single: vi.fn().mockResolvedValue({ data: null, error: null }),
     // Most supabase methods are thenable
-    then: vi.fn(function(this: any, onFulfilled) {
+    then: vi.fn(function (this: any, onFulfilled: (value: any) => any) {
         return Promise.resolve({ data: [], error: null }).then(onFulfilled);
     }),
 };
@@ -35,15 +35,15 @@ describe('adminService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Reset the default implementation for each test
-        mockChain.then.mockImplementation(function(this: any, onFulfilled) {
+        mockChain.then.mockImplementation(function (this: any, onFulfilled: (value: any) => any) {
             return Promise.resolve({ data: [], error: null }).then(onFulfilled);
         });
     });
 
     it('fetches reports successfully', async () => {
         const mockReports = [{ id: '1', reason: 'Spam', target_type: 'spot', target_id: 's1' }];
-        
-        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+
+        mockChain.then.mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) {
             return Promise.resolve({ data: mockReports, error: null }).then(onFulfilled);
         });
 
@@ -59,7 +59,7 @@ describe('adminService', () => {
     });
 
     it('resolves a report by deleting it', async () => {
-        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+        mockChain.then.mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) {
             return Promise.resolve({ error: null }).then(onFulfilled);
         });
 
@@ -70,16 +70,16 @@ describe('adminService', () => {
     it('deletes a spot target', async () => {
         // Setup for spot deletion which now fetches media first
         mockChain.then
-            .mockImplementationOnce(function(this: any, onFulfilled) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // photos
-            .mockImplementationOnce(function(this: any, onFulfilled) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // videos
-            .mockImplementationOnce(function(this: any, onFulfilled) { return Promise.resolve({ data: [{ id: 'spot-123' }], error: null }).then(onFulfilled); }); // delete
+            .mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // photos
+            .mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // videos
+            .mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) { return Promise.resolve({ data: [{ id: 'spot-123' }], error: null }).then(onFulfilled); }); // delete
 
         await adminService.deleteReportTarget('spot', 'spot-123');
         expect(supabase.from).toHaveBeenCalledWith('spots');
     });
 
     it('toggles user ban', async () => {
-        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+        mockChain.then.mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) {
             return Promise.resolve({ error: null }).then(onFulfilled);
         });
 
@@ -90,7 +90,7 @@ describe('adminService', () => {
 
     it('searches for users successfully', async () => {
         const mockUsers = [{ id: 'u1', username: 'testuser' }];
-        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+        mockChain.then.mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) {
             return Promise.resolve({ data: mockUsers, error: null }).then(onFulfilled);
         });
 

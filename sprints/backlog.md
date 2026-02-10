@@ -1,21 +1,5 @@
 # Project Backlog
 
-## Media Processing & Optimization (Deferred)
-
-### 1. Client-side Video Processing (FFmpeg.wasm) [DONE]
-*   **Status:** Successfully implemented in `src/utils/videoProcessing.ts`.
-*   **Implementation:**
-    *   [x] Integrated `@ffmpeg/ffmpeg` and `@ffmpeg/util`.
-    *   [x] Implemented `trimVideo` function with 720p scaling and H.264 encoding.
-    *   [x] Added pre-flight capability checks for `SharedArrayBuffer`.
-
-## Database & Query Optimizations (Deferred)
-
-### 1. Server-side Follower Stats (RPC) [DONE]
-*   **Status:** Successfully implemented via Supabase Migrations.
-*   **Implementation:**
-    *   [x] Created `get_user_follow_stats` RPC to handle counts on the server side.
-
 ## Global Feed & Engagement (Deferred)
 
 ### 1. Analytics for Feed-to-Map Transition [DEFERRED]
@@ -25,13 +9,6 @@
 ### 2. Error Handling (Frontend - Detailed) [PARTIAL]
 *   **Status:** Basic error handling implemented in `FeedContent.tsx` and `MediaCarousel.tsx`.
 *   **Remaining:** Fine-grained "broken link" overlays for individual items during scroll.
-
-### 3. Improved User Onboarding [DONE]
-*   **Status:** Successfully implemented in `src/routes/welcome/index.tsx`.
-*   **Implementation:**
-    *   [x] **Unique Username:** Users must now choose a unique username with specific character constraints (alphanumeric, dashes, underscores) and real-time database validation.
-    *   [x] **Feature Tutorial:** Added a structured walkthrough of app features (Discover Spots, Share Media, Join the Feed) during the second step of onboarding.
-    *   [x] **Validation:** Enhanced reserved keyword checking and display name formatting.
 
 ### 4. Feed Metrics & Optimizations [DEFERRED]
 *   **Concept:** Further deep dive into performance metrics and ongoing optimizations for the feed based on user data.

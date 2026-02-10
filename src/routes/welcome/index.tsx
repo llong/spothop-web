@@ -14,7 +14,7 @@ import {
     Alert,
     CircularProgress
 } from '@mui/material';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom, profileAtom } from 'src/atoms/auth';
 import { useQueryClient } from '@tanstack/react-query';
@@ -234,7 +234,7 @@ const WelcomeComponent = () => {
 
                             {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-                            <Box component="div" noValidate>
+                            <Box component="form" noValidate onSubmit={(e) => e.preventDefault()}>
                                 <Stack spacing={3}>
                                     <TextField
                                         required
@@ -303,7 +303,7 @@ const WelcomeComponent = () => {
                             <Typography variant="h4" fontWeight={800} gutterBottom align="center">
                                 {s.TUTORIAL_TITLE}
                             </Typography>
-                            
+
                             <Stack spacing={4} sx={{ my: 4 }}>
                                 <Box>
                                     <Typography variant="subtitle1" fontWeight={900}>{s.TUTORIAL_STEP1_TITLE}</Typography>
