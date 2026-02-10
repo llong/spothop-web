@@ -29,11 +29,11 @@ export function RootComponent() {
         setIsGoogleMapsLoaded(isLoaded);
     }, [isLoaded, setIsGoogleMapsLoaded]);
     useDevtools();
-    
+
     const isDesktop = useMediaQuery('(min-width:1200px)');
     const isTablet = useMediaQuery('(min-width:600px) and (max-width:1199px)');
     const isMobile = useMediaQuery('(max-width:599px)');
-    
+
     const setUser = useSetAtom(userAtom);
     const auth = useAtomValue(userAtom);
     const location = useLocation();
@@ -96,10 +96,10 @@ export function RootComponent() {
             <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', justifyContent: 'center' }}>
                 {/* Sidebar (Tablet and Desktop) */}
                 {!isMobile && (
-                    <Box sx={{ 
-                        width: { sm: 80, md: 275, lg: 275, xl: 300 }, 
-                        flexShrink: 0, 
-                        display: 'flex', 
+                    <Box sx={{
+                        width: { sm: 80, md: 275, lg: 275, xl: 300 },
+                        flexShrink: 0,
+                        display: 'flex',
                         justifyContent: 'flex-end',
                         position: 'sticky',
                         top: 0,
@@ -109,10 +109,10 @@ export function RootComponent() {
                     </Box>
                 )}
 
-                <Box sx={{ 
-                    flexGrow: 1, 
-                    display: 'flex', 
-                    flexDirection: 'column', 
+                <Box sx={{
+                    flexGrow: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
                     maxWidth: (isDesktop && location.pathname !== '/spots') ? 600 : (isTablet ? 700 : 'none'),
                     width: '100%',
                     borderLeft: !isMobile ? '1px solid' : 'none',
@@ -123,8 +123,8 @@ export function RootComponent() {
                 }}>
                     {/* Mobile/Tablet AppBar */}
                     {!isDesktop && (
-                        <AppBar position="sticky" elevation={0} sx={{ 
-                            bgcolor: 'rgba(255, 255, 255, 0.85)', 
+                        <AppBar position="sticky" elevation={0} sx={{
+                            bgcolor: 'rgba(255, 255, 255, 0.85)',
                             backdropFilter: 'blur(12px)',
                             color: 'black',
                         }}>
@@ -143,12 +143,12 @@ export function RootComponent() {
                         <Outlet />
                     </Box>
                 </Box>
-                
+
                 {/* Right Column (Desktop only) */}
                 {isDesktop && (
-                    <Box sx={{ 
-                        width: { lg: 350, xl: 400 }, 
-                        flexShrink: 0, 
+                    <Box sx={{
+                        width: { lg: 350, xl: 400 },
+                        flexShrink: 0,
                         position: 'sticky',
                         top: 0,
                         height: '100vh',
