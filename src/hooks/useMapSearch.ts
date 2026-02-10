@@ -26,7 +26,7 @@ export const useMapSearch = () => {
         if (types.some(t => midTypes.includes(t))) {
             return 15; // Mid specificity
         }
-        
+
         // Default to broader view for cities, towns, regions
         return 13;
     };
@@ -34,10 +34,15 @@ export const useMapSearch = () => {
     const handlePlaceSelect = useCallback((place: google.maps.places.PlaceResult) => {
         const lat = place.geometry?.location?.lat();
         const lng = place.geometry?.location?.lng();
-        
+
         if (lat && lng) {
-            const zoom = getZoomLevel(place.types);
+            const types = place.types || [];
+            const zoom = getZoomLevel(types);
             const name = place.name || place.formatted_address || 'Searched Location';
+
+            // Check if it's a broad search (city, region, etc.)
+            // We consider it broad if it maps to the default zoom level (13) which is for cities/towns
+            const isBroadLocation = getZoomLevel(types) <= 13;
 
             // 1. Update Map view
             if (map) {
@@ -47,8 +52,12 @@ export const useMapSearch = () => {
                 }
             }
 
-            // 2. Set the searched location atom for the indicator marker
-            setSearchedLocation({ lat, lng, name });
+            // 2. Set the searched location atom ONLY for specific locations
+            if (!isBroadLocation) {
+                setSearchedLocation({ lat, lng, name });
+            } else {
+                setSearchedLocation(null); // Clear any existing marker if searching broadly
+            }
 
             // 3. Update URL
             navigate({ to: '/spots', search: { lat, lng } });

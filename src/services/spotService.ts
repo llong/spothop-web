@@ -1,6 +1,7 @@
 import supabase from "../supabase";
 import type { MediaItem } from "../types";
 import { reverseGeocode } from "../utils/geocoding";
+import { extractStoragePath } from "../utils/media-utils";
 
 export const spotService = {
     /**
@@ -178,15 +179,54 @@ export const spotService = {
     },
 
     /**
-     * Deletes a spot and its associated media/comments
+     * Deletes a spot and its associated media/comments/storage
      */
     async deleteSpot(spotId: string) {
-        const { error } = await supabase
+        // 1. Fetch all media paths first
+        const { data: photos } = await supabase.from('spot_photos').select('url').eq('spot_id', spotId);
+        const { data: videos } = await supabase.from('spot_videos').select('url, thumbnail_url').eq('spot_id', spotId);
+        
+        // 2. Extract relative paths from URLs
+        const pathsToDelete: string[] = [];
+        [...(photos || []), ...(videos || [])].forEach((item: any) => {
+            if (item.url) pathsToDelete.push(extractStoragePath(item.url));
+            if (item.thumbnail_url) pathsToDelete.push(extractStoragePath(item.thumbnail_url));
+            
+            // Also attempt to delete standard thumbnail paths for photos
+            if (item.url && !item.thumbnail_url) {
+                const base = item.url.split('/').pop();
+                if (base) {
+                    pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base}`);
+                    // Handle 240/720 sizes from ADR
+                    pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base.replace(/\.[^/.]+$/, "")}_240.jpg`);
+                    pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base.replace(/\.[^/.]+$/, "")}_720.jpg`);
+                }
+            }
+        });
+
+        // 3. Delete from DB (Cascades and Cleanup Triggers will handle related records)
+        const { data: delData, error } = await supabase
             .from('spots')
             .delete()
-            .eq('id', spotId);
+            .eq('id', spotId)
+            .select();
 
         if (error) throw error;
+        if (!delData || delData.length === 0) {
+            console.warn(`[spotService] No spot deleted for ID ${spotId}. It might have been already deleted or RLS blocked the action.`);
+        }
+
+        // 4. Cleanup Storage
+        if (pathsToDelete.length > 0) {
+            const { error: storageError } = await supabase.storage
+                .from('spot-media')
+                .remove(pathsToDelete);
+            
+            if (storageError) {
+                console.error("Storage cleanup failed for spot:", spotId, storageError);
+                // We don't throw here to avoid user confusion since DB record is already gone
+            }
+        }
     },
 
     /**

@@ -8,6 +8,7 @@ vi.mock('jotai/utils', async () => {
     const { atom } = await vi.importActual<typeof import('jotai')>('jotai');
     return {
         atomWithStorage: (_: any, initialValue: any) => atom(initialValue),
+        createJSONStorage: vi.fn(),
     };
 });
 

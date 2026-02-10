@@ -1,5 +1,6 @@
 import supabase from "../supabase";
 import type { ContentReport, UserProfile } from "../types";
+import { extractStoragePath } from "../utils/media-utils";
 
 export const adminService = {
     /**
@@ -83,30 +84,78 @@ export const adminService = {
     },
 
     /**
-     * Deletes the target of a report.
-     * Cascading triggers will handle report cleanup.
+     * Deletes the target of a report and handles storage cleanup.
+     * Cascading database triggers handle related DB records (likes, reports, etc.).
      */
     async deleteReportTarget(targetType: 'spot' | 'comment' | 'media', targetId: string): Promise<void> {
-        let table = '';
+        console.log(`[adminService] Deleting report target: ${targetType} (${targetId})`);
+        
         switch (targetType) {
-            case 'spot': table = 'spots'; break;
-            case 'comment': table = 'spot_comments'; break;
-            case 'media':
-                // We need to check both photos and videos
-                // A better approach would be to know which one it is from content_reports
-                // For now we'll try to find it in both if targetType is 'media'
-                // But typically targetType would be more specific.
-                // Looking at migrations, target_type check constraint is ('spot', 'comment', 'media')
-                // So we'll try both photos and videos.
-                const photoRes = await supabase.from('spot_photos').delete().eq('id', targetId);
-                const videoRes = await supabase.from('spot_videos').delete().eq('id', targetId);
-                if (photoRes.error && videoRes.error) throw new Error("Target media not found");
-                return;
-        }
+            case 'spot':
+                const { spotService } = await import('./spotService');
+                await spotService.deleteSpot(targetId);
+                break;
 
-        if (table) {
-            const { error } = await supabase.from(table).delete().eq('id', targetId);
-            if (error) throw error;
+            case 'comment':
+                const { error: commentError } = await supabase.from('spot_comments').delete().eq('id', targetId);
+                if (commentError) throw commentError;
+                break;
+
+            case 'media':
+                // We try both tables. We don't throw immediately if one fails to find.
+                // 1. Try spot_photos
+                const { data: photo } = await supabase
+                    .from('spot_photos')
+                    .select('url, thumbnail_small_url, thumbnail_large_url')
+                    .eq('id', targetId)
+                    .maybeSingle();
+
+                if (photo) {
+                    const paths = [
+                        extractStoragePath(photo.url),
+                        extractStoragePath(photo.thumbnail_small_url || ''),
+                        extractStoragePath(photo.thumbnail_large_url || '')
+                    ].filter(Boolean);
+
+                    const { error: delError } = await supabase.from('spot_photos').delete().eq('id', targetId);
+                    if (delError) throw delError;
+
+                    if (paths.length > 0) {
+                        await supabase.storage.from('spot-media').remove(paths);
+                    }
+                    return;
+                }
+
+                // 2. Try spot_videos
+                const { data: video } = await supabase
+                    .from('spot_videos')
+                    .select('url, thumbnail_url')
+                    .eq('id', targetId)
+                    .maybeSingle();
+
+                if (video) {
+                    const paths = [
+                        extractStoragePath(video.url),
+                        extractStoragePath(video.thumbnail_url || '')
+                    ].filter(Boolean);
+
+                    const { error: delError } = await supabase.from('spot_videos').delete().eq('id', targetId);
+                    if (delError) throw delError;
+
+                    if (paths.length > 0) {
+                        await supabase.storage.from('spot-media').remove(paths);
+                    }
+                    return;
+                }
+
+                // 3. Fallback: If we can't select but still want to attempt delete (admin might have delete but not select permission)
+                const { data: delPhotoData } = await supabase.from('spot_photos').delete().eq('id', targetId).select();
+                if (delPhotoData && delPhotoData.length > 0) return;
+
+                const { data: delVideoData } = await supabase.from('spot_videos').delete().eq('id', targetId).select();
+                if (delVideoData && delVideoData.length > 0) return;
+
+                throw new Error("Media content not found or already deleted");
         }
     },
 

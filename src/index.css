@@ -44,3 +44,9 @@ button.jotai-devtools-trigger-button img {
   height: 16px !important;
   margin: 0 !important;
 }
+
+/* Custom Marker Icons */
+.search-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}

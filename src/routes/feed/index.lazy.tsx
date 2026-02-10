@@ -64,11 +64,8 @@ export function FeedScreen() {
                             SpotHop
                         </Typography>
                     </Box>
-                    
+
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ py: 1, px: 2 }}>
-                        <Typography variant="h6" sx={{ display: { xs: 'none', lg: 'block' } }}>
-                            Home
-                        </Typography>
                         <Box sx={{ flexGrow: 1, textAlign: 'right' }}>
                             <Button
                                 onClick={() => setFilterDrawerOpen(true)}
@@ -81,7 +78,7 @@ export function FeedScreen() {
                                     color: hasActiveFilters ? 'primary.main' : 'text.secondary',
                                 }}
                             >
-                                {hasActiveFilters ? 'Filters Active' : 'Filter'}
+                                {hasActiveFilters ? 'Filters Active' : 'Filter Results'}
                             </Button>
                             {hasActiveFilters && (
                                 <Button
@@ -115,7 +112,7 @@ export function FeedScreen() {
                                         color="primary"
                                         fullWidth
                                         startIcon={<Avatar src={filters.author.avatarUrl || undefined} sx={{ width: 24, height: 24 }} />}
-                                        sx={{ 
+                                        sx={{
                                             justifyContent: 'flex-start',
                                             textTransform: 'none',
                                             borderRadius: 3,
@@ -201,9 +198,9 @@ export function FeedScreen() {
 
             <Container maxWidth="sm" sx={{ py: 2 }}>
                 {activeTab === 0 ? (
-                    <GlobalFeed 
-                        userId={user?.user.id} 
-                        filters={filters} 
+                    <GlobalFeed
+                        userId={user?.user.id}
+                        filters={filters}
                         userLocation={userLocation}
                         setFilters={setFilters}
                         hasActiveFilters={hasActiveFilters}
@@ -237,7 +234,7 @@ export function FeedScreen() {
 function GlobalFeed({ userId, filters, userLocation, setFilters, hasActiveFilters }: any) {
     console.log('[GlobalFeed] Render. User:', userId);
     // Only apply global filters
-    const queryFilters = useConstructFeedFilters(filters, userLocation, 0); 
+    const queryFilters = useConstructFeedFilters(filters, userLocation, 0);
     const {
         data,
         fetchNextPage,
@@ -313,7 +310,7 @@ function FollowingFeed({ userId }: { userId?: string }) {
             allItems={allItems}
             hasActiveFilters={false}
             activeTab={1}
-            setFilters={() => {}} // No filters for following feed
+            setFilters={() => { }} // No filters for following feed
             isFetchingNextPage={isFetchingNextPage}
             hasNextPage={hasNextPage}
             lastElementRef={lastElementRef}

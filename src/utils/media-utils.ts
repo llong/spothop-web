@@ -53,3 +53,21 @@ export const formatMediaItem = async (m: any, type: 'photo' | 'video'): Promise<
         }
     };
 };
+
+/**
+ * Utility to extract relative storage path from a public Supabase URL.
+ * Handles query strings and ensures the path is correctly formatted for storage.remove().
+ */
+export const extractStoragePath = (url: string): string => {
+    try {
+        if (!url) return '';
+        // Remove query parameters (e.g., ?t=123)
+        const urlWithoutQuery = url.split('?')[0];
+        // URL format: .../storage/v1/object/public/bucket-name/folder/file.ext
+        const parts = urlWithoutQuery.split('/public/spot-media/');
+        return parts.length > 1 ? decodeURIComponent(parts[1]) : '';
+    } catch (e) {
+        console.error("Error extracting storage path:", e);
+        return '';
+    }
+};

@@ -5,8 +5,11 @@ import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import supabase from 'src/supabase';
 import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { useMediaQuery, useTheme } from '@mui/material';
 
 export function Sidebar() {
+    const muiTheme = useTheme();
+    const isMini = useMediaQuery(muiTheme.breakpoints.between('sm', 'md'));
     const user = useAtomValue(userAtom);
     const { data: profile } = useProfileQuery(user?.user.id);
     const location = useLocation();
@@ -48,10 +51,16 @@ export function Sidebar() {
             <Typography
                 variant="h5"
                 fontWeight={900}
-                sx={{ mb: 4, px: 2, cursor: 'pointer', color: 'primary.main' }}
+                sx={{ 
+                    mb: 4, 
+                    px: 2, 
+                    cursor: 'pointer', 
+                    color: 'primary.main',
+                    textAlign: isMini ? 'center' : 'left'
+                }}
                 onClick={() => navigate({ to: '/feed' })}
             >
-                SpotHop
+                {isMini ? 'S' : 'SpotHop'}
             </Typography>
 
             <List sx={{ flexGrow: 1 }}>
@@ -75,35 +84,41 @@ export function Sidebar() {
                                 }}
                             >
                                 <ListItemIcon sx={{
-                                    minWidth: 45,
-                                    color: isActive ? 'primary.main' : 'inherit'
+                                    minWidth: isMini ? 0 : 45,
+                                    color: isActive ? 'primary.main' : 'inherit',
+                                    justifyContent: 'center'
                                 }}>
                                     {item.icon}
                                 </ListItemIcon>
-                                <ListItemText
-                                    primary={item.label}
-                                    primaryTypographyProps={{
-                                        fontWeight: isActive ? 900 : 500,
-                                        fontSize: '1.1rem',
-                                        color: isActive ? 'primary.main' : 'inherit'
-                                    }}
-                                />
+                                {!isMini && (
+                                    <ListItemText
+                                        primary={item.label}
+                                        primaryTypographyProps={{
+                                            fontWeight: isActive ? 900 : 500,
+                                            fontSize: '1.1rem',
+                                            color: isActive ? 'primary.main' : 'inherit'
+                                        }}
+                                    />
+                                )}
                             </ListItemButton>
                         </ListItem>
                     );
                 })}
             </List>
 
-            <Box sx={{ mt: 'auto', p: 2 }}>
+            <Box sx={{ mt: 'auto', p: isMini ? 0 : 2 }}>
                 {user ? (
-                    <Stack spacing={2}>
+                    <Stack spacing={2} alignItems="center">
                         <Button
                             variant="contained"
                             fullWidth
                             size="large"
                             sx={{
-                                borderRadius: 10,
-                                py: 1.5,
+                                borderRadius: isMini ? '50%' : 10,
+                                minWidth: isMini ? 48 : 'auto',
+                                width: isMini ? 48 : '100%',
+                                height: isMini ? 48 : 'auto',
+                                py: isMini ? 0 : 1.5,
                                 fontWeight: 900,
                                 textTransform: 'none',
                                 fontSize: '1.1rem',
@@ -111,22 +126,33 @@ export function Sidebar() {
                             }}
                             onClick={() => navigate({ to: '/spots' })}
                         >
-                            Post
+                            {isMini ? '+' : 'Post'}
                         </Button>
 
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2, cursor: 'pointer' }} onClick={() => navigate({ to: '/profile' })}>
+                        <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: 1, 
+                            mt: 2, 
+                            cursor: 'pointer',
+                            flexDirection: isMini ? 'column' : 'row'
+                        }} onClick={() => navigate({ to: '/profile' })}>
                             <Avatar src={profile?.avatarUrl || undefined} />
-                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                <Typography variant="subtitle2" fontWeight={700} noWrap>
-                                    {profile?.displayName || user.user.email}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" noWrap>
-                                    @{profile?.username || 'user'}
-                                </Typography>
-                            </Box>
-                            <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleSignOut(); }}>
-                                <Logout fontSize="small" />
-                            </IconButton>
+                            {!isMini && (
+                                <>
+                                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                        <Typography variant="subtitle2" fontWeight={700} noWrap>
+                                            {profile?.displayName || user.user.email}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary" noWrap>
+                                            @{profile?.username || 'user'}
+                                        </Typography>
+                                    </Box>
+                                    <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleSignOut(); }}>
+                                        <Logout fontSize="small" />
+                                    </IconButton>
+                                </>
+                            )}
                         </Box>
                     </Stack>
                 ) : (
@@ -137,9 +163,16 @@ export function Sidebar() {
                         component={Link}
                         to="/login"
                         startIcon={<Login />}
-                        sx={{ borderRadius: 10, py: 1.5, fontWeight: 900 }}
+                        sx={{ 
+                            borderRadius: isMini ? '50%' : 10,
+                            minWidth: isMini ? 48 : 'auto',
+                            width: isMini ? 48 : '100%',
+                            height: isMini ? 48 : 'auto',
+                            py: isMini ? 0 : 1.5,
+                            fontWeight: 900 
+                        }}
                     >
-                        Login
+                        {!isMini && 'Login'}
                     </Button>
                 )}
             </Box>

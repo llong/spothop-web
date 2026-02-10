@@ -14,11 +14,12 @@ import type { Spot } from 'src/types';
 interface DetailsSidebarProps {
     spot: Spot;
     currentUserId?: string;
+    isAdmin?: boolean;
     onDirections: () => void;
     onDelete: () => void;
 }
 
-export const DetailsSidebar = ({ spot, currentUserId, onDirections, onDelete }: DetailsSidebarProps) => {
+export const DetailsSidebar = ({ spot, currentUserId, isAdmin, onDirections, onDelete }: DetailsSidebarProps) => {
     return (
         <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box>
@@ -41,7 +42,7 @@ export const DetailsSidebar = ({ spot, currentUserId, onDirections, onDelete }: 
                         Get Directions
                     </Button>
 
-                    {currentUserId === spot.created_by && (
+                    {(currentUserId === spot.created_by || isAdmin) && (
                         <Button
                             fullWidth
                             variant="outlined"
@@ -50,7 +51,7 @@ export const DetailsSidebar = ({ spot, currentUserId, onDirections, onDelete }: 
                             onClick={onDelete}
                             sx={{ py: 1 }}
                         >
-                            Delete Spot
+                            Delete Spot {isAdmin && currentUserId !== spot.created_by && '(Admin)'}
                         </Button>
                     )}
                 </Stack>

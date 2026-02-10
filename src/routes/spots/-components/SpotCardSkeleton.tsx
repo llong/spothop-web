@@ -19,8 +19,8 @@ export const SpotCardSkeleton = () => {
 export const SpotListSkeleton = () => {
     return (
         <Grid container spacing={2}>
-            {[1, 2, 4, 5, 6].map((i) => (
-                <Grid size={{ xs: 12, lg: 6 }} key={i}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Grid size={{ xs: 12 }} key={i}>
                     <SpotCardSkeleton />
                 </Grid>
             ))}

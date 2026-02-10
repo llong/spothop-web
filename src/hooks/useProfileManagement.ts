@@ -15,13 +15,11 @@ export const useProfileManagement = () => {
         if (!userId) return;
 
         const result = await profileUpdate.mutateAsync(updates);
-        
+
         if (result.error) {
             alert(result.error);
-        } else {
-            navigationUtils.reload();
         }
-        
+
         return result;
     }, [userId, profileUpdate]);
 

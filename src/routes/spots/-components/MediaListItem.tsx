@@ -11,6 +11,9 @@ import ShareIcon from '@mui/icons-material/Share';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import React from 'react';
 import { useToggleFollow } from 'src/hooks/useFeedQueries';
+import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { useAdminQueries } from 'src/hooks/useAdminQueries';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 interface MediaListItemProps {
     item: MediaItem;
@@ -22,11 +25,22 @@ interface MediaListItemProps {
 }
 
 export const MediaListItem = memo(({ item, currentUserId, onLike, onComment, onShare, onClick }: MediaListItemProps) => {
+    const { data: profile } = useProfileQuery(currentUserId);
+    const { deleteContent, isActioning } = useAdminQueries();
+    const isAdmin = profile?.role === 'admin';
     const toggleFollowMutation = useToggleFollow();
 
     const handleFollow = (e: React.MouseEvent) => {
         e.stopPropagation();
         toggleFollowMutation.mutate(item.author.id);
+    };
+
+    const handleDeleteMedia = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (window.confirm('ADMIN: Are you sure you want to delete this media item?')) {
+            await deleteContent({ type: 'media', id: item.id });
+            window.location.reload();
+        }
     };
 
     return (
@@ -61,7 +75,7 @@ export const MediaListItem = memo(({ item, currentUserId, onLike, onComment, onS
                                     </Typography>
                                 </Link>
                                 <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
-                                    · {formatDistanceToNow(new Date(item.createdAt), { addSuffix: false })}
+                                    Â· {formatDistanceToNow(new Date(item.createdAt), { addSuffix: false })}
                                 </Typography>
                             </Stack>
                             <Typography variant="body2" color="text.secondary" noWrap sx={{ lineHeight: 1 }}>
@@ -167,13 +181,26 @@ export const MediaListItem = memo(({ item, currentUserId, onLike, onComment, onS
                         </Typography>
                     </Stack>
 
-                    <IconButton
-                        size="small"
-                        onClick={(e) => { e.stopPropagation(); onShare(item); }}
-                        sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main', bgcolor: 'rgba(29, 155, 240, 0.1)' } }}
-                    >
-                        <ShareIcon fontSize="small" />
-                    </IconButton>
+                    <Stack direction="row" spacing={1}>
+                        {isAdmin && (
+                            <IconButton
+                                size="small"
+                                onClick={handleDeleteMedia}
+                                disabled={isActioning}
+                                sx={{ color: 'error.main', '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' } }}
+                                title="Delete Media (Admin)"
+                            >
+                                <DeleteForeverIcon fontSize="small" />
+                            </IconButton>
+                        )}
+                        <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); onShare(item); }}
+                            sx={{ color: 'text.secondary', '&:hover': { color: 'primary.main', bgcolor: 'rgba(29, 155, 240, 0.1)' } }}
+                        >
+                            <ShareIcon fontSize="small" />
+                        </IconButton>
+                    </Stack>
                 </Stack>
             </Box>
         </Box>

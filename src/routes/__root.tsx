@@ -30,8 +30,9 @@ export function RootComponent() {
     }, [isLoaded, setIsGoogleMapsLoaded]);
     useDevtools();
     
-    const isLargeScreen = useMediaQuery('(min-width:1200px)');
-    const isMobile = useMediaQuery('(max-width:600px)');
+    const isDesktop = useMediaQuery('(min-width:1200px)');
+    const isTablet = useMediaQuery('(min-width:600px) and (max-width:1199px)');
+    const isMobile = useMediaQuery('(max-width:599px)');
     
     const setUser = useSetAtom(userAtom);
     const auth = useAtomValue(userAtom);
@@ -93,10 +94,10 @@ export function RootComponent() {
             </style>
 
             <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', justifyContent: 'center' }}>
-                {/* Desktop Sidebar */}
-                {isLargeScreen && (
+                {/* Sidebar (Tablet and Desktop) */}
+                {!isMobile && (
                     <Box sx={{ 
-                        width: { lg: 275, xl: 300 }, 
+                        width: { sm: 80, md: 275, lg: 275, xl: 300 }, 
                         flexShrink: 0, 
                         display: 'flex', 
                         justifyContent: 'flex-end',
@@ -112,16 +113,16 @@ export function RootComponent() {
                     flexGrow: 1, 
                     display: 'flex', 
                     flexDirection: 'column', 
-                    maxWidth: (isLargeScreen && location.pathname !== '/spots') ? 600 : 'none',
+                    maxWidth: (isDesktop && location.pathname !== '/spots') ? 600 : (isTablet ? 700 : 'none'),
                     width: '100%',
-                    borderLeft: isLargeScreen ? '1px solid' : 'none',
-                    borderRight: isLargeScreen ? '1px solid' : 'none',
+                    borderLeft: !isMobile ? '1px solid' : 'none',
+                    borderRight: isDesktop ? '1px solid' : 'none',
                     borderColor: 'divider',
                     bgcolor: 'background.paper',
                     overflow: 'hidden'
                 }}>
                     {/* Mobile/Tablet AppBar */}
-                    {!isLargeScreen && (
+                    {!isDesktop && (
                         <AppBar position="sticky" elevation={0} sx={{ 
                             bgcolor: 'rgba(255, 255, 255, 0.85)', 
                             backdropFilter: 'blur(12px)',
@@ -143,12 +144,11 @@ export function RootComponent() {
                     </Box>
                 </Box>
                 
-                {/* Right Column on Desktop */}
-                {isLargeScreen && (
+                {/* Right Column (Desktop only) */}
+                {isDesktop && (
                     <Box sx={{ 
                         width: { lg: 350, xl: 400 }, 
                         flexShrink: 0, 
-                        display: { xs: 'none', lg: 'block' },
                         position: 'sticky',
                         top: 0,
                         height: '100vh',

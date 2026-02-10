@@ -1,5 +1,5 @@
 import { Box, Typography, Stack, Button } from "@mui/material";
-import { ChatBubble } from "@mui/icons-material";
+import { ChatBubble, Person as PersonIcon } from "@mui/icons-material";
 import { Link } from "@tanstack/react-router";
 import { AvatarUpload } from "./AvatarUpload";
 import type { UserProfile } from "src/types";
@@ -34,14 +34,35 @@ export const ProfileHeader = ({ socialStats, formData, onAvatarUpload }: Profile
                     <Typography variant="caption" color="text.secondary">Following</Typography>
                 </Box>
             </Box>
-            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                <Link to="/profile/$username" params={{ username: formData.username! }} style={{ textDecoration: 'none' }}>
-                    <Button variant="outlined" size="small">
-                        View Public Profile
+            <Stack direction="column" spacing={1.5} sx={{ mt: 2, width: '100%' }}>
+                <Link to="/profile/$username" params={{ username: formData.username! }} style={{ textDecoration: 'none', width: '100%' }}>
+                    <Button
+                        variant="outlined"
+                        size="medium"
+                        fullWidth
+                        startIcon={<PersonIcon />}
+                        sx={{
+                            borderWidth: '1.5px',
+                            fontWeight: 800,
+                            height: 40,
+                            '&:hover': { borderWidth: '1.5px' }
+                        }}
+                    >
+                        Public Profile
                     </Button>
                 </Link>
-                <Link to="/chat" style={{ textDecoration: 'none' }}>
-                    <Button variant="contained" size="small" startIcon={<ChatBubble />}>
+                <Link to="/chat" style={{ textDecoration: 'none', width: '100%' }}>
+                    <Button
+                        variant="contained"
+                        size="medium"
+                        startIcon={<ChatBubble />}
+                        fullWidth
+                        sx={{
+                            fontWeight: 800,
+                            height: 40,
+                            color: 'white'
+                        }}
+                    >
                         Messages
                     </Button>
                 </Link>

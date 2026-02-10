@@ -168,6 +168,7 @@ export interface FeedItem {
     popularity_score: number;
     is_liked_by_user?: boolean;
     is_favorited_by_user?: boolean;
+    favorite_count?: number;
 }
 
 export interface LikedMediaItem {

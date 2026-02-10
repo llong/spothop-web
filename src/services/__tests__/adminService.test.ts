@@ -2,36 +2,49 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { adminService } from '../adminService';
 import supabase from '../../supabase';
 
+// Create a robust chain mock
+const mockChain: any = {
+    select: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    or: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    // Most supabase methods are thenable
+    then: vi.fn(function(this: any, onFulfilled) {
+        return Promise.resolve({ data: [], error: null }).then(onFulfilled);
+    }),
+};
+
 vi.mock('../../supabase', () => ({
     default: {
-        from: vi.fn(() => ({
-            select: vi.fn().mockReturnThis(),
-            delete: vi.fn().mockReturnThis(),
-            update: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            order: vi.fn().mockReturnThis(),
-            or: vi.fn().mockReturnThis(),
-            limit: vi.fn().mockReturnThis(),
-            maybeSingle: vi.fn(),
-            single: vi.fn(),
-        }))
+        from: vi.fn(() => mockChain),
+        storage: {
+            from: vi.fn(() => ({
+                remove: vi.fn().mockResolvedValue({ error: null })
+            }))
+        }
     }
 }));
 
 describe('adminService', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        // Reset the default implementation for each test
+        mockChain.then.mockImplementation(function(this: any, onFulfilled) {
+            return Promise.resolve({ data: [], error: null }).then(onFulfilled);
+        });
     });
 
     it('fetches reports successfully', async () => {
         const mockReports = [{ id: '1', reason: 'Spam', target_type: 'spot', target_id: 's1' }];
-        const mockSelect = vi.fn().mockReturnThis();
-        const mockOrder = vi.fn().mockResolvedValue({ data: mockReports, error: null });
-
-        (supabase.from as any).mockReturnValue({
-            select: mockSelect,
-            order: mockOrder,
-            in: vi.fn().mockResolvedValue({ data: [], error: null })
+        
+        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+            return Promise.resolve({ data: mockReports, error: null }).then(onFulfilled);
         });
 
         const result = await adminService.fetchReports();
@@ -46,10 +59,8 @@ describe('adminService', () => {
     });
 
     it('resolves a report by deleting it', async () => {
-        const mockEq = vi.fn().mockResolvedValue({ error: null });
-        (supabase.from as any).mockReturnValue({
-            delete: vi.fn().mockReturnThis(),
-            eq: mockEq
+        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+            return Promise.resolve({ error: null }).then(onFulfilled);
         });
 
         await adminService.resolveReport('report-123');
@@ -57,38 +68,30 @@ describe('adminService', () => {
     });
 
     it('deletes a spot target', async () => {
-        const mockEq = vi.fn().mockResolvedValue({ error: null });
-        (supabase.from as any).mockReturnValue({
-            delete: vi.fn().mockReturnThis(),
-            eq: mockEq
-        });
+        // Setup for spot deletion which now fetches media first
+        mockChain.then
+            .mockImplementationOnce(function(this: any, onFulfilled) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // photos
+            .mockImplementationOnce(function(this: any, onFulfilled) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // videos
+            .mockImplementationOnce(function(this: any, onFulfilled) { return Promise.resolve({ data: [{ id: 'spot-123' }], error: null }).then(onFulfilled); }); // delete
 
         await adminService.deleteReportTarget('spot', 'spot-123');
         expect(supabase.from).toHaveBeenCalledWith('spots');
     });
 
     it('toggles user ban', async () => {
-        const mockEq = vi.fn().mockResolvedValue({ error: null });
-        const mockUpdate = vi.fn().mockReturnThis();
-        (supabase.from as any).mockReturnValue({
-            update: mockUpdate,
-            eq: mockEq
+        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+            return Promise.resolve({ error: null }).then(onFulfilled);
         });
 
         await adminService.toggleUserBan('user-123', true);
-        expect(mockUpdate).toHaveBeenCalledWith({ "isBanned": true });
+        expect(mockChain.update).toHaveBeenCalledWith({ "isBanned": true });
         expect(supabase.from).toHaveBeenCalledWith('profiles');
     });
 
     it('searches for users successfully', async () => {
         const mockUsers = [{ id: 'u1', username: 'testuser' }];
-        const mockOr = vi.fn().mockReturnThis();
-        const mockLimit = vi.fn().mockResolvedValue({ data: mockUsers, error: null });
-
-        (supabase.from as any).mockReturnValue({
-            select: vi.fn().mockReturnThis(),
-            or: mockOr,
-            limit: mockLimit
+        mockChain.then.mockImplementationOnce(function(this: any, onFulfilled) {
+            return Promise.resolve({ data: mockUsers, error: null }).then(onFulfilled);
         });
 
         const result = await adminService.searchUsers('test');

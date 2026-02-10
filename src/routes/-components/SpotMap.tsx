@@ -2,12 +2,14 @@ import { Box, Typography, Button } from "@mui/material";
 import { MapContainer, TileLayer, useMapEvents, Marker as LeafletMarker, Popup } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Map as LeafletMap } from 'leaflet';
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { useAtomValue, useSetAtom, useAtom } from 'jotai';
 import { boundsAtom, mapAtom, searchedLocationAtom } from 'src/atoms/map';
 import { filtersAtom } from 'src/atoms/spots';
 import { isLoggedInAtom } from 'src/atoms/auth';
 import type { Spot } from 'src/types';
+import { renderToStaticMarkup } from 'react-dom/server';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
 import L, { Icon } from 'leaflet';
 import { useGeolocation } from 'src/hooks/useGeolocation';
 import { MapSearchAreaButton } from './MapSearchAreaButton';
@@ -31,7 +33,7 @@ Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-const DEFAULT_CENTER = [3.1319, 101.6841] as [number, number];
+const DEFAULT_CENTER = [43.088947, -76.154480] as [number, number];
 
 const currentTheme = {
     name: 'Positron (Light)',
@@ -66,6 +68,23 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
     const [searchedLocation, setSearchedLocation] = useAtom(searchedLocationAtom);
     const isLoggedIn = useAtomValue(isLoggedInAtom);
     const filters = useAtomValue(filtersAtom);
+
+    const searchIcon = useMemo(() => {
+        const iconHtml = renderToStaticMarkup(
+            <LocationOnIcon style={{
+                color: '#EA4335',
+                fontSize: '48px',
+                filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.4))'
+            }} />
+        );
+        return L.divIcon({
+            html: iconHtml,
+            className: 'search-marker-icon', // Defined in index.css to remove default border/bg
+            iconSize: [48, 48],
+            iconAnchor: [24, 48],
+            popupAnchor: [0, -48],
+        });
+    }, []);
 
     const {
         moved,
@@ -135,18 +154,19 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
 
                 {/* Searched Location Indicator */}
                 {searchedLocation && (
-                    <LeafletMarker 
+                    <LeafletMarker
                         position={[searchedLocation.lat, searchedLocation.lng]}
                         zIndexOffset={1000}
+                        icon={searchIcon}
                     >
                         <Popup autoPan={false}>
                             <Box sx={{ p: 0.5 }}>
                                 <Typography variant="subtitle2" fontWeight={700} gutterBottom>
                                     {searchedLocation.name}
                                 </Typography>
-                                <Button 
-                                    size="small" 
-                                    variant="contained" 
+                                <Button
+                                    size="small"
+                                    variant="contained"
                                     fullWidth
                                     onClick={() => {
                                         onRightClick(L.latLng(searchedLocation.lat, searchedLocation.lng));

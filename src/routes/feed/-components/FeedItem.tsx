@@ -57,12 +57,13 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
         id: item.spot_id,
         name: item.spot_name,
         isFavorited: item.is_favorited_by_user,
+        favoriteCount: item.favorite_count,
         latitude: 0,
         longitude: 0,
         description: ''
-    }), [item.spot_id, item.spot_name, item.is_favorited_by_user]);
+    }), [item.spot_id, item.spot_name, item.is_favorited_by_user, item.favorite_count]);
 
-    const { isFavorited, toggleFavorite } = useSpotFavorites(spot, currentUserId);
+    const { isFavorited, favoriteCount, toggleFavorite } = useSpotFavorites(spot, currentUserId, item.favorite_count);
 
     const handleFavorite = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
@@ -205,6 +206,9 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
                         >
                             {isFavorited ? <FavoriteIcon fontSize="small" /> : <FavoriteBorderIcon fontSize="small" />}
                         </IconButton>
+                        <Typography variant="caption" fontWeight={500}>
+                            {favoriteCount}
+                        </Typography>
                     </Stack>
 
                     {/* Comment */}

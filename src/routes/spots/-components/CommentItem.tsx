@@ -231,7 +231,7 @@ export const CommentItem = ({
                     </MenuItem>
                 )}
 
-                {!isAuthor && (
+                {(!isAuthor && !isAdmin) && (
                     <MenuItem key="report" onClick={() => { setReportOpen(true); handleMenuClose(); }}>
                         <ListItemIcon><FlagOutlined fontSize="small" /></ListItemIcon>
                         <ListItemText>Report</ListItemText>

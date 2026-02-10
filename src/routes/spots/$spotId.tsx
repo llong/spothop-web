@@ -17,6 +17,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DirectionsIcon from '@mui/icons-material/Directions';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
+import { useProfileQuery } from 'src/hooks/useProfileQueries';
 import { MediaCarousel } from './-components/MediaCarousel';
 import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
 import { useMediaLikes } from 'src/hooks/useMediaLikes';
@@ -48,6 +49,7 @@ const loader = async ({ params, context }: { params: { spotId: string }, context
 export function SpotDetails() {
     const { spotId } = useParams({ from: '/spots/$spotId' });
     const auth = useAtomValue(userAtom);
+    const { data: currentUserProfile } = useProfileQuery(auth?.user.id);
     const [activeSlide, setActiveSlide] = useState(0);
     const { data: spot, isLoading, error } = useSpotQuery(spotId, auth?.user.id);
     const deleteMutation = useDeleteSpotMutation();
@@ -96,10 +98,11 @@ export function SpotDetails() {
         <DetailsSidebar
             spot={spot}
             currentUserId={auth?.user.id}
+            isAdmin={currentUserProfile?.role === 'admin'}
             onDirections={handleDirections}
             onDelete={handleDelete}
         />
-    ) : null, [spot, auth?.user.id, handleDirections, handleDelete]);
+    ) : null, [spot, auth?.user.id, currentUserProfile?.role, handleDirections, handleDelete]);
 
     useEffect(() => {
         if (isLargeScreen) {

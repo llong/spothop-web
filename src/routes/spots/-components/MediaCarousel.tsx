@@ -106,8 +106,8 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                                     fontWeight: 800,
                                     zIndex: 2,
                                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                                    bgcolor: 'white',
-                                    color: 'black',
+                                    bgcolor: 'rgba(0,0,0,0.7)',
+                                    color: 'white',
                                     px: 3,
                                     py: 1,
                                     '&:hover': { bgcolor: 'grey.100' }
@@ -166,7 +166,7 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                     >
                         <KeyboardArrowRight />
                     </IconButton>
-                    
+
                     <Box
                         sx={{
                             position: 'absolute',

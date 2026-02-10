@@ -69,6 +69,7 @@ function ProfileComponent() {
                                 socialStats={socialData}
                                 formData={formData!}
                                 onAvatarUpload={async (url) => {
+                                    setFormData(prev => ({ ...prev!, avatarUrl: url }));
                                     await updateProfile({ ...formData!, avatarUrl: url });
                                 }}
                             />
