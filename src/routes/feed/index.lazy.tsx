@@ -23,6 +23,7 @@ import { useRef, useCallback, useState, useMemo } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { FeedFilterPanel } from './-components/FeedFilterPanel';
 import { FeedContent } from './-components/FeedContent';
+import { analytics } from 'src/lib/posthog';
 
 export const Route = createLazyFileRoute('/feed/')({
     component: FeedScreen,
@@ -223,6 +224,14 @@ export function FeedScreen() {
                     onApply={(newFilters) => {
                         setFilters(newFilters);
                         setFilterDrawerOpen(false);
+                        
+                        analytics.capture('feed_filter_changed', {
+                            near_me: newFilters.nearMe,
+                            spot_types: newFilters.spotTypes,
+                            difficulties: newFilters.difficulties,
+                            rider_types: newFilters.riderTypes,
+                            max_risk: newFilters.maxRisk
+                        });
                     }}
                     onClose={() => setFilterDrawerOpen(false)}
                 />

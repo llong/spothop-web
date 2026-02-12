@@ -31,6 +31,7 @@ import { DetailsInfo } from './-components/DetailsInfo';
 import { DetailsActions } from './-components/DetailsActions';
 import { DetailsMediaSection } from './-components/DetailsMediaSection';
 import type { FeedItem, MediaItem } from 'src/types';
+import { analytics } from 'src/lib/posthog';
 
 const loader = async ({ params, context }: { params: { spotId: string }, context: any }) => {
     const { queryClient } = context;
@@ -64,6 +65,18 @@ export function SpotDetails() {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
 
+    // Track spot view
+    useEffect(() => {
+        if (spot) {
+            analytics.capture('spot_viewed', {
+                spot_id: spot.id,
+                category: spot.spot_type,
+                city: spot.city,
+                country: spot.country
+            });
+        }
+    }, [spot?.id]);
+
     const handleOpenLightbox = useCallback((index: number) => {
         setLightboxIndex(index);
         setLightboxOpen(true);
@@ -78,6 +91,12 @@ export function SpotDetails() {
 
     const handleDirections = useCallback(() => {
         if (!spot) return;
+
+        analytics.capture('spot_navigated_to', {
+            spot_id: spot.id,
+            spot_name: spot.name
+        });
+
         window.open(`https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}`, '_blank');
     }, [spot]);
 

@@ -27,6 +27,7 @@ import { useMediaUpload } from 'src/hooks/useMediaUpload';
 import type { VideoAsset } from 'src/types';
 import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
 import { reverseGeocode } from 'src/utils/geocoding';
+import { analytics } from 'src/lib/posthog';
 
 export const NewSpotComponent = () => {
     const isOnline = useOnlineStatus();
@@ -134,6 +135,17 @@ export const NewSpotComponent = () => {
 
             // 2. Upload Media
             await uploadMedia(spotId, selectedPhotos, selectedVideos);
+
+            // Track spot creation
+            analytics.capture('spot_created', {
+                spot_id: spotId,
+                category: spotType,
+                difficulty,
+                has_media: selectedPhotos.length > 0 || selectedVideos.length > 0,
+                has_description: !!description,
+                city,
+                country
+            });
 
             setSuccess(true);
             setStatusMessage('Spot created successfully!');

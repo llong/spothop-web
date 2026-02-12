@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import supabase from 'src/supabase';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
+import { analytics } from 'src/lib/posthog';
 
 export function useMediaLikes() {
     const user = useAtomValue(userAtom);
@@ -27,6 +28,11 @@ export function useMediaLikes() {
 
                 const { error } = await query;
                 if (error) throw error;
+                
+                analytics.capture('media_unliked', {
+                    media_id: mediaId,
+                    media_type: mediaType
+                });
             } else {
                 const { error } = await supabase
                     .from('media_likes')
@@ -38,6 +44,11 @@ export function useMediaLikes() {
                     });
 
                 if (error) throw error;
+
+                analytics.capture('media_liked', {
+                    media_id: mediaId,
+                    media_type: mediaType
+                });
             }
 
             return { success: true };

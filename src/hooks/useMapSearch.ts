@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { mapAtom, getSpotsAtom, searchedLocationAtom } from 'src/atoms/map';
 import { useNavigate } from '@tanstack/react-router';
+import { analytics } from 'src/lib/posthog';
 
 export const useMapSearch = () => {
     const map = useAtomValue(mapAtom);
@@ -61,6 +62,15 @@ export const useMapSearch = () => {
 
             // 3. Update URL
             navigate({ to: '/spots', search: { lat, lng } });
+
+            // 4. Track Search
+            analytics.capture('search_performed', {
+                query: name,
+                latitude: lat,
+                longitude: lng,
+                place_types: types,
+                is_broad_location: isBroadLocation
+            });
         }
     }, [map, getSpots, setSearchedLocation, navigate]);
 

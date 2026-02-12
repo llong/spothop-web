@@ -3,6 +3,7 @@ import supabase from 'src/supabase';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import type { SpotComment } from 'src/types';
+import { analytics } from 'src/lib/posthog';
 
 export function useComments(spotId: string) {
     const user = useAtomValue(userAtom);
@@ -99,6 +100,12 @@ export function useComments(spotId: string) {
                 .single();
 
             if (error) throw error;
+
+            analytics.capture('comment_added', {
+                spot_id: spotId,
+                is_reply: !!parentId,
+                comment_id: data.id
+            });
 
             await fetchComments();
             return { success: true, data };

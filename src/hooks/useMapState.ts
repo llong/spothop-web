@@ -42,8 +42,23 @@ export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngB
                     };
                     setUserLocation(coords);
                     setGlobalUserLocation({ latitude: coords.lat, longitude: coords.lng });
+                    
+                    // Only update map view if we are explicitly following the user AND NO search params exist
+                    // AND we haven't moved the map manually recently (handled by isFollowingUser)
                     if (isFollowingUser && !lat && !lng) {
-                        map.panTo([coords.lat, coords.lng]);
+                        const currentCenter = map.getCenter();
+                        const dist = L.latLng(coords.lat, coords.lng).distanceTo(currentCenter);
+                        
+                        // Only pan and refetch if we moved significantly (> 50 meters)
+                        // This prevents micro-stuttering updates from refreshing the list constantly
+                        if (dist > 50) {
+                            map.panTo([coords.lat, coords.lng]);
+                            
+                            // Debounce/Throttle this in a real app, but for now just check distance
+                            setTimeout(() => {
+                                getSpots(map.getBounds());
+                            }, 500);
+                        }
                     }
                 },
                 (error) => console.error('[useMapState] Geolocation error:', error),

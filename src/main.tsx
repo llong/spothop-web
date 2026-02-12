@@ -13,6 +13,11 @@ import { routeTree } from './routeTree.gen'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { get, set, del } from 'idb-keyval'
+import { PostHogProvider } from 'posthog-js/react'
+import { initPostHog, analytics } from './lib/posthog'
+
+// Initialize PostHog
+initPostHog();
 
 // Create a new router instance
 const queryClient = new QueryClient({
@@ -69,16 +74,18 @@ const renderApp = async () => {
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={customStore} >
-      <QueryClientProvider client={queryClient}>
-        {DevToolsComponent && <DevToolsComponent store={customStore} />}
-        {import.meta.env.MODE !== 'production' && (
-          <ReactQueryDevtools
-            initialIsOpen={false}
-            buttonPosition="bottom-left"
-          />
-        )}
-        <RouterProvider router={router} />
-      </QueryClientProvider>
+      <PostHogProvider client={analytics}>
+        <QueryClientProvider client={queryClient}>
+          {DevToolsComponent && <DevToolsComponent store={customStore} />}
+          {import.meta.env.MODE !== 'production' && (
+            <ReactQueryDevtools
+              initialIsOpen={false}
+              buttonPosition="bottom-left"
+            />
+          )}
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </PostHogProvider>
     </Provider>,
   )
 };

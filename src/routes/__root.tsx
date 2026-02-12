@@ -16,6 +16,7 @@ import { Snackbar, Alert } from '@mui/material'
 import { useLoadScript } from '@react-google-maps/api'
 import { isGoogleMapsLoadedAtom } from 'src/atoms/map'
 import { useMemo } from 'react'
+import { analytics } from 'src/lib/posthog'
 
 export function RootComponent() {
     const setIsGoogleMapsLoaded = useSetAtom(isGoogleMapsLoadedAtom);
@@ -41,17 +42,29 @@ export function RootComponent() {
     const [toast, setToast] = useAtom(globalToastAtom);
     const rightSidebarContent = useAtomValue(rightSidebarAtom);
 
+    // Track page views
+    useEffect(() => {
+        analytics.capture('$pageview');
+    }, [location.pathname]);
+
     // 1. STABLE AUTH LISTENER
     useEffect(() => {
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(prev => {
                 if (session?.access_token === prev?.session?.access_token) return prev;
                 if (session) {
+                    // Identify user in PostHog
+                    analytics.identify(session.user.id, {
+                        email: session.user.email
+                    });
+                    
                     return {
                         user: session.user,
                         session,
                     };
                 }
+                // Reset PostHog user
+                analytics.reset();
                 return null;
             });
         })

@@ -11,6 +11,7 @@ import { UserStats } from './-components/UserStats';
 import { profileService } from 'src/services/profileService';
 import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 import { chatService, blockService } from 'src/services/chatService';
+import { analytics } from 'src/lib/posthog';
 
 // Loader function to fetch profile data
 const loader = async ({ params, context }: { params: { username: string }, context: any }) => {
@@ -96,6 +97,7 @@ const PublicProfileComponent = () => {
                     .eq('follower_id', user.user.id)
                     .eq('following_id', profile.id);
                 setIsFollowing(false);
+                analytics.capture('user_unfollowed', { target_user_id: profile.id });
             } else {
                 await supabase
                     .from('user_followers')
@@ -104,6 +106,7 @@ const PublicProfileComponent = () => {
                         following_id: profile.id
                     });
                 setIsFollowing(true);
+                analytics.capture('user_followed', { target_user_id: profile.id });
             }
             // Invalidate the social stats query to refresh follower counts
             await queryClient.invalidateQueries({ queryKey: profileKeys.social(profile.id) });
