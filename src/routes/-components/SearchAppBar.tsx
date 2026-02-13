@@ -74,11 +74,24 @@ export default function SearchAppBar() {
 
     return (
         <Toolbar sx={{ gap: 1 }}>
+            <Box
+                component="img"
+                src="/spothopIcon.png"
+                alt="SpotHop Logo"
+                sx={{ 
+                    height: 32, 
+                    width: 'auto', 
+                    cursor: 'pointer', 
+                    flexShrink: 0,
+                    mr: 1
+                }}
+                onClick={() => navigate({ to: '/feed' })}
+            />
             <Typography
                 variant="h6"
                 noWrap
                 component="div"
-                sx={{ cursor: 'pointer', flexShrink: 0, fontWeight: 900 }}
+                sx={{ cursor: 'pointer', flexShrink: 0, fontWeight: 900, display: { xs: 'none', sm: 'block' } }}
                 onClick={() => navigate({ to: '/feed' })}
             >
                 SpotHop

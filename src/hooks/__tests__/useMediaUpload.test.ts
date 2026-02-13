@@ -3,8 +3,13 @@ import { useMediaUpload } from '../useMediaUpload';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import supabase from 'src/supabase';
 import { optimizePhoto } from 'src/utils/imageOptimization';
+import { checkContent } from 'src/utils/moderation';
 
 // Mock dependencies
+vi.mock('src/utils/moderation', () => ({
+    checkContent: vi.fn().mockResolvedValue({ safe: true }),
+}));
+
 vi.mock('src/supabase', () => ({
     default: {
         storage: {
@@ -46,6 +51,7 @@ describe('useMediaUpload hook', () => {
 
         await result.current.uploadMedia('spot123', [mockFile], []);
 
+        expect(checkContent).toHaveBeenCalledWith(mockFile);
         expect(optimizePhoto).toHaveBeenCalledWith(mockFile);
         expect(supabase.storage.from).toHaveBeenCalledWith('spot-media');
         expect(supabase.from).toHaveBeenCalledWith('spot_photos');

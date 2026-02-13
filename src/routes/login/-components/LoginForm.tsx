@@ -9,11 +9,9 @@ import {
     Link as MuiLink,
     Alert,
     Paper,
-    Avatar,
     Stack
 } from '@mui/material';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import supabase from '../../../supabase';
+import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 
@@ -67,11 +65,14 @@ export function LoginForm() {
                         borderRadius: 2
                     }}
                 >
-                    <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                        <LockOutlinedIcon />
-                    </Avatar>
-                    <Typography component="h1" variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-                        Sign in to SpotHop
+                    <Box
+                        component="img"
+                        src="/spothopIcon.png"
+                        alt="SpotHop Logo"
+                        sx={{ height: 80, width: 'auto', mb: 2 }}
+                    />
+                    <Typography component="h1" variant="h5" sx={{ mb: 3, fontWeight: 900 }}>
+                        SpotHop
                     </Typography>
 
                     {error && <Alert severity="error" sx={{ width: "100%", mb: 2 }}>{error}</Alert>}

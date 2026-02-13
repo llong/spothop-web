@@ -15,11 +15,15 @@ import {
 } from '@mui/material';
 import supabase from 'src/supabase';
 import { useState } from 'react';
+import { FormControlLabel, Checkbox } from '@mui/material';
 
 const signupSchema = z.object({
     email: z.string().email({ message: 'Invalid email address' }).trim(),
     password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
     confirmPassword: z.string(),
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+        message: "You must agree to the Terms of Service"
+    }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ['confirmPassword'],
@@ -32,8 +36,9 @@ export function SignupForm() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
-    const { register, handleSubmit, formState: { errors } } = useForm<SignupFormInputs>({
+    const { register, handleSubmit, formState: { errors, isValid } } = useForm<SignupFormInputs>({
         resolver: zodResolver(signupSchema),
+        mode: 'onChange',
     });
 
     const onSubmit = async (data: SignupFormInputs) => {
@@ -99,8 +104,14 @@ export function SignupForm() {
                     alignItems: 'center',
                 }}
             >
-                <Typography component="h1" variant="h5">
-                    Sign up
+                <Box
+                    component="img"
+                    src="/spothopIcon.png"
+                    alt="SpotHop Logo"
+                    sx={{ height: 60, width: 'auto', mb: 2 }}
+                />
+                <Typography component="h1" variant="h5" sx={{ fontWeight: 900, mb: 3 }}>
+                    Sign Up for SpotHop
                 </Typography>
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1 }}>
                     <Stack spacing={2}>
@@ -133,12 +144,30 @@ export function SignupForm() {
                             error={!!errors.confirmPassword}
                             helperText={errors.confirmPassword?.message}
                         />
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    {...register('agreeToTerms')}
+                                    color="primary"
+                                />
+                            }
+                            label={
+                                <Typography variant="body2">
+                                    I agree to the <MuiLink component={Link} to="/terms" target="_blank">Terms of Service</MuiLink> and permit SpotHop to use my uploaded content.
+                                </Typography>
+                            }
+                        />
+                        {errors.agreeToTerms && (
+                            <Typography variant="caption" color="error">
+                                {errors.agreeToTerms.message}
+                            </Typography>
+                        )}
                     </Stack>
                     <Button
                         type="submit"
                         fullWidth
                         variant="contained"
-                        disabled={isLoading}
+                        disabled={isLoading || !isValid}
                         sx={{ mt: 3, mb: 2 }}
                     >
                         {isLoading ? 'Creating account...' : 'Sign Up'}

@@ -1,5 +1,6 @@
 import supabase from 'src/supabase';
 import { optimizePhoto, generateImageFilename } from 'src/utils/imageOptimization';
+import { checkContent } from 'src/utils/moderation';
 import type { VideoAsset } from 'src/types';
 
 interface UseMediaUploadProps {
@@ -21,6 +22,14 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
 
             for (let i = 0; i < photos.length; i++) {
                 const photo = photos[i];
+
+                // Moderate content before processing
+                setStatusMessage(`Scanning photo ${i + 1}/${photos.length} for safety...`);
+                const moderationResult = await checkContent(photo);
+                if (!moderationResult.safe) {
+                    throw new Error(`Upload rejected: ${moderationResult.reason || 'Content violation detected'}`);
+                }
+
                 const { original, thumbnailSmall, thumbnailLarge } = await optimizePhoto(photo);
                 const filename = generateImageFilename(user.user.id);
 
@@ -61,6 +70,18 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
             for (let i = 0; i < videos.length; i++) {
                 const videoAsset = videos[i];
                 const videoFile = videoAsset.file;
+
+                // Moderate content before processing (if possible for videos, otherwise skip or check thumbnail)
+                // Note: Full video moderation is expensive/slow. For MVP, we might check the thumbnail
+                // if one exists, or rely on post-upload moderation.
+                // Here we'll check the file itself if the service supports it, or skip.
+                // The mock service just checks the file object, so we'll run it.
+                setStatusMessage(`Scanning video ${i + 1}/${videos.length} for safety...`);
+                const moderationResult = await checkContent(videoFile);
+                if (!moderationResult.safe) {
+                    throw new Error(`Upload rejected: ${moderationResult.reason || 'Content violation detected'}`);
+                }
+
                 const fileExt = videoFile.name.split('.').pop();
                 const videoFilename = `${Math.random()}.${fileExt}`;
                 const videoPath = `spots/${spotId}/videos/originals/${videoFilename}`;

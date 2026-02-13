@@ -17,4 +17,4 @@
 
 
 # Supabase
-You should have MCP access to Supabase to verify backend configuration. If you cannot access you should inform the developer.
+You should have MCP access to Supabase (project ID: wbkpofmvjcmdqbivocqc) to verify backend configuration. If you cannot access you should inform the developer.
