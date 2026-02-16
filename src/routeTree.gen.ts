@@ -20,12 +20,15 @@ import { Route as NotificationsIndexRouteImport } from './routes/notifications/i
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as ForgotPasswordIndexRouteImport } from './routes/forgot-password/index'
 import { Route as FeedIndexRouteImport } from './routes/feed/index'
+import { Route as ContestsIndexRouteImport } from './routes/contests/index'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as SpotsNewRouteImport } from './routes/spots/new'
 import { Route as SpotsSpotIdRouteImport } from './routes/spots/$spotId'
 import { Route as ProfileUsernameRouteImport } from './routes/profile/$username'
+import { Route as ContestsContestIdRouteImport } from './routes/contests/$contestId'
 import { Route as ChatConversationIdRouteImport } from './routes/chat/$conversationId'
+import { Route as AdminContestsRouteImport } from './routes/admin/contests'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -82,6 +85,11 @@ const FeedIndexRoute = FeedIndexRouteImport.update({
   path: '/feed/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/feed/index.lazy').then((d) => d.Route))
+const ContestsIndexRoute = ContestsIndexRouteImport.update({
+  id: '/contests/',
+  path: '/contests/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -107,40 +115,56 @@ const ProfileUsernameRoute = ProfileUsernameRouteImport.update({
   path: '/profile/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContestsContestIdRoute = ContestsContestIdRouteImport.update({
+  id: '/contests/$contestId',
+  path: '/contests/$contestId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatConversationIdRoute = ChatConversationIdRouteImport.update({
   id: '/chat/$conversationId',
   path: '/chat/$conversationId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminContestsRoute = AdminContestsRouteImport.update({
+  id: '/admin/contests',
+  path: '/admin/contests',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/terms': typeof TermsRoute
+  '/admin/contests': typeof AdminContestsRoute
   '/chat/$conversationId': typeof ChatConversationIdRoute
+  '/contests/$contestId': typeof ContestsContestIdRoute
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
-  '/admin': typeof AdminIndexRoute
-  '/chat': typeof ChatIndexRoute
-  '/feed': typeof FeedIndexRoute
-  '/forgot-password': typeof ForgotPasswordIndexRoute
-  '/login': typeof LoginIndexRoute
-  '/notifications': typeof NotificationsIndexRoute
-  '/profile': typeof ProfileIndexRoute
-  '/signup': typeof SignupIndexRoute
-  '/spots': typeof SpotsIndexRoute
-  '/update-password': typeof UpdatePasswordIndexRoute
-  '/welcome': typeof WelcomeIndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/chat/': typeof ChatIndexRoute
+  '/contests/': typeof ContestsIndexRoute
+  '/feed/': typeof FeedIndexRoute
+  '/forgot-password/': typeof ForgotPasswordIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/notifications/': typeof NotificationsIndexRoute
+  '/profile/': typeof ProfileIndexRoute
+  '/signup/': typeof SignupIndexRoute
+  '/spots/': typeof SpotsIndexRoute
+  '/update-password/': typeof UpdatePasswordIndexRoute
+  '/welcome/': typeof WelcomeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/terms': typeof TermsRoute
+  '/admin/contests': typeof AdminContestsRoute
   '/chat/$conversationId': typeof ChatConversationIdRoute
+  '/contests/$contestId': typeof ContestsContestIdRoute
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
   '/admin': typeof AdminIndexRoute
   '/chat': typeof ChatIndexRoute
+  '/contests': typeof ContestsIndexRoute
   '/feed': typeof FeedIndexRoute
   '/forgot-password': typeof ForgotPasswordIndexRoute
   '/login': typeof LoginIndexRoute
@@ -155,12 +179,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/terms': typeof TermsRoute
+  '/admin/contests': typeof AdminContestsRoute
   '/chat/$conversationId': typeof ChatConversationIdRoute
+  '/contests/$contestId': typeof ContestsContestIdRoute
   '/profile/$username': typeof ProfileUsernameRoute
   '/spots/$spotId': typeof SpotsSpotIdRoute
   '/spots/new': typeof SpotsNewRoute
   '/admin/': typeof AdminIndexRoute
   '/chat/': typeof ChatIndexRoute
+  '/contests/': typeof ContestsIndexRoute
   '/feed/': typeof FeedIndexRoute
   '/forgot-password/': typeof ForgotPasswordIndexRoute
   '/login/': typeof LoginIndexRoute
@@ -176,31 +203,37 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/terms'
+    | '/admin/contests'
     | '/chat/$conversationId'
+    | '/contests/$contestId'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
-    | '/admin'
-    | '/chat'
-    | '/feed'
-    | '/forgot-password'
-    | '/login'
-    | '/notifications'
-    | '/profile'
-    | '/signup'
-    | '/spots'
-    | '/update-password'
-    | '/welcome'
+    | '/admin/'
+    | '/chat/'
+    | '/contests/'
+    | '/feed/'
+    | '/forgot-password/'
+    | '/login/'
+    | '/notifications/'
+    | '/profile/'
+    | '/signup/'
+    | '/spots/'
+    | '/update-password/'
+    | '/welcome/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/terms'
+    | '/admin/contests'
     | '/chat/$conversationId'
+    | '/contests/$contestId'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
     | '/admin'
     | '/chat'
+    | '/contests'
     | '/feed'
     | '/forgot-password'
     | '/login'
@@ -214,12 +247,15 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/terms'
+    | '/admin/contests'
     | '/chat/$conversationId'
+    | '/contests/$contestId'
     | '/profile/$username'
     | '/spots/$spotId'
     | '/spots/new'
     | '/admin/'
     | '/chat/'
+    | '/contests/'
     | '/feed/'
     | '/forgot-password/'
     | '/login/'
@@ -234,12 +270,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TermsRoute: typeof TermsRoute
+  AdminContestsRoute: typeof AdminContestsRoute
   ChatConversationIdRoute: typeof ChatConversationIdRoute
+  ContestsContestIdRoute: typeof ContestsContestIdRoute
   ProfileUsernameRoute: typeof ProfileUsernameRoute
   SpotsSpotIdRoute: typeof SpotsSpotIdRoute
   SpotsNewRoute: typeof SpotsNewRoute
   AdminIndexRoute: typeof AdminIndexRoute
   ChatIndexRoute: typeof ChatIndexRoute
+  ContestsIndexRoute: typeof ContestsIndexRoute
   FeedIndexRoute: typeof FeedIndexRoute
   ForgotPasswordIndexRoute: typeof ForgotPasswordIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
@@ -270,77 +309,84 @@ declare module '@tanstack/react-router' {
     '/welcome/': {
       id: '/welcome/'
       path: '/welcome'
-      fullPath: '/welcome'
+      fullPath: '/welcome/'
       preLoaderRoute: typeof WelcomeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/update-password/': {
       id: '/update-password/'
       path: '/update-password'
-      fullPath: '/update-password'
+      fullPath: '/update-password/'
       preLoaderRoute: typeof UpdatePasswordIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/spots/': {
       id: '/spots/'
       path: '/spots'
-      fullPath: '/spots'
+      fullPath: '/spots/'
       preLoaderRoute: typeof SpotsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup/': {
       id: '/signup/'
       path: '/signup'
-      fullPath: '/signup'
+      fullPath: '/signup/'
       preLoaderRoute: typeof SignupIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile/': {
       id: '/profile/'
       path: '/profile'
-      fullPath: '/profile'
+      fullPath: '/profile/'
       preLoaderRoute: typeof ProfileIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications/': {
       id: '/notifications/'
       path: '/notifications'
-      fullPath: '/notifications'
+      fullPath: '/notifications/'
       preLoaderRoute: typeof NotificationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login/': {
       id: '/login/'
       path: '/login'
-      fullPath: '/login'
+      fullPath: '/login/'
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password/': {
       id: '/forgot-password/'
       path: '/forgot-password'
-      fullPath: '/forgot-password'
+      fullPath: '/forgot-password/'
       preLoaderRoute: typeof ForgotPasswordIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed/': {
       id: '/feed/'
       path: '/feed'
-      fullPath: '/feed'
+      fullPath: '/feed/'
       preLoaderRoute: typeof FeedIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contests/': {
+      id: '/contests/'
+      path: '/contests'
+      fullPath: '/contests/'
+      preLoaderRoute: typeof ContestsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/': {
       id: '/chat/'
       path: '/chat'
-      fullPath: '/chat'
+      fullPath: '/chat/'
       preLoaderRoute: typeof ChatIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
       id: '/admin/'
       path: '/admin'
-      fullPath: '/admin'
+      fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -365,11 +411,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contests/$contestId': {
+      id: '/contests/$contestId'
+      path: '/contests/$contestId'
+      fullPath: '/contests/$contestId'
+      preLoaderRoute: typeof ContestsContestIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat/$conversationId': {
       id: '/chat/$conversationId'
       path: '/chat/$conversationId'
       fullPath: '/chat/$conversationId'
       preLoaderRoute: typeof ChatConversationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/contests': {
+      id: '/admin/contests'
+      path: '/admin/contests'
+      fullPath: '/admin/contests'
+      preLoaderRoute: typeof AdminContestsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -378,12 +438,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TermsRoute: TermsRoute,
+  AdminContestsRoute: AdminContestsRoute,
   ChatConversationIdRoute: ChatConversationIdRoute,
+  ContestsContestIdRoute: ContestsContestIdRoute,
   ProfileUsernameRoute: ProfileUsernameRoute,
   SpotsSpotIdRoute: SpotsSpotIdRoute,
   SpotsNewRoute: SpotsNewRoute,
   AdminIndexRoute: AdminIndexRoute,
   ChatIndexRoute: ChatIndexRoute,
+  ContestsIndexRoute: ContestsIndexRoute,
   FeedIndexRoute: FeedIndexRoute,
   ForgotPasswordIndexRoute: ForgotPasswordIndexRoute,
   LoginIndexRoute: LoginIndexRoute,

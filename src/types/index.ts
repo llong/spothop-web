@@ -239,3 +239,63 @@ export interface AppNotification {
         avatarUrl: string | null;
     };
 }
+
+export type ContestStatus = 'draft' | 'active' | 'voting' | 'finished';
+
+export interface ContestCriteria {
+    allowed_spot_types?: string[];
+    allowed_rider_types?: string[];
+    allowed_difficulties?: string[];
+    allowed_is_lit?: boolean;
+    allowed_kickout_risk_max?: number;
+    location_latitude?: number;
+    location_longitude?: number;
+    location_radius_km?: number;
+    specific_spot_id?: string;
+    require_spot_creator_is_competitor?: boolean;
+    spot_creation_time_frame?: 'anytime' | 'during_competition' | 'last_30_days' | 'last_60_days' | 'last_90_days';
+    media_creation_time_frame?: 'anytime' | 'during_competition' | 'last_30_days' | 'last_60_days' | 'last_90_days';
+    required_media_types?: ('video' | 'photo')[];
+    max_entries_per_user?: number;
+    judges?: string[];
+    min_date?: string;
+    max_date?: string;
+}
+
+export interface Contest {
+    id: string;
+    title: string;
+    description: string;
+    status: ContestStatus;
+    start_date: string;
+    end_date: string;
+    flyer_url?: string;
+    prize_info?: string;
+    voting_type: 'public' | 'judges';
+    criteria: ContestCriteria;
+    entry_count?: number;
+    created_at?: string;
+}
+
+export type ContestEntryStatus = 'pending' | 'approved' | 'rejected' | 'disqualified' | 'winner';
+
+export interface ContestEntry {
+    id: string;
+    contest_id: string;
+    user_id: string;
+    spot_id: string;
+    media_type: 'photo' | 'video';
+    media_id: string;
+    status: ContestEntryStatus;
+    created_at: string;
+    media_url?: string;
+    vote_count?: number;
+    author?: {
+        username: string | null;
+        avatarUrl: string | null;
+    };
+    spot?: {
+        name: string;
+        city?: string;
+    };
+}

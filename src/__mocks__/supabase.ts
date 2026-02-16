@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-export const supabase = {
+export const supabase: any = {
     auth: {
         getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
         onAuthStateChange: vi.fn(() => ({

@@ -383,7 +383,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                         <Typography variant="caption" display="block" gutterBottom color="text.secondary">Allowed Spot Types</Typography>
                         <ToggleButtonGroup
                             value={formData.criteria?.allowed_spot_types || []}
-                            onChange={(_, val) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, allowed_spot_types: val } }))}
+                            onChange={(_, val) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, allowed_spot_types: val } }))}
                             size="small"
                             sx={{ flexWrap: 'wrap', gap: 1 }}
                         >
@@ -397,7 +397,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                         <Typography variant="caption" display="block" gutterBottom color="text.secondary">Allowed Rider Types</Typography>
                         <ToggleButtonGroup
                             value={formData.criteria?.allowed_rider_types || []}
-                            onChange={(_, val) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, allowed_rider_types: val } }))}
+                            onChange={(_, val) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, allowed_rider_types: val } }))}
                             size="small"
                             sx={{ flexWrap: 'wrap', gap: 1 }}
                         >
@@ -411,7 +411,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                         <Typography variant="caption" display="block" gutterBottom color="text.secondary">Allowed Difficulties</Typography>
                         <ToggleButtonGroup
                             value={formData.criteria?.allowed_difficulties || []}
-                            onChange={(_, val) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, allowed_difficulties: val } }))}
+                            onChange={(_, val) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, allowed_difficulties: val } }))}
                             size="small"
                             sx={{ flexWrap: 'wrap', gap: 1 }}
                         >
@@ -426,7 +426,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                             control={
                                 <Switch
                                     checked={formData.criteria?.allowed_is_lit === true}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, allowed_is_lit: e.target.checked } }))}
+                                    onChange={(e) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, allowed_is_lit: e.target.checked } }))}
                                 />
                             }
                             label="Must be Lit"
@@ -441,7 +441,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                                 max={5}
                                 step={1}
                                 marks
-                                onChange={(_, val) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, allowed_kickout_risk_max: val as number } }))}
+                                onChange={(_, val) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, allowed_kickout_risk_max: val as number } }))}
                             />
                         </Box>
                     </Grid>
@@ -481,7 +481,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                                     max={100}
                                     onChange={(_, val) => {
                                         const km = radiusUnit === 'miles' ? (val as number) * 1.60934 : (val as number);
-                                        setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, location_radius_km: km } }));
+                                        setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, location_radius_km: km } }));
                                     }}
                                 />
                             </Box>
@@ -502,7 +502,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                             fullWidth
                             label="Specific Spot ID Restriction (Optional)"
                             value={formData.criteria?.specific_spot_id || ''}
-                            onChange={(e) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, specific_spot_id: e.target.value } }))}
+                            onChange={(e) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, specific_spot_id: e.target.value } }))}
                             helperText="Enter a spot UUID to restrict this contest to one location."
                         />
                     </Grid>
@@ -514,7 +514,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                             control={
                                 <Switch
                                     checked={formData.criteria?.require_spot_creator_is_competitor === true}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, require_spot_creator_is_competitor: e.target.checked } }))}
+                                    onChange={(e) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, require_spot_creator_is_competitor: e.target.checked } }))}
                                 />
                             }
                             label="Require Competitor Created the Spot"
@@ -527,7 +527,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                             fullWidth
                             label="Spot Creation Time Frame"
                             value={formData.criteria?.spot_creation_time_frame || 'anytime'}
-                            onChange={(e) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, spot_creation_time_frame: e.target.value as any } }))}
+                            onChange={(e) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, spot_creation_time_frame: e.target.value as any } }))}
                         >
                             <MenuItem value="anytime">Anytime</MenuItem>
                             <MenuItem value="during_competition">During Competition</MenuItem>
@@ -543,7 +543,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                             fullWidth
                             label="Media Creation Time Frame"
                             value={formData.criteria?.media_creation_time_frame || 'anytime'}
-                            onChange={(e) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, media_creation_time_frame: e.target.value as any } }))}
+                            onChange={(e) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, media_creation_time_frame: e.target.value as any } }))}
                         >
                             <MenuItem value="anytime">Anytime</MenuItem>
                             <MenuItem value="during_competition">During Competition</MenuItem>
@@ -557,7 +557,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                         <Typography variant="caption" display="block" gutterBottom color="text.secondary">Allowed Media Types (Default: Video)</Typography>
                         <ToggleButtonGroup
                             value={formData.criteria?.required_media_types || ['video']}
-                            onChange={(_, val) => setFormData(prev => ({ ...prev, criteria: { ...prev.criteria, required_media_types: val } }))}
+                            onChange={(_, val) => setFormData((prev: Partial<Contest>) => ({ ...prev, criteria: { ...prev.criteria, required_media_types: val } }))}
                             size="small"
                             sx={{ flexWrap: 'wrap', gap: 1 }}
                         >
@@ -574,7 +574,7 @@ function ContestFormDialog({ open, onClose, contest }: { open: boolean, onClose:
                             value={formData.criteria?.max_entries_per_user || 1}
                             onChange={(e) => {
                                 const val = parseInt(e.target.value);
-                                setFormData(prev => ({
+                                setFormData((prev: Partial<Contest>) => ({
                                     ...prev,
                                     criteria: {
                                         ...prev.criteria,

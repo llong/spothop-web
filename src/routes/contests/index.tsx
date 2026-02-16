@@ -179,7 +179,7 @@ function ContestsPage() {
                                         </Typography>
 
                                         <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                                            {contest.criteria?.required_media_types?.map(t => (
+                                            {contest.criteria?.required_media_types?.map((t: string) => (
                                                 <Chip key={t} label={`${t} contest`} size="small" variant="outlined" />
                                             ))}
                                         </Box>
