@@ -1,11 +1,10 @@
 # Quality Assurance
 - Be sure to remove unused imports from files before saving
 - **NEVER** commit files containing Git merge conflict markers (<<<<<<<, =======, >>>>>>>). Always verify file content and run a local build/test before pushing.
-- **ALWAYS** use absolute path aliases @/ for file imports and not relative ../ paths
 
 # UI Standards
 - Use MUI components to create components - follow latest documentation: https://mui.com/material-ui/all-components/
-- Remember the Grid component from MUI does not have an item prop and for sizing it uses a "size" prop object ie: size={{sm:12,md:6}}. This applies to all usages of Grid, including nested Grids. Ensure consistent application of this prop for responsive layouts.
+- Remember the Grid component from MUI does not have an item prop and for sizing it uses a "size" prop object ie: size={{sm:12,md:6}}
 
 # Project Management
 - when creating sprints each task should be numbered
