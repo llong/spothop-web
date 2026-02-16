@@ -1,6 +1,7 @@
 # Quality Assurance
 - Be sure to remove unused imports from files before saving
 - **NEVER** commit files containing Git merge conflict markers (<<<<<<<, =======, >>>>>>>). Always verify file content and run a local build/test before pushing.
+- **ALWAYS** use absolute path aliases @/ for file imports and not relative ../ paths
 
 # UI Standards
 - Use MUI components to create components - follow latest documentation: https://mui.com/material-ui/all-components/

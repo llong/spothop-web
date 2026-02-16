@@ -21,6 +21,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
+        navigateFallbackAllowlist: [/^(?!\/__).*/], // Allow all routes except those starting with /__ (Firebase/Vercel internals)
       },
       manifest: {
         name: "SpotHop",

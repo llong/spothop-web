@@ -19,6 +19,6 @@
 - [x] **Privacy Policy**: Outline data collection and usage (PostHog/Supabase).
 
 ## 4. UI Polish & Seeding
-- [ ] **Empty States**: Improve UX for areas with no data.
+- [x] **Empty States**: Improve UX for areas with no data.
 - [ ] **Navigation Polish**: Final check for mobile-responsive issues and navigation bugs.
 - [ ] **Owner Seeding**: Verify and optimize the mobile upload flow for the owner's manual spot seeding.

@@ -22,9 +22,16 @@
   - Geographic discovery (Near Me).
   - Recommendation engine foundations.
 
-## Phase 4: Monetization & Growth (Sprints 12+) - BACKLOG
-- **Enhanced Analytics**: Detailed tracking of user journeys and content performance.
+## Phase 4: Monetization & Growth (Sprints 12-13) - COMPLETED/IN PROGRESS
+- **Enhanced Analytics**: Detailed tracking of user journeys and content performance (Sprint 12).
 - **Advanced Onboarding**: Tutorial-driven introduction to the platform.
 - **Brand Partnerships**: Integration of sponsored content and brand profiles (target: 500+ users).
 - **Ad Integration**: Strategic placement of in-feed advertisements.
 - **Premium Features**: Exclusive content access or enhanced profile capabilities for power users.
+
+## Phase 5: Competitions & Community Incentives (Sprint 14) - IN PROGRESS
+- **Sprint 14: Contests & Challenges** (Feb 15, 2026)
+  - Admin-led contest management system.
+  - Criteria-based entry submission (Date range, Spot Type, Rider Type).
+  - Flexible voting models (Judges or Public).
+  - Gamified incentives to drive spot creation and media quality.

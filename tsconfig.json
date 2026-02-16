@@ -9,6 +9,9 @@
     }
   ],
   "compilerOptions": {
+    "composite": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "baseUrl": ".",
     "paths": {
       "@/*": [
@@ -26,6 +29,15 @@
       "@services/*": [
         "src/services/*"
       ]
-    }
+    },
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   }
 }

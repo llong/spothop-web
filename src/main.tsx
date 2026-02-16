@@ -16,8 +16,7 @@ import { get, set, del } from 'idb-keyval'
 import { PostHogProvider } from 'posthog-js/react'
 import { initPostHog, analytics } from './lib/posthog'
 
-// Initialize PostHog
-initPostHog();
+// PostHog initialized in renderApp
 
 // Create a new router instance
 const queryClient = new QueryClient({
@@ -64,6 +63,9 @@ persistQueryClient({
 
 // For now, let's just use a more robust way to exclude it from production
 const renderApp = async () => {
+  // Initialize PostHog
+  await initPostHog();
+
   let DevToolsComponent = null;
 
   if (import.meta.env.MODE !== 'production') {
