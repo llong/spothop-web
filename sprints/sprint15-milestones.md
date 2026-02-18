@@ -15,3 +15,7 @@
 - [x] Implement unit tests for `DetailsMediaSection` (>80% coverage)
 - [x] Implement unit tests for `MediaListItem` (>80% coverage)
 - [x] Verify all tests pass locally
+
+## Milestone 3: Security & Production Hardening
+- [x] Secure Sightengine API keys by moving moderation logic to a Supabase Edge Function
+- [x] Fix Vercel caching issues for Spot Details and Pro History clips

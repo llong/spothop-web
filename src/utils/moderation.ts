@@ -10,32 +10,22 @@ export interface ModerationResult {
     details?: any;
 }
 
-// Real implementation using Sightengine
+import supabase from 'src/supabase';
+
+// Real implementation using Supabase Edge Function
 const checkContentReal = async (file: File): Promise<ModerationResult> => {
-    // Check if keys are available
-    const apiUser = import.meta.env.VITE_SIGHTENGINE_USER;
-    const apiSecret = import.meta.env.VITE_SIGHTENGINE_SECRET;
-
-    if (!apiUser || !apiSecret) {
-        console.warn('Sightengine API keys missing. Skipping moderation.');
-        return { safe: true };
-    }
-
     try {
         const formData = new FormData();
         formData.append('media', file);
-        // Models: nudity, weapons, alcohol, drugs, offensive, scam, gore
-        // 'nudity-2.0' is the newer model, but 'nudity' is standard. Let's use standard set.
-        formData.append('models', 'nudity,wad,offensive,scam,gore');
-        formData.append('api_user', apiUser);
-        formData.append('api_secret', apiSecret);
 
-        const response = await fetch('https://api.sightengine.com/1.0/check.json', {
-            method: 'POST',
-            body: formData
+        const { data, error } = await supabase.functions.invoke('moderate-content', {
+            body: formData,
         });
 
-        const data = await response.json();
+        if (error) {
+            console.error('Moderation function error:', error);
+            return { safe: true };
+        }
 
         if (data.status !== 'success') {
             console.error('Sightengine API error:', data);
