@@ -19,7 +19,10 @@ export const ProPartsTab = ({ spot, currentUserId }: ProPartsTabProps) => {
 
     const handleSuccess = () => {
         // Invalidate spot query to refresh data
-        queryClient.invalidateQueries({ queryKey: spotKeys.details(spot.id) });
+        queryClient.invalidateQueries({ 
+            queryKey: spotKeys.details(spot.id),
+            refetchType: 'all'
+        });
     };
 
     const handleLike = async (id: string, isLiked: boolean) => {
@@ -28,7 +31,10 @@ export const ProPartsTab = ({ spot, currentUserId }: ProPartsTabProps) => {
         // Optimistic update could go here, but for simplicity we'll just invalidate
         try {
             await spotService.toggleVideoLinkLike(id, currentUserId, isLiked);
-            queryClient.invalidateQueries({ queryKey: spotKeys.details(spot.id) });
+            queryClient.invalidateQueries({ 
+                queryKey: spotKeys.details(spot.id),
+                refetchType: 'all'
+            });
         } catch (error) {
             console.error('Failed to toggle like', error);
         }

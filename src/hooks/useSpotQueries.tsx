@@ -14,7 +14,8 @@ export function useSpotQuery(spotId: string, userId?: string) {
         queryKey: spotKeys.details(spotId),
         queryFn: () => spotService.fetchSpotDetails(spotId, userId),
         enabled: !!spotId,
-        staleTime: 1000 * 60 * 5, // 5 minutes (standard stale time)
+        staleTime: 0, // Always consider details stale to ensure fresh data on mount
+        gcTime: 1000 * 60 * 10, // Keep in cache for 10 mins
     });
 }
 
