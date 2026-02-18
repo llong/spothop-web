@@ -23,11 +23,13 @@ const checkContentReal = async (file: File): Promise<ModerationResult> => {
         });
 
         if (error) {
-            console.error('Moderation function error:', error);
+            // If the function doesn't exist (e.g. not running locally or not deployed yet), 
+            // log a warning but allow the upload to proceed for better DX.
+            console.warn('Moderation function unavailable, skipping check:', error);
             return { safe: true };
         }
 
-        if (data.status !== 'success') {
+        if (!data || data.status !== 'success') {
             console.error('Sightengine API error:', data);
             // Fail open or closed? Failing open for MVP to avoid blocking valid users on API error, 
             // but logging it.
