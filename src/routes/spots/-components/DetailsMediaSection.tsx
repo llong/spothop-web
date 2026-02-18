@@ -28,6 +28,8 @@ export const DetailsMediaSection = ({ spot, currentUserId, onLike, onComment, on
     const filteredMedia = spot.media?.filter((m: MediaItem) => (mediaTab === 0 ? m.type === 'photo' : m.type === 'video')) || [];
     const proPartsCount = spot.videoLinks?.length || 0;
 
+    console.log('[DetailsMediaSection] Media:', spot.media?.length, 'Pro Parts:', proPartsCount);
+
     return (
         <Box>
             <Tabs
