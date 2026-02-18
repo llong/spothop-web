@@ -104,7 +104,6 @@ describe('spotService', () => {
 
     it('toggles favorite status (delete)', async () => {
         const mockFrom = vi.mocked(supabase.from);
-        const mockDelete = vi.fn().mockResolvedValue({ error: null });
         mockFrom.mockReturnValue({
             delete: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
