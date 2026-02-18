@@ -30,6 +30,7 @@ import { DetailsSidebar } from './-components/DetailsSidebar';
 import { DetailsInfo } from './-components/DetailsInfo';
 import { DetailsActions } from './-components/DetailsActions';
 import { DetailsMediaSection } from './-components/DetailsMediaSection';
+import SEO from 'src/components/SEO/SEO';
 import type { FeedItem, MediaItem } from 'src/types';
 import { analytics } from 'src/lib/posthog';
 
@@ -149,6 +150,12 @@ export function SpotDetails() {
 
     return (
         <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+            <SEO
+                title={spot.name}
+                description={`Check out ${spot.name} in ${spot.city}, ${spot.country}. A ${spot.spot_type} with ${spot.kickout_risk} kickout risk.`}
+                image={spot.media[0]?.url}
+                url={`/spots/${spot.id}`}
+            />
             <Box sx={{ position: 'relative', width: '100%' }}>
                 <MediaCarousel
                     media={spot.media}

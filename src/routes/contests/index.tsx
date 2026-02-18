@@ -20,6 +20,7 @@ import {
 import { Close as CloseIcon, ZoomIn as ZoomInIcon, EmojiEvents as EmojiEventsIcon } from '@mui/icons-material';
 import type { ContestStatus } from '@/types';
 import { useState } from 'react';
+import SEO from '@/components/SEO/SEO';
 
 export const Route = createFileRoute('/contests/')({
     component: ContestsPage,
@@ -53,6 +54,11 @@ function ContestsPage() {
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
+            <SEO
+                title="Contests & Challenges"
+                description="Showcase your skills, discover new spots, and win prizes in our community skate contests."
+                url="/contests"
+            />
             <Box mb={4}>
                 <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
                     Contests & Challenges

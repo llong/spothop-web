@@ -12,6 +12,7 @@ import { profileService } from 'src/services/profileService';
 import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
 import { chatService, blockService } from 'src/services/chatService';
 import { analytics } from 'src/lib/posthog';
+import SEO from '@/components/SEO/SEO';
 
 // Loader function to fetch profile data
 const loader = async ({ params, context }: { params: { username: string }, context: any }) => {
@@ -127,10 +128,16 @@ const PublicProfileComponent = () => {
 
     const isOwnProfile = user?.user.id === profile.id;
 
-
+    const displayName = profile.displayName || profile.username;
 
     return (
         <Container sx={{ mt: 5 }}>
+            <SEO
+                title={displayName || undefined}
+                description={`Check out ${displayName}'s profile on SpotHop. See their favorite spots and latest clips.`}
+                image={profile.avatarUrl || undefined}
+                url={`/profile/${profile.username}`}
+            />
             <Button onClick={() => navigate({ to: '..' })}>Back</Button>
             <Grid container spacing={3} justifyContent="center" sx={{ mt: 2 }}>
                 <Grid size={{ xs: 12, md: 8 }}>
@@ -138,10 +145,10 @@ const PublicProfileComponent = () => {
                         <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                             <Avatar
                                 src={profile.avatarUrl ? getOptimizedImageUrl(profile.avatarUrl) : ""}
-                                alt={`${profile.displayName || profile.username}'s avatar`}
+                                alt={`${displayName}'s avatar`}
                                 sx={{ width: 120, height: 120, mb: 2 }}
                             />
-                            <Typography variant="h4" component="h1" fontWeight={800}>{profile.displayName || profile.username}</Typography>
+                            <Typography variant="h4" component="h1" fontWeight={800}>{displayName}</Typography>
                             <Typography variant="subtitle1" component="p" color="text.secondary" gutterBottom>@{profile.username}</Typography>
                             <Typography variant="body1" component="p" color="text.secondary">{profile.city}, {profile.country}</Typography>
 

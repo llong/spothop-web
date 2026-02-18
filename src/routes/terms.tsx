@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { Container, Typography, Box, Paper, Button } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SEO from '@/components/SEO/SEO';
 
 export const Route = createFileRoute('/terms')({
     component: TermsComponent,
@@ -9,6 +10,11 @@ export const Route = createFileRoute('/terms')({
 function TermsComponent() {
     return (
         <Container maxWidth="md" sx={{ py: 8 }}>
+            <SEO
+                title="Terms and Conditions"
+                description="Terms and conditions for using SpotHop."
+                url="/terms"
+            />
             <Button
                 startIcon={<ArrowBackIcon />}
                 onClick={() => window.history.back()}

@@ -57,6 +57,27 @@ export interface Spot {
     thumbnail_small_url?: string;
     thumbnail_large_url?: string;
     media?: MediaItem[];
+    videoLinks?: SpotVideoLink[];
+}
+
+export interface SpotVideoLink {
+    id: string;
+    spot_id: string;
+    user_id: string;
+    youtube_video_id: string;
+    start_time: number;
+    end_time?: number;
+    description?: string;
+    skater_name?: string;
+    created_at: string;
+    updated_at: string;
+    like_count?: number;
+    is_liked_by_user?: boolean;
+    author?: {
+        username: string | null;
+        avatarUrl: string | null;
+        displayName: string | null;
+    };
 }
 
 export interface VideoAsset {

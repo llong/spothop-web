@@ -1,5 +1,5 @@
 import supabase from "../supabase";
-import type { MediaItem } from "../types";
+import type { MediaItem, SpotVideoLink } from "../types";
 import { reverseGeocode } from "../utils/geocoding";
 import { extractStoragePath } from "../utils/media-utils";
 
@@ -36,6 +36,20 @@ export const spotService = {
                     ),
                     media_comments!video_id (
                         id
+                    )
+                ),
+                spot_video_links (
+                    id,
+                    youtube_video_id,
+                    start_time,
+                    end_time,
+                    description,
+                    skater_name,
+                    created_at,
+                    updated_at,
+                    user_id,
+                    spot_video_link_likes (
+                        user_id
                     )
                 )
             `)
@@ -109,6 +123,7 @@ export const spotService = {
         const authorIds = [
             ...(spotData.spot_photos || []).map((p: any) => p.user_id),
             ...(spotData.spot_videos || []).map((v: any) => v.user_id),
+            ...(spotData.spot_video_links || []).map((l: any) => l.user_id),
             spotData.created_by
         ].filter((v, i, a) => v && a.indexOf(v) === i);
 
@@ -157,9 +172,24 @@ export const spotService = {
             };
         });
 
+        const videoLinks: SpotVideoLink[] = (spotData.spot_video_links || []).map((l: any) => {
+            const author = profileMap.get(l.user_id);
+            return {
+                ...l,
+                author: {
+                    username: author?.username || 'unknown',
+                    avatarUrl: author?.avatarUrl || null,
+                    displayName: author?.displayName || null,
+                },
+                like_count: l.spot_video_link_likes?.length || 0,
+                is_liked_by_user: userId ? l.spot_video_link_likes?.some((like: any) => like.user_id === userId) : false
+            };
+        });
+
         return {
             ...spotData,
             media: [...photos, ...videos],
+            videoLinks,
             creator: {
                 username: creatorProfile?.username || 'unknown',
                 avatarUrl: creatorProfile?.avatarUrl || null,
@@ -246,6 +276,117 @@ export const spotService = {
                 .upsert(
                     { user_id: userId, spot_id: spotId },
                     { onConflict: 'user_id,spot_id', ignoreDuplicates: true }
+                );
+            if (error) throw error;
+        }
+    },
+
+    /**
+     * Adds a YouTube video link to a spot
+     */
+    async addVideoLink(
+        spotId: string,
+        userId: string,
+        youtubeVideoId: string,
+        startTime: number,
+        endTime?: number,
+        description?: string,
+        skaterName?: string
+    ) {
+        const { data, error } = await supabase
+            .from('spot_video_links')
+            .insert({
+                spot_id: spotId,
+                user_id: userId,
+                youtube_video_id: youtubeVideoId,
+                start_time: startTime,
+                end_time: endTime,
+                description: description,
+                skater_name: skaterName
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Updates an existing video link
+     */
+    async updateVideoLink(
+        linkId: string,
+        youtubeVideoId: string,
+        startTime: number,
+        endTime?: number,
+        description?: string,
+        skaterName?: string
+    ) {
+        const { data, error } = await supabase
+            .from('spot_video_links')
+            .update({
+                youtube_video_id: youtubeVideoId,
+                start_time: startTime,
+                end_time: endTime,
+                description: description,
+                skater_name: skaterName
+            })
+            .eq('id', linkId)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return data;
+    },
+
+    /**
+     * Deletes a video link
+     */
+    async deleteVideoLink(linkId: string) {
+        const { error } = await supabase
+            .from('spot_video_links')
+            .delete()
+            .eq('id', linkId);
+
+        if (error) throw error;
+    },
+
+    /**
+     * Fetches unique skater names for suggestions
+     */
+    async fetchSkaterSuggestions(query: string) {
+        if (!query || query.length < 2) return [];
+
+        const { data, error } = await supabase
+            .from('spot_video_links')
+            .select('skater_name')
+            .ilike('skater_name', `%${query}%`)
+            .not('skater_name', 'is', null)
+            .limit(10);
+
+        if (error) throw error;
+
+        // Return unique names
+        return Array.from(new Set((data || []).map((item: any) => item.skater_name)));
+    },
+
+    /**
+     * Toggles like on a video link
+     */
+    async toggleVideoLinkLike(linkId: string, userId: string, isLiked: boolean) {
+        if (isLiked) {
+            const { error } = await supabase
+                .from('spot_video_link_likes')
+                .delete()
+                .eq('link_id', linkId)
+                .eq('user_id', userId);
+            if (error) throw error;
+        } else {
+            const { error } = await supabase
+                .from('spot_video_link_likes')
+                .upsert(
+                    { link_id: linkId, user_id: userId },
+                    { onConflict: 'link_id,user_id', ignoreDuplicates: true }
                 );
             if (error) throw error;
         }

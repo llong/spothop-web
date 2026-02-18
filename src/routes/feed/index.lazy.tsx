@@ -23,6 +23,7 @@ import { useRef, useCallback, useState, useMemo } from 'react';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { FeedFilterPanel } from './-components/FeedFilterPanel';
 import { FeedContent } from './-components/FeedContent';
+import SEO from 'src/components/SEO/SEO';
 import { analytics } from 'src/lib/posthog';
 
 export const Route = createLazyFileRoute('/feed/')({
@@ -50,6 +51,11 @@ export function FeedScreen() {
 
     return (
         <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+            <SEO
+                title="Feed"
+                description="Stay up to date with the latest skate spots and media from the SpotHop community."
+                url="/feed"
+            />
             <Box sx={{
                 position: 'sticky',
                 top: 0,

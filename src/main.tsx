@@ -14,6 +14,7 @@ import { persistQueryClient } from '@tanstack/react-query-persist-client'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { get, set, del } from 'idb-keyval'
 import { PostHogProvider } from 'posthog-js/react'
+import { HelmetProvider } from 'react-helmet-async'
 import { initPostHog, analytics } from './lib/posthog'
 
 // PostHog initialized in renderApp
@@ -76,18 +77,20 @@ const renderApp = async () => {
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <Provider store={customStore} >
-      <PostHogProvider client={analytics}>
-        <QueryClientProvider client={queryClient}>
-          {DevToolsComponent && <DevToolsComponent store={customStore} />}
-          {import.meta.env.MODE !== 'production' && (
-            <ReactQueryDevtools
-              initialIsOpen={false}
-              buttonPosition="bottom-left"
-            />
-          )}
-          <RouterProvider router={router} />
-        </QueryClientProvider>
-      </PostHogProvider>
+      <HelmetProvider>
+        <PostHogProvider client={analytics}>
+          <QueryClientProvider client={queryClient}>
+            {DevToolsComponent && <DevToolsComponent store={customStore} />}
+            {import.meta.env.MODE !== 'production' && (
+              <ReactQueryDevtools
+                initialIsOpen={false}
+                buttonPosition="bottom-left"
+              />
+            )}
+            <RouterProvider router={router} />
+          </QueryClientProvider>
+        </PostHogProvider>
+      </HelmetProvider>
     </Provider>,
   )
 };

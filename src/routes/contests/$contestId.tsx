@@ -31,6 +31,7 @@ import { userAtom } from '@/atoms/auth';
 import { useProfileQuery } from '@/hooks/useProfileQueries';
 import { useState } from 'react';
 import { ContestSubmissionModal } from './-components/ContestSubmissionModal';
+import SEO from '@/components/SEO/SEO';
 
 export const Route = createFileRoute('/contests/$contestId')({
     component: ContestDetailPage,
@@ -103,6 +104,12 @@ function ContestDetailPage() {
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
+            <SEO
+                title={contest.title}
+                description={contest.description || undefined}
+                image={contest.flyer_url || undefined}
+                url={`/contests/${contest.id}`}
+            />
             <Button
                 startIcon={<ArrowBackIcon />}
                 component={Link}

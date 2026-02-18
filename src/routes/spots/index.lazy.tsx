@@ -15,6 +15,7 @@ import { FilterBar } from '../-components/FilterBar';
 import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
 import { rightSidebarAtom } from 'src/atoms/ui';
 import { useMapSearch } from 'src/hooks/useMapSearch';
+import SEO from 'src/components/SEO/SEO';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -152,6 +153,11 @@ function SpotsIndex() {
 
     return (
         <Box sx={{ height: isMobile ? 'calc(100vh - 128px)' : '100vh', overflow: 'hidden', position: 'relative' }}>
+            <SEO
+                title="Skate Spots Map"
+                description="Explore and find the best skate spots near you on our interactive map."
+                url="/spots"
+            />
             <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {mapVisible && (
                     <Box sx={{ flexGrow: 1, position: 'relative', overflow: 'hidden' }}>

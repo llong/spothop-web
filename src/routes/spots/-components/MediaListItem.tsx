@@ -134,6 +134,7 @@ export const MediaListItem = memo(({ item, currentUserId, onLike, onComment, onS
                         component="img"
                         src={getOptimizedImageUrl(item.thumbnailUrl || item.url)}
                         alt="Spot media"
+                        crossOrigin="anonymous"
                         sx={{
                             position: 'absolute',
                             top: 0,

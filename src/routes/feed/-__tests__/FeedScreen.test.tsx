@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createStore, Provider } from 'jotai';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HelmetProvider } from 'react-helmet-async';
 
 // Mock jotai/utils before importing atoms
 vi.mock('jotai/utils', async () => {
@@ -94,11 +95,13 @@ describe('FeedScreen', () => {
 
     it('renders the global feed content', () => {
         render(
-            <Provider store={testStore}>
-                <QueryClientProvider client={queryClient}>
-                    <FeedScreen />
-                </QueryClientProvider>
-            </Provider>
+            <HelmetProvider>
+                <Provider store={testStore}>
+                    <QueryClientProvider client={queryClient}>
+                        <FeedScreen />
+                    </QueryClientProvider>
+                </Provider>
+            </HelmetProvider>
         );
 
         expect(screen.getByText('Test Spot')).toBeInTheDocument();

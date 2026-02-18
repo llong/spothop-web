@@ -49,6 +49,7 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                     component="img"
                     src={currentItem.url}
                     alt="Spot media"
+                    crossOrigin="anonymous"
                     onClick={() => onItemClick?.(activeSlide)}
                     sx={{
                         position: 'absolute',
@@ -88,6 +89,7 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                                 <Box
                                     component="img"
                                     src={currentItem.thumbnailUrl}
+                                    crossOrigin="anonymous"
                                     sx={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
                                 />
                             ) : (

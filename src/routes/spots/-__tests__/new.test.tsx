@@ -75,7 +75,7 @@ describe('NewSpotComponent', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         window.fetch = vi.fn().mockResolvedValue({
-            json: () => Promise.resolve({ results: [] })
+            json: () => Promise.resolve({ status: 'success', results: [] })
         }) as any;
     });
 

@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SpotDetails } from '../$spotId';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { HelmetProvider } from 'react-helmet-async';
 import { useSpotQuery } from 'src/hooks/useSpotQueries';
 import { useParams } from '@tanstack/react-router';
 import { useAtomValue, useSetAtom } from 'jotai';
@@ -109,11 +110,13 @@ describe('SpotDetails Page', () => {
 
   const renderComponent = () => {
     return render(
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={theme}>
-          <SpotDetails />
-        </ThemeProvider>
-      </QueryClientProvider>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider theme={theme}>
+            <SpotDetails />
+          </ThemeProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
     );
   };
 
