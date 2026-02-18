@@ -33,7 +33,6 @@ export const Route = createLazyFileRoute('/feed/')({
 export function FeedScreen() {
     const queryClient = useQueryClient();
     const user = useAtomValue(userAtom);
-    console.log('[FeedScreen] Render. User:', user?.user?.id);
     const userLocation = useAtomValue(userLocationAtom);
     const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
     const [activeTab, setActiveTab] = useState(0);
@@ -247,7 +246,6 @@ export function FeedScreen() {
 }
 
 function GlobalFeed({ userId, filters, userLocation, setFilters, hasActiveFilters }: any) {
-    console.log('[GlobalFeed] Render. User:', userId);
     // Only apply global filters
     const queryFilters = useConstructFeedFilters(filters, userLocation, 0);
     const {
@@ -292,7 +290,6 @@ function GlobalFeed({ userId, filters, userLocation, setFilters, hasActiveFilter
 }
 
 function FollowingFeed({ userId }: { userId?: string }) {
-    console.log('[FollowingFeed] Render. User:', userId);
     const {
         data,
         fetchNextPage,
