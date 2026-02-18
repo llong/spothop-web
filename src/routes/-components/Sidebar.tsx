@@ -1,6 +1,6 @@
 import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Button, Stack, Avatar } from '@mui/material';
 import { Link, useLocation, useNavigate } from '@tanstack/react-router';
-import { AccountCircle, ChatBubble, Notifications, DynamicFeed, Shield, Logout, Explore, Login } from '@mui/icons-material';
+import { AccountCircle, ChatBubble, Notifications, DynamicFeed, Shield, Logout, Explore, Login, EmojiEvents } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
 import supabase from 'src/supabase';
@@ -18,6 +18,7 @@ export function Sidebar() {
     const menuItems = [
         { label: 'Feed', to: '/feed', icon: <DynamicFeed /> },
         { label: 'Spots', to: '/spots', icon: <Explore /> },
+        { label: 'Contests', to: '/contests', icon: <EmojiEvents /> },
         { label: 'Inbox', to: '/chat', icon: <ChatBubble />, authRequired: true },
         { label: 'Alerts', to: '/notifications', icon: <Notifications />, authRequired: true },
         { label: 'Profile', to: '/profile', icon: <AccountCircle />, authRequired: true },
