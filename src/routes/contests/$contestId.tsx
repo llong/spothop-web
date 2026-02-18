@@ -275,22 +275,40 @@ function ContestDetailPage() {
                         </Grid>
                     </Grid>
 
-                    {user && contest.status === 'active' && (
+                    {contest.status === 'active' && (
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                sx={{
-                                    borderRadius: 2,
-                                    px: 4,
-                                    py: 1.2,
-                                    textTransform: 'none',
-                                    fontWeight: 'bold',
-                                }}
-                                onClick={() => setSubmissionModalOpen(true)}
-                            >
-                                Enter Contest
-                            </Button>
+                            {user ? (
+                                <Button
+                                    variant="contained"
+                                    startIcon={<AddIcon />}
+                                    sx={{
+                                        borderRadius: 2,
+                                        px: 4,
+                                        py: 1.2,
+                                        textTransform: 'none',
+                                        fontWeight: 'bold',
+                                    }}
+                                    onClick={() => setSubmissionModalOpen(true)}
+                                >
+                                    Enter Contest
+                                </Button>
+                            ) : (
+                                <Button
+                                    variant="contained"
+                                    component={Link}
+                                    to="/signup"
+                                    startIcon={<AddIcon />}
+                                    sx={{
+                                        borderRadius: 2,
+                                        px: 4,
+                                        py: 1.2,
+                                        textTransform: 'none',
+                                        fontWeight: 'bold',
+                                    }}
+                                >
+                                    Sign Up To Enter
+                                </Button>
+                            )}
                         </Box>
                     )}
                 </CardContent>
