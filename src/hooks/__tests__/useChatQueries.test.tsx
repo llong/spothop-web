@@ -5,19 +5,15 @@ import { useConversationsQuery, useMessagesQuery, useConversationQuery, useSendM
 import { chatService } from '../../services/chatService';
 import supabase from '../../supabase';
 
-// Mock TanStack Query hooks internally as well for isolated testing of this module
-vi.mock("@tanstack/react-query", async (importOriginal) => {
-    const actual = await importOriginal();
-    return {
-        ...actual as any,
-        useQuery: vi.fn(),
-        useMutation: vi.fn(),
-        useQueryClient: vi.fn(() => ({ invalidateQueries: vi.fn() })),
-    };
-});
+import { renderHook, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { QueryClient, QueryClientProvider, useQueryClient, useQuery, useMutation } from '@tanstack/react-query'; // Import actual hooks
+import { useConversationsQuery, useMessagesQuery, useConversationQuery, useSendMessageMutation, chatKeys } from '../useChatQueries';
+import { chatService } from '../../services/chatService';
+import supabase from '../../supabase';
 
-vi.mock("../../services/chatService");
-vi.mock("../../supabase");
+vi.mock('../../services/chatService');
+vi.mock('../../supabase');
 
 // Explicitly mock jotai to handle the `atom.debugLabel` error
 vi.mock("jotai", async (importOriginal) => {
@@ -42,6 +38,11 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('useChatQueries', () => {
+    // Spy on actual useQuery and useMutation to control their behavior
+    let useQuerySpy: vi.SpiedFunction<typeof useQuery>;
+    let useMutationSpy: vi.SpiedFunction<typeof useMutation>;
+    let useQueryClientSpy: vi.SpiedFunction<typeof useQueryClient>;
+
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(chatService.fetchConversations).mockResolvedValue([]);
@@ -49,22 +50,26 @@ describe('useChatQueries', () => {
         vi.mocked(chatService.fetchConversationDetails).mockResolvedValue(null);
         vi.mocked(chatService.sendMessage).mockResolvedValue({});
 
-        // Mock useQuery and useMutation to return basic structure for testing
-        vi.mocked(useQuery).mockImplementation((options) => ({
+        useQuerySpy = vi.spyOn(require('@tanstack/react-query'), 'useQuery');
+        useMutationSpy = vi.spyOn(require('@tanstack/react-query'), 'useMutation');
+        useQueryClientSpy = vi.spyOn(require('@tanstack/react-query'), 'useQueryClient');
+
+        useQuerySpy.mockImplementation((options) => ({
             data: options.queryFn(),
             isLoading: false,
             isFetching: false,
             error: null,
         }));
-        vi.mocked(useMutation).mockImplementation((options) => ({
+        useMutationSpy.mockImplementation((options) => ({
             mutate: options.mutationFn,
-            mutateAsync: vi.fn(() => Promise.resolve(options.mutationFn)),
+            mutateAsync: vi.fn(() => Promise.resolve(options.mutationFn({} as any))), // Added { } as any
             isPending: false,
             isSuccess: false,
             isError: false,
             data: null,
             error: null,
         }));
+        useQueryClientSpy.mockReturnValue({ invalidateQueries: vi.fn() } as any);
     });
 
     describe('useConversationsQuery', () => {
