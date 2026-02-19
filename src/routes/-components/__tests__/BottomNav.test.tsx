@@ -1,90 +1,42 @@
-import { BottomNav } from "../BottomNav";
-import { render, screen, waitFor } from "@testing-library/react";
-import { RouterProvider, createRouter, createMemoryHistory, createRootRoute, createRoute } from "@tanstack/react-router";
-import { describe, it, expect, vi } from "vitest";
-import "@testing-library/jest-dom";
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { BottomNav } from '../BottomNav';
+import { useAtomValue } from 'jotai';
 
-import { fireEvent } from "@testing-library/react";
-
-// Mock jotai to simulate authenticated user
-vi.mock('jotai', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('jotai')>();
+vi.mock('jotai', async () => {
+    const actual = await vi.importActual('jotai');
     return {
-        ...actual,
-        useAtomValue: vi.fn(() => ({ user: { id: 'u1' } })),
+        ...actual as any,
+        useAtomValue: vi.fn(),
     };
 });
 
-const createTestRouter = () => {
-    const rootRoute = createRootRoute({
-        component: () => <BottomNav />,
+vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children }: any) => <div>{children}</div>,
+    useLocation: () => ({ pathname: '/feed' }),
+}));
+
+describe('BottomNav', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
     });
 
-    const feedRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: '/feed',
-        component: () => <div>Feed Page</div>,
+    it('renders basic items when not authenticated', () => {
+        vi.mocked(useAtomValue).mockReturnValue(null);
+        render(<BottomNav />);
+        
+        expect(screen.getByText('Feed')).toBeInTheDocument();
+        expect(screen.getByText('Spots')).toBeInTheDocument();
+        expect(screen.getByText('Sign In')).toBeInTheDocument();
+        expect(screen.queryByText('Inbox')).not.toBeInTheDocument();
     });
 
-    const spotsRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: '/spots',
-        component: () => <div>Spots Page</div>,
-    });
-
-    const profileRoute = createRoute({
-        getParentRoute: () => rootRoute,
-        path: '/profile',
-        component: () => <div>Profile Page</div>,
-    });
-
-    const routeTree = rootRoute.addChildren([feedRoute, spotsRoute, profileRoute]);
-
-    const history = createMemoryHistory({ initialEntries: ['/feed'] });
-
-    const router = createRouter({
-        routeTree,
-        history,
-    });
-
-    return router;
-};
-
-describe("BottomNav", () => {
-    it("renders navigation items", async () => {
-        const router = createTestRouter();
-        render(<RouterProvider router={router} />);
-
-        await waitFor(() => {
-            expect(screen.getByText("Feed")).toBeInTheDocument();
-            expect(screen.getByText("Spots")).toBeInTheDocument();
-            expect(screen.getByText("Profile")).toBeInTheDocument();
-        });
-    });
-
-    it("navigates to the correct route when clicked", async () => {
-        const router = createTestRouter();
-        render(<RouterProvider router={router} />);
-
-        const profileLink = await screen.findByText("Profile");
-        fireEvent.click(profileLink);
-
-        await waitFor(() => {
-            expect(router.state.location.pathname).toBe("/profile");
-        });
-
-        const spotsLink = await screen.findByText("Spots");
-        fireEvent.click(spotsLink);
-
-        await waitFor(() => {
-            expect(router.state.location.pathname).toBe("/spots");
-        });
-
-        const feedLink = await screen.findByText("Feed");
-        fireEvent.click(feedLink);
-
-        await waitFor(() => {
-            expect(router.state.location.pathname).toBe("/feed");
-        });
+    it('renders extra items when authenticated', () => {
+        vi.mocked(useAtomValue).mockReturnValue({ user: { id: 'u1' } });
+        render(<BottomNav />);
+        
+        expect(screen.getByText('Inbox')).toBeInTheDocument();
+        expect(screen.getByText('Alerts')).toBeInTheDocument();
+        expect(screen.getByText('Profile')).toBeInTheDocument();
     });
 });

@@ -28,7 +28,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import { InputAdornment } from '@mui/material';
 
-const WelcomeComponent = () => {
+export const WelcomeComponent = () => {
     const user = useAtomValue(userAtom);
     const setProfile = useSetAtom(profileAtom);
     const queryClient = useQueryClient();

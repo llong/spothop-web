@@ -47,7 +47,7 @@ export const Route = createFileRoute('/admin/contests')({
     component: AdminContestsPage,
 });
 
-function AdminContestsPage() {
+export function AdminContestsPage() {
     const queryClient = useQueryClient();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingContest, setEditingContest] = useState<Contest | null>(null);
