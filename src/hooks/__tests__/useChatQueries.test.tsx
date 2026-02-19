@@ -6,18 +6,26 @@ import { chatService } from '../../services/chatService';
 import supabase from '../../supabase';
 
 // Mock TanStack Query hooks internally as well for isolated testing of this module
-vi.mock('@tanstack/react-query', async (importOriginal) => {
+vi.mock("@tanstack/react-query", async (importOriginal) => {
     const actual = await importOriginal();
     return {
         ...actual as any,
         useQuery: vi.fn(),
         useMutation: vi.fn(),
-        useQueryClient: vi.fn(() => ({ invalidateQueries: vi.fn() }))
+        useQueryClient: vi.fn(() => ({ invalidateQueries: vi.fn() })),
     };
 });
 
-vi.mock('../../services/chatService');
-vi.mock('../../supabase');
+vi.mock("../../services/chatService");
+vi.mock("../../supabase");
+
+// Explicitly mock jotai to handle the `atom.debugLabel` error
+vi.mock("jotai", async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+        ...actual as any,
+    };
+});
 
 const queryClient = new QueryClient({
     defaultOptions: {
