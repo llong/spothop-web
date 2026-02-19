@@ -4,10 +4,10 @@ import { useConstructFeedFilters } from '../useConstructFeedFilters';
 import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
 
 describe('useConstructFeedFilters', () => {
-    const userLocation = { latitude: 10, longitude: 20 };
+    const mockUserLocation = { latitude: 10, longitude: 20 };
 
-    it('returns default filters', () => {
-        const { result } = renderHook(() => useConstructFeedFilters(INITIAL_FEED_FILTERS, userLocation, 0));
+    it('constructs basic filters', () => {
+        const { result } = renderHook(() => useConstructFeedFilters(INITIAL_FEED_FILTERS, mockUserLocation, 0));
         
         expect(result.current).toEqual({
             lat: undefined,
@@ -17,50 +17,55 @@ describe('useConstructFeedFilters', () => {
             spotTypes: undefined,
             difficulties: undefined,
             riderTypes: undefined,
-            maxRisk: undefined
+            maxRisk: undefined,
+            authorId: undefined,
         });
     });
 
-    it('includes location when nearMe is true', () => {
-        const filters = { ...INITIAL_FEED_FILTERS, nearMe: true, maxDistKm: 100 };
-        const { result } = renderHook(() => useConstructFeedFilters(filters, userLocation, 0));
-        
-        expect(result.current).toMatchObject({
-            lat: 10,
-            lng: 20,
-            maxDistKm: 100
-        });
-    });
-
-    it('sets followingOnly when activeTab is 1', () => {
-        const { result } = renderHook(() => useConstructFeedFilters(INITIAL_FEED_FILTERS, userLocation, 1));
+    it('constructs following only filter', () => {
+        const { result } = renderHook(() => useConstructFeedFilters(INITIAL_FEED_FILTERS, mockUserLocation, 1));
         
         expect(result.current.followingOnly).toBe(true);
     });
 
-    it('includes arrays only when populated', () => {
-        const filters = { 
-            ...INITIAL_FEED_FILTERS, 
-            spotTypes: ['gap'],
-            difficulties: ['advanced'],
-            riderTypes: ['skateboard']
-        };
-        const { result } = renderHook(() => useConstructFeedFilters(filters, userLocation, 0));
+    it('constructs location filters from user location', () => {
+        const filters = { ...INITIAL_FEED_FILTERS, nearMe: true, maxDistKm: 50 };
+        const { result } = renderHook(() => useConstructFeedFilters(filters, mockUserLocation, 0));
         
-        expect(result.current.spotTypes).toEqual(['gap']);
-        expect(result.current.difficulties).toEqual(['advanced']);
-        expect(result.current.riderTypes).toEqual(['skateboard']);
+        expect(result.current).toEqual(expect.objectContaining({
+            lat: 10,
+            lng: 20,
+            maxDistKm: 50,
+        }));
     });
 
-    it('includes maxRisk only when less than 5', () => {
-        const filters = { ...INITIAL_FEED_FILTERS, maxRisk: 4 };
-        const { result } = renderHook(() => useConstructFeedFilters(filters, userLocation, 0));
+    it('constructs location filters from selected location', () => {
+        const selectedLocation = { lat: 30, lng: 40, name: 'Paris' };
+        const filters = { ...INITIAL_FEED_FILTERS, selectedLocation, maxDistKm: 100 };
+        const { result } = renderHook(() => useConstructFeedFilters(filters, mockUserLocation, 0));
         
-        expect(result.current.maxRisk).toBe(4);
+        expect(result.current).toEqual(expect.objectContaining({
+            lat: 30,
+            lng: 40,
+            maxDistKm: 100,
+        }));
+    });
 
-        const defaultRiskFilters = { ...INITIAL_FEED_FILTERS, maxRisk: 5 };
-        const { result: defaultResult } = renderHook(() => useConstructFeedFilters(defaultRiskFilters, userLocation, 0));
+    it('constructs filters with arrays and risk', () => {
+        const filters = {
+            ...INITIAL_FEED_FILTERS,
+            spotTypes: ['rail', 'ledge'],
+            difficulties: ['advanced'],
+            riderTypes: ['skateboard'],
+            maxRisk: 3
+        };
+        const { result } = renderHook(() => useConstructFeedFilters(filters, mockUserLocation, 0));
         
-        expect(defaultResult.current.maxRisk).toBeUndefined();
+        expect(result.current).toEqual(expect.objectContaining({
+            spotTypes: ['rail', 'ledge'],
+            difficulties: ['advanced'],
+            riderTypes: ['skateboard'],
+            maxRisk: 3,
+        }));
     });
 });

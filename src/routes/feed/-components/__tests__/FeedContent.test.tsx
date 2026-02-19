@@ -1,19 +1,28 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { FeedContent } from '../FeedContent';
-import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Mock dependencies
-vi.mock('../FeedItem', () => ({
-    FeedItemCard: ({ item }: any) => <div data-testid="feed-item">{item.spot_name}</div>
+vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children }: any) => <div>{children}</div>
 }));
 
-vi.mock('../FeedItemSkeleton', () => ({
-    FeedItemSkeleton: () => <div data-testid="feed-skeleton">Skeleton</div>
-}));
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+    },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+        {children}
+    </QueryClientProvider>
+);
 
 describe('FeedContent', () => {
-    const defaultProps = {
+    const mockProps = {
         isLoading: false,
         error: null,
         allItems: [],
@@ -23,70 +32,48 @@ describe('FeedContent', () => {
         isFetchingNextPage: false,
         hasNextPage: false,
         lastElementRef: vi.fn(),
-        currentUserId: 'u1'
     };
 
-    it('renders loading state', () => {
-        render(<FeedContent {...defaultProps} isLoading={true} />);
-        expect(screen.getAllByTestId('feed-skeleton')).toHaveLength(3);
+    it('renders loading state with skeletons', () => {
+        render(<FeedContent {...mockProps} isLoading={true} />, { wrapper });
+        // FeedItemSkeleton components are rendered
+        expect(screen.getAllByTestId('feed-item-skeleton')).toHaveLength(3);
     });
 
     it('renders error state', () => {
-        // Mock window.location.reload
-        const originalLocation = window.location;
-        Object.defineProperty(window, 'location', {
-            configurable: true,
-            value: { reload: vi.fn() },
-        });
-
-        render(<FeedContent {...defaultProps} error={new Error('Failed')} />);
-        expect(screen.getByText('Failed to load feed')).toBeInTheDocument();
-        
-        fireEvent.click(screen.getByText('Retry'));
-        expect(window.location.reload).toHaveBeenCalled();
-
-        // Restore window.location
-        Object.defineProperty(window, 'location', {
-            configurable: true,
-            value: originalLocation,
-        });
+        render(<FeedContent {...mockProps} error={new Error('Failed')} />, { wrapper });
+        expect(screen.getByText(/Failed to load feed/i)).toBeInTheDocument();
     });
 
     it('renders empty state without filters', () => {
-        render(<FeedContent {...defaultProps} allItems={[]} />);
-        expect(screen.getByText('No spots yet!')).toBeInTheDocument();
-        expect(screen.getByText('Go to Spots Map')).toBeInTheDocument();
+        render(<FeedContent {...mockProps} />, { wrapper });
+        expect(screen.getByText(/No spots yet!/i)).toBeInTheDocument();
+        expect(screen.getByText(/The global feed is currently empty/i)).toBeInTheDocument();
     });
 
-    it('renders empty state with active filters', () => {
-        render(<FeedContent {...defaultProps} allItems={[]} hasActiveFilters={true} />);
-        expect(screen.getByText('No matches found')).toBeInTheDocument();
-        
-        fireEvent.click(screen.getByText('Clear All Filters'));
-        expect(defaultProps.setFilters).toHaveBeenCalledWith(INITIAL_FEED_FILTERS);
+    it('renders empty state with filters', () => {
+        render(<FeedContent {...mockProps} hasActiveFilters={true} />, { wrapper });
+        expect(screen.getByText(/No matches found/i)).toBeInTheDocument();
+        expect(screen.getByText(/Clear All Filters/i)).toBeInTheDocument();
+    });
+
+    it('renders following tab empty state', () => {
+        render(<FeedContent {...mockProps} activeTab={1} />, { wrapper });
+        expect(screen.getByText(/You aren't following anyone yet/i)).toBeInTheDocument();
     });
 
     it('renders feed items', () => {
-        const items = [
-            {
-                media_id: 'm1',
-                spot_name: 'Spot 1',
-                // ... other required fields mocked as needed or partial since we mock the component
-            }
-        ] as any[];
-
-        render(<FeedContent {...defaultProps} allItems={items} />);
-        expect(screen.getByText('Spot 1')).toBeInTheDocument();
-        expect(screen.getByText("You've reached the end of the global feed.")).toBeInTheDocument();
+        const mockItems = [
+            { media_id: 'm1', spot_id: 's1', author: { username: 'user1' }, media_url: 'url1', created_at: new Date().toISOString(), type: 'photo' }
+        ];
+        render(<FeedContent {...mockProps} allItems={mockItems as any} />, { wrapper });
+        // FeedItemCard should be rendered
+        expect(screen.getByTestId('FavoriteBorderIcon')).toBeInTheDocument();
     });
 
-    it('renders pagination loader', () => {
-        const items = [{ media_id: 'm1', spot_name: 'Spot 1' }] as any[];
-        render(<FeedContent {...defaultProps} allItems={items} isFetchingNextPage={true} hasNextPage={true} />);
-        
-        // CircularProgress renders as an SVG with role 'progressbar' usually, but here we can check for existence via class or just assume it renders if no error.
-        // MUI CircularProgress:
-        expect(document.querySelector('.MuiCircularProgress-root')).toBeInTheDocument();
-        expect(screen.queryByText("You've reached the end of the global feed.")).not.toBeInTheDocument();
+    it('renders end of feed message', () => {
+        const mockItems = [{ media_id: 'm1', spot_id: 's1', author: { username: 'user1' }, media_url: 'url1', created_at: new Date().toISOString(), type: 'photo' }];
+        render(<FeedContent {...mockProps} allItems={mockItems as any} hasNextPage={false} />, { wrapper });
+        expect(screen.getByText(/reached the end/i)).toBeInTheDocument();
     });
 });

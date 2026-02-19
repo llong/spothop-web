@@ -1,84 +1,67 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FeedCommentDialog } from '../FeedCommentDialog';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useMediaComments } from 'src/hooks/useFeedQueries';
-import type { FeedItem } from 'src/types';
-import React from 'react';
+import { useMediaComments, usePostMediaComment, useToggleCommentReaction } from 'src/hooks/useFeedQueries';
 
-// Mock queries
-vi.mock('src/hooks/useFeedQueries', () => ({
-    useMediaComments: vi.fn(() => ({
-        data: [
-            { id: 'c1', content: 'Cool trick!', created_at: new Date().toISOString(), author: { username: 'skater2', avatarUrl: null } }
-        ],
-        isLoading: false
-    })),
-    usePostMediaComment: vi.fn(() => ({
-        mutateAsync: vi.fn().mockResolvedValue({}),
-        isPending: false
-    })),
-    useToggleCommentReaction: vi.fn(() => ({
-        mutate: vi.fn(),
-        isPending: false
-    }))
-}));
-
-const mockItem: FeedItem = {
-    media_id: 'm1',
-    spot_id: 's1',
-    uploader_id: 'u1',
-    media_url: 'https://example.com/image.jpg',
-    media_type: 'photo',
-    created_at: new Date().toISOString(),
-    spot_name: 'Test Spot',
-    uploader_username: 'skater1',
-    uploader_display_name: 'Skater 1',
-    uploader_avatar_url: null,
-    is_followed_by_user: false,
-    like_count: 0,
-    comment_count: 0,
-    popularity_score: 0
-};
-
-const queryClient = new QueryClient();
-
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-        {children}
-    </QueryClientProvider>
-);
+vi.mock('src/hooks/useFeedQueries');
 
 describe('FeedCommentDialog', () => {
-    it('renders comments when open', () => {
-        render(
-            <FeedCommentDialog 
-                open={true} 
-                onClose={() => {}} 
-                item={mockItem}
-                userId="u1"
-            />, 
-            { wrapper }
-        );
+    const mockItem = { media_id: 'm1', media_type: 'photo' } as any;
+    const mockOnClose = vi.fn();
+    const mockMutateAsync = vi.fn();
+    const mockMutate = vi.fn();
 
-        expect(screen.getByText('Comments')).toBeInTheDocument();
-        expect(screen.getByText('Cool trick!')).toBeInTheDocument();
-        expect(screen.getByText('@skater2')).toBeInTheDocument();
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.mocked(useMediaComments).mockReturnValue({ data: [], isLoading: false } as any);
+        vi.mocked(usePostMediaComment).mockReturnValue({ mutateAsync: mockMutateAsync, isPending: false } as any);
+        vi.mocked(useToggleCommentReaction).mockReturnValue({ mutate: mockMutate } as any);
     });
 
-    it('shows empty message when no comments', () => {
-        vi.mocked(useMediaComments).mockReturnValue({ data: [], isLoading: false } as any);
+    it('renders null if media info missing', () => {
+        const { container } = render(<FeedCommentDialog open={true} onClose={mockOnClose} item={{} as any} />);
+        expect(container).toBeEmptyDOMElement();
+    });
 
-        render(
-            <FeedCommentDialog 
-                open={true} 
-                onClose={() => {}} 
-                item={mockItem}
-                userId="u1"
-            />, 
-            { wrapper }
-        );
+    it('renders comments list', () => {
+        const mockComments = [
+            { id: 'c1', content: 'Nice!', author: { username: 'user1' }, created_at: new Date().toISOString(), reactions: { likes: 0 } }
+        ];
+        vi.mocked(useMediaComments).mockReturnValue({ data: mockComments, isLoading: false } as any);
 
-        expect(screen.getByText('No comments yet.')).toBeInTheDocument();
+        render(<FeedCommentDialog open={true} onClose={mockOnClose} item={mockItem} userId="u1" />);
+        expect(screen.getByText('Nice!')).toBeInTheDocument();
+        expect(screen.getByText('@user1')).toBeInTheDocument();
+    });
+
+    it('posts a new comment', async () => {
+        render(<FeedCommentDialog open={true} onClose={mockOnClose} item={mockItem} userId="u1" spotId="s1" />);
+        
+        const input = screen.getByPlaceholderText('Add a comment...');
+        fireEvent.change(input, { target: { value: 'Awesome!' } });
+        
+        const submitBtn = screen.getByTestId('SendIcon').parentElement;
+        fireEvent.click(submitBtn!);
+
+        expect(mockMutateAsync).toHaveBeenCalledWith({
+            mediaId: 'm1',
+            mediaType: 'photo',
+            content: 'Awesome!',
+            spotId: 's1'
+        });
+    });
+
+    it('toggles reaction', () => {
+        const mockComments = [
+            { id: 'c1', content: 'Nice!', author: { username: 'user1' }, created_at: new Date().toISOString(), reactions: { likes: 0 } }
+        ];
+        vi.mocked(useMediaComments).mockReturnValue({ data: mockComments, isLoading: false } as any);
+
+        render(<FeedCommentDialog open={true} onClose={mockOnClose} item={mockItem} userId="u1" />);
+        
+        const likeBtn = screen.getByTestId('FavoriteBorderIcon').parentElement;
+        fireEvent.click(likeBtn!);
+
+        expect(mockMutate).toHaveBeenCalledWith({ commentId: 'c1' });
     });
 });

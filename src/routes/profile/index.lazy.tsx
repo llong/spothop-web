@@ -16,7 +16,7 @@ export const Route = createLazyFileRoute("/profile/")({
     component: ProfileComponent,
 })
 
-function ProfileComponent() {
+export function ProfileComponent() {
     const user = useAtomValue(userAtom);
     const userId = user?.user.id;
     const { updateProfile, handleSignOut, createHandleFormChange, isUpdating } = useProfileManagement();

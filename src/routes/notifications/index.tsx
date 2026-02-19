@@ -12,7 +12,7 @@ import { useNotifications } from 'src/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import supabase from 'src/supabase';
 
-const NotificationsComponent = () => {
+export const NotificationsComponent = () => {
     const { notifications = [], loading, markAsRead, deleteNotification, markAllAsRead } = useNotifications();
     const navigate = useNavigate();
 
