@@ -16,6 +16,7 @@ vi.mock('jotai', async () => {
     const actual = await vi.importActual('jotai');
     return {
         ...actual as any,
+        atom: actual.atom,
         useAtomValue: vi.fn(),
     };
 });

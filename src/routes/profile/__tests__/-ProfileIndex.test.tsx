@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProfileComponent } from '../index.lazy';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom, atom } from 'jotai';
 import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
 import { useProfileManagement } from 'src/hooks/useProfileManagement';
 
@@ -9,7 +9,9 @@ vi.mock('jotai', async () => {
     const actual = await vi.importActual('jotai');
     return {
         ...actual as any,
+        atom: actual.atom,
         useAtomValue: vi.fn(),
+        useSetAtom: vi.fn(),
     };
 });
 
