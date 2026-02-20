@@ -6,14 +6,14 @@ import L from 'leaflet';
 describe('useSpotCreation', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        window.fetch = vi.fn();
     });
 
     it('sets new spot with geocoded address on right click', async () => {
         const mockLatlng = L.latLng(10, 20);
         const mockAddress = '123 Test St';
         
-        vi.mocked(fetch).mockResolvedValue({
+        vi.mocked(window.fetch).mockResolvedValue({
             json: () => Promise.resolve({
                 results: [{ formatted_address: mockAddress }]
             })
@@ -36,6 +36,6 @@ describe('useSpotCreation', () => {
         });
 
         expect(result.current.newSpot).toBeNull();
-        expect(fetch).not.toHaveBeenCalled();
+        expect(window.fetch).not.toHaveBeenCalled();
     });
 });

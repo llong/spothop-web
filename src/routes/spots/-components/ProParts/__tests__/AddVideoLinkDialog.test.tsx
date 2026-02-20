@@ -76,7 +76,9 @@ describe('AddVideoLinkDialog', () => {
             user_id: 'u1',
             spot_id: 's1',
             like_count: 0,
-            is_liked_by_user: false
+            is_liked_by_user: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
         };
 
         render(<AddVideoLinkDialog {...defaultProps} editLink={editLink} />);

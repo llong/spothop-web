@@ -29,6 +29,11 @@ export const supabase: any = {
         })),
     },
     rpc: vi.fn(),
+    channel: vi.fn(() => ({
+        on: vi.fn().mockReturnThis(),
+        subscribe: vi.fn(),
+    })),
+    removeChannel: vi.fn(),
 };
 
 export default supabase;

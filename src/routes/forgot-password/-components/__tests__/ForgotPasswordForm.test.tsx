@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ForgotPasswordForm } from '../ForgotPasswordForm';
 import supabase from '@/supabase';
@@ -34,9 +34,9 @@ describe('ForgotPasswordForm', () => {
     });
 
     it('displays error on failure', async () => {
-        vi.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({ 
-            data: null, 
-            error: { message: 'Reset failed' } 
+        vi.mocked(supabase.auth.resetPasswordForEmail).mockResolvedValue({
+            data: null,
+            error: { message: 'Reset failed' }
         } as any);
         render(<ForgotPasswordForm />);
 

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ProPartsTab } from '../ProPartsTab';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -31,10 +31,10 @@ describe('ProPartsTab', () => {
     it('renders links when present', () => {
         const spotWithLinks = {
             ...mockSpot,
-            videoLinks: [{ 
-                id: 'l1', 
-                youtube_video_id: 'vid1', 
-                start_time: 0, 
+            videoLinks: [{
+                id: 'l1',
+                youtube_video_id: 'vid1',
+                start_time: 0,
                 skater_name: 'SkaterName',
                 author: { username: 'user' }
             }]

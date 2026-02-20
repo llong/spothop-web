@@ -3,10 +3,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useMapState } from '../useMapState';
 import type { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
+import { useSetAtom } from 'jotai';
+
+vi.mock('jotai', async () => {
+    const actual = await vi.importActual('jotai');
+    return {
+        ...actual as any,
+        atom: actual.atom,
+        useSetAtom: vi.fn(),
+    };
+});
 
 describe('useMapState', () => {
     let mockMap: any;
     let mockGetSpots: any;
+    let mockSetGlobalUserLocation: any;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -19,6 +30,8 @@ describe('useMapState', () => {
             panTo: vi.fn(),
         };
         mockGetSpots = vi.fn();
+        mockSetGlobalUserLocation = vi.fn();
+        vi.mocked(useSetAtom).mockReturnValue(mockSetGlobalUserLocation);
 
         // Mock navigator.geolocation
         const mockGeolocation = {
@@ -91,5 +104,6 @@ describe('useMapState', () => {
         });
 
         expect(mockMap.panTo).toHaveBeenCalledWith([1.0, 1.0]);
+        expect(mockSetGlobalUserLocation).toHaveBeenCalledWith({ latitude: 1.0, longitude: 1.0 });
     });
 });

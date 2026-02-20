@@ -1,0 +1,12 @@
+- [x] Task 1: Fix TS2304 "Cannot find name 'global'" error in src/hooks/__tests__/useSpotCreation.test.ts
+- [x] Task 2: Remove unused 'waitFor' import in src/routes/forgot-password/-components/__tests__/ForgotPasswordForm.test.tsx
+- [x] Task 3: Remove unused 'waitFor' import in src/routes/login/-components/__tests__/LoginForm.test.tsx
+- [x] Task 4: Fix TS2739 type mismatch in src/routes/spots/-components/ProParts/__tests__/AddVideoLinkDialog.test.tsx
+- [x] Task 5: Remove unused 'beforeEach' import in src/routes/spots/-components/ProParts/__tests__/ProPartsTab.test.tsx
+- [x] Task 6: Fix TS2322 type mismatch (missing 'author.id') in src/routes/spots/-components/__tests__/MediaCard.test.tsx
+- [x] Task 7: Fix TS2559 type mismatch in src/services/__tests__/adminContestService.test.ts
+- [x] Task 8: Fix TS2339 property 'name' does not exist on type 'Contest' in src/services/__tests__/adminContestService.test.ts
+- [x] Task 9: Fix TS2532 object is possibly 'undefined' in src/services/__tests__/chatService.test.ts
+- [x] Task 10: Remove unused 'waitFor' import in src/routes/update-password/-components/__tests__/UpdatePasswordForm.test.tsx
+- [ ] Task 11: Fix "Module namespace is not configurable in ESM" in src/hooks/__tests__/useChatQueries.test.tsx
+- [ ] Task 12: Fix "setGlobalUserLocation is not a function" in src/hooks/__tests__/useMapState.test.ts

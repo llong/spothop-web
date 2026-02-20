@@ -1,25 +1,31 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
+import type { UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { useConversationsQuery, useMessagesQuery, useConversationQuery, useSendMessageMutation, chatKeys } from '../useChatQueries';
 import { chatService } from '../../services/chatService';
-import supabase from '../../supabase';
-
-import { renderHook, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider, useQueryClient, useQuery, useMutation } from '@tanstack/react-query'; // Import actual hooks
-import { useConversationsQuery, useMessagesQuery, useConversationQuery, useSendMessageMutation, chatKeys } from '../useChatQueries';
-import { chatService } from '../../services/chatService';
-import supabase from '../../supabase';
+import type { Conversation } from '../../services/chatService';
 
 vi.mock('../../services/chatService');
 vi.mock('../../supabase');
 
+// Mock @tanstack/react-query hooks
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+    const actual = await importOriginal() as any;
+    return {
+        ...actual,
+        useQuery: vi.fn(),
+        useMutation: vi.fn(),
+        useQueryClient: vi.fn(),
+    };
+});
+
 // Explicitly mock jotai to handle the `atom.debugLabel` error
 vi.mock("jotai", async (importOriginal) => {
-    const actual = await importOriginal();
+    const actual = await importOriginal() as any;
     return {
-        ...actual as any,
+        ...actual,
+        atom: actual.atom,
     };
 });
 
@@ -38,47 +44,63 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('useChatQueries', () => {
-    // Spy on actual useQuery and useMutation to control their behavior
-    let useQuerySpy: vi.SpiedFunction<typeof useQuery>;
-    let useMutationSpy: vi.SpiedFunction<typeof useMutation>;
-    let useQueryClientSpy: vi.SpiedFunction<typeof useQueryClient>;
-
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(chatService.fetchConversations).mockResolvedValue([]);
         vi.mocked(chatService.fetchMessages).mockResolvedValue([]);
-        vi.mocked(chatService.fetchConversationDetails).mockResolvedValue(null);
+        vi.mocked(chatService.fetchConversationDetails).mockResolvedValue({ id: 'mock' } as unknown as Conversation);
         vi.mocked(chatService.sendMessage).mockResolvedValue({});
-
-        useQuerySpy = vi.spyOn(require('@tanstack/react-query'), 'useQuery');
-        useMutationSpy = vi.spyOn(require('@tanstack/react-query'), 'useMutation');
-        useQueryClientSpy = vi.spyOn(require('@tanstack/react-query'), 'useQueryClient');
-
-        useQuerySpy.mockImplementation((options) => ({
-            data: options.queryFn(),
+        
+        // Default implementation that tries to run queryFn if possible
+        vi.mocked(useQuery).mockImplementation((options: any) => ({
+            data: options.queryFn ? options.queryFn() : undefined,
             isLoading: false,
             isFetching: false,
             error: null,
-        }));
-        useMutationSpy.mockImplementation((options) => ({
-            mutate: options.mutationFn,
-            mutateAsync: vi.fn(() => Promise.resolve(options.mutationFn({} as any))), // Added { } as any
+            isError: false,
+            isPending: false,
+            isLoadingError: false,
+            isRefetchError: false,
+            status: 'success',
+            refetch: vi.fn(),
+        } as unknown as UseQueryResult<any, any>));
+
+        vi.mocked(useMutation).mockImplementation((options: any) => ({
+            mutate: options.mutationFn || vi.fn(),
+            mutateAsync: vi.fn((args) => {
+                if (options.onSuccess) options.onSuccess(null, args, null);
+                return Promise.resolve(options.mutationFn ? options.mutationFn(args) : {});
+            }),
             isPending: false,
             isSuccess: false,
             isError: false,
             data: null,
             error: null,
-        }));
-        useQueryClientSpy.mockReturnValue({ invalidateQueries: vi.fn() } as any);
+            reset: vi.fn(),
+            variables: undefined,
+            status: 'idle',
+        } as unknown as UseMutationResult<any, any, any, any>));
+
+        vi.mocked(useQueryClient).mockReturnValue({
+            invalidateQueries: vi.fn(),
+        } as any);
     });
 
     describe('useConversationsQuery', () => {
         it('fetches conversations for a given user ID', async () => {
             const mockConversations = [{ id: 'c1', name: 'Chat 1' }];
             vi.mocked(chatService.fetchConversations).mockResolvedValue(mockConversations as any);
-            vi.mocked(useQuery).mockImplementation((options) => ({
-                data: mockConversations, isLoading: false, isFetching: false, error: null
-            }));
+            
+            vi.mocked(useQuery).mockImplementation((options: any) => {
+                if (options.queryFn && options.enabled !== false) options.queryFn();
+                return {
+                    data: mockConversations,
+                    isLoading: false,
+                    isFetching: false,
+                    error: null,
+                    status: 'success',
+                } as any;
+            });
 
             const { result } = renderHook(() => useConversationsQuery('u1'), { wrapper });
 
@@ -88,23 +110,37 @@ describe('useChatQueries', () => {
         });
 
         it('does not fetch if userId is undefined', () => {
-            vi.mocked(useQuery).mockImplementation((options) => ({
-                data: null, isLoading: false, isFetching: false, error: null
-            }));
+            vi.mocked(useQuery).mockImplementation((options: any) => {
+                if (options.queryFn && options.enabled !== false) options.queryFn();
+                return {
+                    data: null,
+                    isLoading: false,
+                    isFetching: false,
+                    error: null,
+                    status: 'pending',
+                } as any;
+            });
+            
             renderHook(() => useConversationsQuery(undefined), { wrapper });
             expect(chatService.fetchConversations).not.toHaveBeenCalled();
         });
-
-        // Need more advanced mocking for useEffect based real-time updates
     });
 
     describe('useMessagesQuery', () => {
         it('fetches messages for a given conversation ID', async () => {
             const mockMessages = [{ id: 'm1', content: 'hello' }];
             vi.mocked(chatService.fetchMessages).mockResolvedValue(mockMessages as any);
-            vi.mocked(useQuery).mockImplementation((options) => ({
-                data: mockMessages, isLoading: false, isFetching: false, error: null
-            }));
+            
+            vi.mocked(useQuery).mockImplementation((options: any) => {
+                if (options.queryFn && options.enabled !== false) options.queryFn();
+                return {
+                    data: mockMessages,
+                    isLoading: false,
+                    isFetching: false,
+                    error: null,
+                    status: 'success',
+                } as any;
+            });
 
             const { result } = renderHook(() => useMessagesQuery('conv1'), { wrapper });
 
@@ -114,9 +150,17 @@ describe('useChatQueries', () => {
         });
 
         it('does not fetch if conversationId is undefined', () => {
-            vi.mocked(useQuery).mockImplementation((options) => ({
-                data: null, isLoading: false, isFetching: false, error: null
-            }));
+            vi.mocked(useQuery).mockImplementation((options: any) => {
+                if (options.queryFn && options.enabled !== false) options.queryFn();
+                return {
+                    data: null,
+                    isLoading: false,
+                    isFetching: false,
+                    error: null,
+                    status: 'pending',
+                } as any;
+            });
+            
             renderHook(() => useMessagesQuery(undefined), { wrapper });
             expect(chatService.fetchMessages).not.toHaveBeenCalled();
         });
@@ -126,9 +170,17 @@ describe('useChatQueries', () => {
         it('fetches details for a single conversation', async () => {
             const mockConversation = { id: 'conv1', name: 'Single Chat' };
             vi.mocked(chatService.fetchConversationDetails).mockResolvedValue(mockConversation as any);
-            vi.mocked(useQuery).mockImplementation((options) => ({
-                data: mockConversation, isLoading: false, isFetching: false, error: null
-            }));
+            
+            vi.mocked(useQuery).mockImplementation((options: any) => {
+                if (options.queryFn && options.enabled !== false) options.queryFn();
+                return {
+                    data: mockConversation,
+                    isLoading: false,
+                    isFetching: false,
+                    error: null,
+                    status: 'success',
+                } as any;
+            });
 
             const { result } = renderHook(() => useConversationQuery('conv1', 'u1'), { wrapper });
 
@@ -138,10 +190,18 @@ describe('useChatQueries', () => {
         });
 
         it('does not fetch if conversationId or userId is undefined', () => {
-            vi.mocked(useQuery).mockImplementation((options) => ({
-                data: null, isLoading: false, isFetching: false, error: null
-            }));
-            renderHook(() => useConversationQuery(undefined, 'u1'), { wrapper });
+            vi.mocked(useQuery).mockImplementation((options: any) => {
+                if (options.queryFn && options.enabled !== false) options.queryFn();
+                return {
+                    data: null,
+                    isLoading: false,
+                    isFetching: false,
+                    error: null,
+                    status: 'pending',
+                } as any;
+            });
+            
+            renderHook(() => useConversationQuery(undefined as any, 'u1'), { wrapper });
             expect(chatService.fetchConversationDetails).not.toHaveBeenCalled();
         });
     });
@@ -151,14 +211,6 @@ describe('useChatQueries', () => {
             const invalidateQueries = vi.fn();
             vi.mocked(useQueryClient).mockReturnValue({ invalidateQueries } as any);
             
-            vi.mocked(useMutation).mockImplementation((options) => ({
-                mutateAsync: vi.fn((args) => {
-                    options.onSuccess();
-                    return Promise.resolve(options.mutationFn(args));
-                }),
-                isPending: false,
-            }));
-
             const { result } = renderHook(() => useSendMessageMutation('conv1'), { wrapper });
 
             await result.current.mutateAsync({ senderId: 'u1', content: 'test message' });

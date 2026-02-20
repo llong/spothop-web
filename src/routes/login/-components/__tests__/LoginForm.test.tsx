@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LoginForm } from '../LoginForm';
 import supabase from '@/supabase';
@@ -55,9 +55,9 @@ describe('LoginForm', () => {
     });
 
     it('displays error message on failure', async () => {
-        vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({ 
-            data: null, 
-            error: { message: 'Invalid credentials' } 
+        vi.mocked(supabase.auth.signInWithPassword).mockResolvedValue({
+            data: null,
+            error: { message: 'Invalid credentials' }
         } as any);
         render(<LoginForm />);
 

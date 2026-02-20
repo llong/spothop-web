@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { adminContestService } from '../adminContestService';
 import supabase from '@/supabase';
+import type { ContestStatus } from '@/types';
 
 // Mock supabase
 vi.mock('@/supabase', () => ({
@@ -19,7 +20,16 @@ describe('adminContestService', () => {
 
     describe('fetchAllContests', () => {
         it('fetches all contests ordered by created_at', async () => {
-            const mockContests = [{ id: 'c1', name: 'Contest 1' }];
+            const mockContests = [{
+                id: 'c1',
+                title: 'Contest 1',
+                description: 'Description 1',
+                status: 'active' as ContestStatus,
+                start_date: new Date().toISOString(),
+                end_date: new Date().toISOString(),
+                voting_type: 'public' as const,
+                criteria: {}
+            }];
             const mockFrom = vi.mocked(supabase.from);
             mockFrom.mockReturnValue({
                 select: vi.fn().mockReturnThis(),
@@ -35,7 +45,15 @@ describe('adminContestService', () => {
 
     describe('createContest', () => {
         it('creates a contest without flyer file', async () => {
-            const mockContest = { name: 'New Contest' };
+            const mockContest = {
+                title: 'New Contest',
+                description: 'New Contest Description',
+                status: 'draft' as ContestStatus,
+                start_date: new Date().toISOString(),
+                end_date: new Date().toISOString(),
+                voting_type: 'public' as const,
+                criteria: {}
+            };
             const mockFrom = vi.mocked(supabase.from);
             mockFrom.mockReturnValue({
                 insert: vi.fn().mockReturnThis(),
@@ -46,11 +64,20 @@ describe('adminContestService', () => {
             const result = await adminContestService.createContest(mockContest);
 
             expect(result.id).toBe('c1');
+            expect(result.title).toBe('New Contest');
             expect(mockFrom).toHaveBeenCalledWith('contests');
         });
 
         it('creates a contest with flyer file', async () => {
-            const mockContest = { name: 'New Contest' };
+            const mockContest = {
+                title: 'New Contest',
+                description: 'New Contest Description',
+                status: 'draft' as ContestStatus,
+                start_date: new Date().toISOString(),
+                end_date: new Date().toISOString(),
+                voting_type: 'public' as const,
+                criteria: {}
+            };
             const mockFile = new File([''], 'flyer.jpg', { type: 'image/jpeg' });
             
             const mockStorage = vi.mocked(supabase.storage.from);
@@ -75,7 +102,15 @@ describe('adminContestService', () => {
 
     describe('updateContest', () => {
         it('updates a contest', async () => {
-            const mockUpdates = { name: 'Updated Name' };
+            const mockUpdates = {
+                title: 'Updated Name',
+                description: 'Updated Description',
+                status: 'active' as ContestStatus,
+                start_date: new Date().toISOString(),
+                end_date: new Date().toISOString(),
+                voting_type: 'judges' as const,
+                criteria: {}
+            };
             const mockFrom = vi.mocked(supabase.from);
             mockFrom.mockReturnValue({
                 update: vi.fn().mockReturnThis(),
@@ -86,7 +121,7 @@ describe('adminContestService', () => {
 
             const result = await adminContestService.updateContest('c1', mockUpdates);
 
-            expect(result.name).toBe('Updated Name');
+            expect(result.title).toBe('Updated Name');
             expect(mockFrom).toHaveBeenCalledWith('contests');
         });
     });
@@ -96,7 +131,8 @@ describe('adminContestService', () => {
             const mockFrom = vi.mocked(supabase.from);
             mockFrom.mockReturnValue({
                 delete: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue({ error: null })
+                eq: vi.fn().mockReturnThis(),
+                then: (cb: any) => Promise.resolve(cb({ error: null }))
             } as any);
 
             await adminContestService.deleteContest('c1');

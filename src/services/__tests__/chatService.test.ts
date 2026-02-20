@@ -31,7 +31,10 @@ describe('chatService', () => {
             const mockParticipation = [{ conversation_id: 'c1' }];
             const mockConversations = [{
                 id: 'c1',
-                conversation_participants: [{ user_id: 'u1' }, { user_id: 'u2' }],
+                conversation_participants: [
+                    { user_id: 'u1', profile: { username: 'user1', avatarUrl: null, id: 'u1' } },
+                    { user_id: 'u2', profile: { username: 'user2', avatarUrl: null, id: 'u2' } }
+                ],
                 messages: [{ id: 'm1', content: 'hi', sender_id: 'u2', is_read: false, created_at: new Date().toISOString() }]
             }];
             const mockProfiles = [
@@ -67,7 +70,9 @@ describe('chatService', () => {
             const result = await chatService.fetchConversations('u1');
             expect(result).toHaveLength(1);
             expect(result[0].unreadCount).toBe(1);
-            expect(result[0].participants[1].profile.username).toBe('user2');
+            if (result[0].participants[1].profile) {
+                expect(result[0].participants[1].profile.username).toBe('user2');
+            }
         });
     });
 

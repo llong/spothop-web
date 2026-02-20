@@ -1,3 +1,4 @@
+/// <reference types="vitest/globals" />
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { expect, vi } from 'vitest';
 

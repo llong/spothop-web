@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ProfileComponent } from '../index.lazy';
-import { useAtomValue, useSetAtom, atom } from 'jotai';
+import { useAtomValue } from 'jotai';
 import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
 import { useProfileManagement } from 'src/hooks/useProfileManagement';
 

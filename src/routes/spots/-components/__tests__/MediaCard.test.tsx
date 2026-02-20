@@ -11,7 +11,7 @@ describe('MediaCard', () => {
         id: 'm1',
         type: 'photo' as const,
         url: 'photo-url',
-        author: { username: 'testuser', avatarUrl: 'avatar-url' },
+        author: { id: 'user1', username: 'testuser', avatarUrl: 'avatar-url' },
         likeCount: 5,
         isLiked: false,
         createdAt: new Date().toISOString()
