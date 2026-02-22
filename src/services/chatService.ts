@@ -36,12 +36,7 @@ export interface Conversation {
 }
 
 export const chatService = {
-    /**
-     * Fetches all conversations for the current user.
-     * Includes participants and the last message for each chat.
-     */
     async fetchConversations(userId: string): Promise<Conversation[]> {
-        // 1. Get IDs of conversations the user is part of
         const { data: participationData, error: partError } = await supabase
             .from('conversation_participants')
             .select('conversation_id')
@@ -53,7 +48,6 @@ export const chatService = {
 
         const conversationIds = participationData.map(p => p.conversation_id);
 
-        // 2. Fetch full conversation details
         const { data: convData, error: convError } = await supabase
             .from('conversations')
             .select(`
@@ -66,7 +60,6 @@ export const chatService = {
 
         if (convError) throw convError;
 
-        // 3. Enrich with profiles
         const allParticipantIds = [...new Set((convData || []).flatMap(c =>
             c.conversation_participants.map((p: any) => p.user_id)
         ))];
@@ -84,7 +77,6 @@ export const chatService = {
                 profile: profileMap.get(p.user_id)
             }));
 
-            // Find last message
             const sortedMessages = [...(c.messages || [])].sort((a, b) =>
                 new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
             );
@@ -104,9 +96,6 @@ export const chatService = {
         });
     },
 
-    /**
-     * Fetches message history for a specific conversation.
-     */
     async fetchMessages(conversationId: string): Promise<ChatMessage[]> {
         const { data, error } = await supabase
             .from('messages')
@@ -117,7 +106,6 @@ export const chatService = {
         if (error) throw error;
         if (!data) return [];
 
-        // Fetch authors
         const authorIds = [...new Set(data.map(m => m.sender_id))];
         const { data: profiles } = await supabase
             .from('profiles')
@@ -132,9 +120,6 @@ export const chatService = {
         }));
     },
 
-    /**
-     * Sends a new message in a conversation.
-     */
     async sendMessage(conversationId: string, senderId: string, content: string) {
         const { data, error } = await supabase
             .from('messages')
@@ -150,11 +135,7 @@ export const chatService = {
         return data;
     },
 
-    /**
-     * Finds an existing 1-on-1 conversation or creates a new one.
-     */
     async getOrCreate1on1(myId: string, targetUserId: string): Promise<string> {
-        // 1. Find conversations where both are participants
         const { data: existing, error } = await supabase
             .rpc('find_common_1on1_conversation', {
                 user_a: myId,
@@ -162,7 +143,6 @@ export const chatService = {
             });
 
         if (error) {
-            // Fallback if RPC isn't available: manual search
             const { data: myConvs } = await supabase
                 .from('conversation_participants')
                 .select('conversation_id')
@@ -176,7 +156,6 @@ export const chatService = {
             const common = myConvs?.filter(m => targetConvs?.some(t => t.conversation_id === m.conversation_id));
 
             if (common?.length) {
-                // Check if it's actually a 1-on-1
                 for (const c of common) {
                     const { count } = await supabase
                         .from('conversation_participants')
@@ -189,7 +168,6 @@ export const chatService = {
             return existing;
         }
 
-        // 2. Create new if none found
         const { data: newConv, error: createError } = await supabase
             .from('conversations')
             .insert({ is_group: false, created_by: myId })
@@ -206,9 +184,6 @@ export const chatService = {
         return newConv.id;
     },
 
-    /**
-     * Responds to a group invitation.
-     */
     async respondToInvite(conversationId: string, userId: string, status: 'accepted' | 'rejected') {
         const { error } = await supabase
             .from('conversation_participants')
@@ -219,9 +194,6 @@ export const chatService = {
         if (error) throw error;
     },
 
-    /**
-     * Creates a new group chat.
-     */
     async createGroup(name: string, participantIds: string[], creatorId: string): Promise<string> {
         const { data: newConv, error: createError } = await supabase
             .from('conversations')
@@ -254,9 +226,6 @@ export const chatService = {
         return newConv.id;
     },
 
-    /**
-     * Fetches details for a single conversation.
-     */
     async fetchConversationDetails(conversationId: string): Promise<Conversation> {
         const { data, error } = await supabase
             .from('conversations')
@@ -270,7 +239,6 @@ export const chatService = {
 
         if (error) throw error;
 
-        // Enrich with profiles
         const participantIds = data.conversation_participants.map((p: any) => p.user_id);
         const { data: profiles } = await supabase
             .from('profiles')
@@ -286,34 +254,9 @@ export const chatService = {
         return {
             ...data,
             participants,
-            unreadCount: 0 // Not needed for detail view
+            unreadCount: 0 
         };
     }
 };
 
-export const blockService = {
-    async blockUser(blockerId: string, blockedId: string) {
-        const { error } = await supabase
-            .from('user_blocks')
-            .insert({ blocker_id: blockerId, blocked_id: blockedId });
-        if (error) throw error;
-    },
-
-    async unblockUser(blockerId: string, blockedId: string) {
-        const { error } = await supabase
-            .from('user_blocks')
-            .delete()
-            .eq('blocker_id', blockerId)
-            .eq('blocked_id', blockedId);
-        if (error) throw error;
-    },
-
-    async fetchBlockedUsers(userId: string) {
-        const { data, error } = await supabase
-            .from('user_blocks')
-            .select('blocked_id, profiles!blocked_id(*)')
-            .eq('blocker_id', userId);
-        if (error) throw error;
-        return data;
-    }
-};
+export { blockService } from './chat/blockService';

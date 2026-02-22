@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { Box, Typography, IconButton, Paper, Modal, Button, Menu, MenuItem, Stack } from '@mui/material';
+import { useState } from 'react';
+import { Box, Typography, IconButton, Paper, Stack, Menu, MenuItem } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import ReplayIcon from '@mui/icons-material/Replay';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -12,6 +11,8 @@ import { secondsToTime } from 'src/utils/youtube';
 import { useProfileQuery } from 'src/hooks/useProfileQueries';
 import { spotService } from 'src/services/spotService';
 import { AddVideoLinkDialog } from './AddVideoLinkDialog';
+import { VideoPlayerModal } from './VideoPlayerModal';
+import { useYoutubePlayer } from '../../hooks/useYoutubePlayer';
 
 interface VideoLinkItemProps {
     link: SpotVideoLink;
@@ -27,17 +28,9 @@ export const VideoLinkItem = ({ link, currentUserId, onLike, onDeleteSuccess, on
     const isOwner = currentUserId === link.user_id;
     const canManage = isAdmin || isOwner;
 
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [playerKey, setPlayerKey] = useState(0);
+    const { isPlaying, playerKey, handlePlay, handleClose, handleReplay } = useYoutubePlayer(link.id, link.start_time || 0);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const playerRef = useRef<any>(null);
-
-    const handlePlay = () => setIsPlaying(true);
-    const handleClose = () => {
-        setIsPlaying(false);
-        playerRef.current = null;
-    };
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -65,65 +58,12 @@ export const VideoLinkItem = ({ link, currentUserId, onLike, onDeleteSuccess, on
         }
     };
 
-    const handleReplay = () => {
-        // Increment key to force iframe to reload at the start timestamp
-        setPlayerKey(prev => prev + 1);
-    };
-
     const thumbnailUrl = `https://img.youtube.com/vi/${link.youtube_video_id}/hqdefault.jpg`;
     
-    // Construct embed URL with start/end
-    // enablejsapi=1 allows us to control the player programmatically
     let embedUrl = `https://www.youtube.com/embed/${link.youtube_video_id.trim()}?autoplay=1&start=${link.start_time || 0}&playsinline=1&enablejsapi=1`;
     if (link.end_time) {
         embedUrl += `&end=${link.end_time}`;
     }
-
-    // Effect to handle YouTube Player API for automatic looping
-    useEffect(() => {
-        if (!isPlaying) return;
-
-        const initPlayer = () => {
-            // @ts-ignore
-            if (window.YT && window.YT.Player) {
-                // @ts-ignore
-                playerRef.current = new window.YT.Player(`youtube-player-${link.id}`, {
-                    events: {
-                        'onStateChange': (event: any) => {
-                            // YT.PlayerState.ENDED = 0
-                            if (event.data === 0) {
-                                // When video ends, seek back to the start timestamp instead of 0:00
-                                event.target.seekTo(link.start_time || 0);
-                                event.target.playVideo();
-                            }
-                        }
-                    }
-                });
-            }
-        };
-
-        // Load the IFrame Player API code asynchronously if not already present
-        // @ts-ignore
-        if (!window.YT) {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            if (firstScriptTag && firstScriptTag.parentNode) {
-                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            } else {
-                document.head.appendChild(tag);
-            }
-
-            // @ts-ignore
-            window.onYouTubeIframeAPIReady = initPlayer;
-        } else {
-            initPlayer();
-        }
-
-        return () => {
-            playerRef.current = null;
-        };
-    }, [isPlaying, link.id, link.start_time, playerKey]);
 
     return (
         <>
@@ -137,7 +77,6 @@ export const VideoLinkItem = ({ link, currentUserId, onLike, onDeleteSuccess, on
                     borderColor: 'divider'
                 }}
             >
-                {/* Thumbnail Section */}
                 <Box 
                     onClick={handlePlay}
                     sx={{ 
@@ -186,7 +125,6 @@ export const VideoLinkItem = ({ link, currentUserId, onLike, onDeleteSuccess, on
                     </Box>
                 </Box>
 
-                {/* Content Section */}
                 <Box sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                         <Typography variant="subtitle1" fontWeight="bold" noWrap sx={{ flex: 1 }}>
@@ -245,51 +183,15 @@ export const VideoLinkItem = ({ link, currentUserId, onLike, onDeleteSuccess, on
                 </Box>
             </Paper>
 
-            {/* Video Player Modal */}
-            <Modal
+            <VideoPlayerModal
                 open={isPlaying}
                 onClose={handleClose}
-                sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-                <Box sx={{ width: '90%', maxWidth: 800, bgcolor: 'black', boxShadow: 24, outline: 'none', display: 'flex', flexDirection: 'column' }}>
-                    <Box sx={{ aspectRatio: '16/9', width: '100%' }}>
-                        <iframe
-                            key={playerKey}
-                            id={`youtube-player-${link.id}`}
-                            width="100%"
-                            height="100%"
-                            src={embedUrl}
-                            title="YouTube video player"
-                            style={{ border: 0 }}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                            // @ts-ignore
-                            credentialless="true"
-                        ></iframe>
-                    </Box>
-                    <Box sx={{ p: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Button 
-                            startIcon={<ReplayIcon />}
-                            onClick={handleReplay}
-                            variant="text"
-                            size="small"
-                            sx={{ color: 'grey.500' }}
-                        >
-                            Replay Clip
-                        </Button>
-                        <Button 
-                            href={`https://www.youtube.com/watch?v=${link.youtube_video_id}&t=${link.start_time || 0}s`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            variant="text"
-                            size="small"
-                            sx={{ color: 'grey.500' }}
-                        >
-                            Open in YouTube
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
+                playerKey={playerKey}
+                linkId={link.id}
+                embedUrl={embedUrl}
+                onReplay={handleReplay}
+                youtubeUrl={`https://www.youtube.com/watch?v=${link.youtube_video_id}&t=${link.start_time || 0}s`}
+            />
 
             {canManage && (
                 <AddVideoLinkDialog

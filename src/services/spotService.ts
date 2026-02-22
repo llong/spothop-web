@@ -2,13 +2,11 @@ import supabase from "../supabase";
 import type { MediaItem, SpotVideoLink } from "../types";
 import { reverseGeocode } from "../utils/geocoding";
 import { extractStoragePath } from "../utils/media-utils";
+import { favoriteService } from './spot/favoriteService';
+import { videoLinkService } from './spot/videoLinkService';
 
 export const spotService = {
-    /**
-     * Fetches a full spot with its media, stats, and favorite status.
-     */
     async fetchSpotDetails(spotId: string, userId?: string) {
-        // 1. Fetch Spot with Media and Metadata
         const spotPromise = supabase
             .from('spots')
             .select(`
@@ -56,7 +54,6 @@ export const spotService = {
             .eq('id', spotId)
             .maybeSingle();
 
-        // 2. Fetch Social Stats
         const favoriteStatusPromise = userId
             ? supabase
                 .from('user_favorite_spots')
@@ -104,10 +101,8 @@ export const spotService = {
 
         if (spotResult.error) throw spotResult.error;
         const spotData = spotResult.data;
-
         if (!spotData) return null;
 
-        // 3. Location Enrichment (Only if missing)
         if (!spotData.city || !spotData.country || !spotData.state) {
             try {
                 const info = await reverseGeocode(spotData.latitude, spotData.longitude);
@@ -119,7 +114,6 @@ export const spotService = {
             }
         }
 
-        // 4. Author Profiles
         const authorIds = [
             ...(spotData.spot_photos || []).map((p: any) => p.user_id),
             ...(spotData.spot_videos || []).map((v: any) => v.user_id),
@@ -134,7 +128,6 @@ export const spotService = {
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
         const creatorProfile = profileMap.get(spotData.created_by);
 
-        // 5. Format Media
         const photos: MediaItem[] = (spotData.spot_photos || []).map((p: any) => {
             const author = profileMap.get(p.user_id);
             return {
@@ -195,7 +188,7 @@ export const spotService = {
                 avatarUrl: creatorProfile?.avatarUrl || null,
                 displayName: creatorProfile?.displayName || null,
             },
-            username: creatorProfile?.username || 'unknown', // Keep for backward compatibility
+            username: creatorProfile?.username || 'unknown',
             favoriteCount: favoriteCountResult.count || 0,
             commentCount: commentCountResult.count || 0,
             flagCount: flagCountResult.count || 0,
@@ -208,187 +201,33 @@ export const spotService = {
         };
     },
 
-    /**
-     * Deletes a spot and its associated media/comments/storage
-     */
     async deleteSpot(spotId: string) {
-        // 1. Fetch all media paths first
         const { data: photos } = await supabase.from('spot_photos').select('url').eq('spot_id', spotId);
         const { data: videos } = await supabase.from('spot_videos').select('url, thumbnail_url').eq('spot_id', spotId);
         
-        // 2. Extract relative paths from URLs
         const pathsToDelete: string[] = [];
         [...(photos || []), ...(videos || [])].forEach((item: any) => {
             if (item.url) pathsToDelete.push(extractStoragePath(item.url));
             if (item.thumbnail_url) pathsToDelete.push(extractStoragePath(item.thumbnail_url));
-            
-            // Also attempt to delete standard thumbnail paths for photos
             if (item.url && !item.thumbnail_url) {
                 const base = item.url.split('/').pop();
                 if (base) {
                     pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base}`);
-                    // Handle 240/720 sizes from ADR
                     pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base.replace(/\.[^/.]+$/, "")}_240.jpg`);
                     pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base.replace(/\.[^/.]+$/, "")}_720.jpg`);
                 }
             }
         });
 
-        // 3. Delete from DB (Cascades and Cleanup Triggers will handle related records)
-        const { data: delData, error } = await supabase
-            .from('spots')
-            .delete()
-            .eq('id', spotId)
-            .select();
-
+        const { error } = await supabase.from('spots').delete().eq('id', spotId).select();
         if (error) throw error;
-        if (!delData || delData.length === 0) {
-            console.warn(`[spotService] No spot deleted for ID ${spotId}. It might have been already deleted or RLS blocked the action.`);
-        }
 
-        // 4. Cleanup Storage
         if (pathsToDelete.length > 0) {
-            const { error: storageError } = await supabase.storage
-                .from('spot-media')
-                .remove(pathsToDelete);
-            
-            if (storageError) {
-                console.error("Storage cleanup failed for spot:", spotId, storageError);
-                // We don't throw here to avoid user confusion since DB record is already gone
-            }
+            await supabase.storage.from('spot-media').remove(pathsToDelete);
         }
     },
 
-    /**
-     * Toggles favorite status for a spot
-     */
-    async toggleFavorite(spotId: string, userId: string, isFavorited: boolean) {
-        if (isFavorited) {
-            const { error } = await supabase
-                .from('user_favorite_spots')
-                .delete()
-                .eq('user_id', userId)
-                .eq('spot_id', spotId);
-            if (error) throw error;
-        } else {
-            const { error } = await supabase
-                .from('user_favorite_spots')
-                .upsert(
-                    { user_id: userId, spot_id: spotId },
-                    { onConflict: 'user_id,spot_id', ignoreDuplicates: true }
-                );
-            if (error) throw error;
-        }
-    },
-
-    /**
-     * Adds a YouTube video link to a spot
-     */
-    async addVideoLink(
-        spotId: string,
-        userId: string,
-        youtubeVideoId: string,
-        startTime: number,
-        endTime?: number,
-        description?: string,
-        skaterName?: string
-    ) {
-        const { data, error } = await supabase
-            .from('spot_video_links')
-            .insert({
-                spot_id: spotId,
-                user_id: userId,
-                youtube_video_id: youtubeVideoId,
-                start_time: startTime,
-                end_time: endTime,
-                description: description,
-                skater_name: skaterName
-            })
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    },
-
-    /**
-     * Updates an existing video link
-     */
-    async updateVideoLink(
-        linkId: string,
-        youtubeVideoId: string,
-        startTime: number,
-        endTime?: number,
-        description?: string,
-        skaterName?: string
-    ) {
-        const { data, error } = await supabase
-            .from('spot_video_links')
-            .update({
-                youtube_video_id: youtubeVideoId,
-                start_time: startTime,
-                end_time: endTime,
-                description: description,
-                skater_name: skaterName
-            })
-            .eq('id', linkId)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
-    },
-
-    /**
-     * Deletes a video link
-     */
-    async deleteVideoLink(linkId: string) {
-        const { error } = await supabase
-            .from('spot_video_links')
-            .delete()
-            .eq('id', linkId);
-
-        if (error) throw error;
-    },
-
-    /**
-     * Fetches unique skater names for suggestions
-     */
-    async fetchSkaterSuggestions(query: string) {
-        if (!query || query.length < 2) return [];
-
-        const { data, error } = await supabase
-            .from('spot_video_links')
-            .select('skater_name')
-            .ilike('skater_name', `%${query}%`)
-            .not('skater_name', 'is', null)
-            .limit(10);
-
-        if (error) throw error;
-
-        // Return unique names
-        return Array.from(new Set((data || []).map((item: any) => item.skater_name)));
-    },
-
-    /**
-     * Toggles like on a video link
-     */
-    async toggleVideoLinkLike(linkId: string, userId: string, isLiked: boolean) {
-        if (isLiked) {
-            const { error } = await supabase
-                .from('spot_video_link_likes')
-                .delete()
-                .eq('link_id', linkId)
-                .eq('user_id', userId);
-            if (error) throw error;
-        } else {
-            const { error } = await supabase
-                .from('spot_video_link_likes')
-                .upsert(
-                    { link_id: linkId, user_id: userId },
-                    { onConflict: 'link_id,user_id', ignoreDuplicates: true }
-                );
-            if (error) throw error;
-        }
-    }
+    ...favoriteService,
+    ...videoLinkService,
 };
+export { favoriteService, videoLinkService };

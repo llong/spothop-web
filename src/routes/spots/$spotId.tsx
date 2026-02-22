@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router';
 import supabase from 'src/supabase';
-import { spotKeys, useSpotQuery, useDeleteSpotMutation } from 'src/hooks/useSpotQueries';
+import { spotKeys } from 'src/hooks/useSpotQueries';
 import { spotService } from 'src/services/spotService';
 import {
     Box,
@@ -10,36 +10,26 @@ import {
     Stack,
     Button,
     CircularProgress,
-    useMediaQuery,
-    useTheme,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DirectionsIcon from '@mui/icons-material/Directions';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
 import { MediaCarousel } from './-components/MediaCarousel';
-import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
-import { useMediaLikes } from 'src/hooks/useMediaLikes';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo } from 'react';
 import { FeedCommentDialog } from 'src/routes/feed/-components/FeedCommentDialog';
-import { useFlagging } from 'src/hooks/useFlagging';
-import { rightSidebarAtom } from 'src/atoms/ui';
 import { Lightbox } from './-components/Lightbox';
 import { DetailsSidebar } from './-components/DetailsSidebar';
 import { DetailsInfo } from './-components/DetailsInfo';
 import { DetailsActions } from './-components/DetailsActions';
 import { DetailsMediaSection } from './-components/DetailsMediaSection';
 import SEO from 'src/components/SEO/SEO';
-import type { FeedItem, MediaItem } from 'src/types';
-import { analytics } from 'src/lib/posthog';
+import type { FeedItem } from 'src/types';
+import { useSpotDetailsState } from './hooks/useSpotDetailsState';
 
 const loader = async ({ params, context }: { params: { spotId: string }, context: any }) => {
     const { queryClient } = context;
     const { data: sessionData } = await supabase.auth.getSession();
     const userId = sessionData.session?.user.id;
 
-    // Prefetch Spot Details via QueryClient
     await queryClient.ensureQueryData({
         queryKey: spotKeys.details(params.spotId),
         queryFn: () => spotService.fetchSpotDetails(params.spotId, userId),
@@ -50,69 +40,34 @@ const loader = async ({ params, context }: { params: { spotId: string }, context
 
 export function SpotDetails() {
     const { spotId } = useParams({ from: '/spots/$spotId' });
-    const auth = useAtomValue(userAtom);
-    const { data: currentUserProfile } = useProfileQuery(auth?.user.id);
-    const [activeSlide, setActiveSlide] = useState(0);
-    const { data: spot, isLoading, error } = useSpotQuery(spotId, auth?.user.id);
-    const deleteMutation = useDeleteSpotMutation();
     const navigate = useNavigate();
-    const theme = useTheme();
-    const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
-    const { isFavorited, toggleFavorite } = useSpotFavorites(spot ?? undefined, auth?.user.id);
-    const { toggleLike: toggleMediaLike, loading: mediaLoadingStates } = useMediaLikes();
-    const [mediaCommentItem, setMediaCommentItem] = useState<MediaItem | null>(null);
-    const { flagSpot } = useFlagging();
-    const setRightSidebarContent = useSetAtom(rightSidebarAtom);
-    const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [lightboxIndex, setLightboxIndex] = useState(0);
-
-    // Track spot view
-    useEffect(() => {
-        if (spot) {
-            analytics.capture('spot_viewed', {
-                spot_id: spot.id,
-                category: spot.spot_type,
-                city: spot.city,
-                country: spot.country
-            });
-        }
-    }, [spot?.id]);
-
-    const handleOpenLightbox = useCallback((index: number) => {
-        setLightboxIndex(index);
-        setLightboxOpen(true);
-    }, []);
-
-    const handleDelete = useCallback(async () => {
-        if (window.confirm('Are you sure you want to delete this spot?')) {
-            await deleteMutation.mutateAsync(spotId);
-            navigate({ to: '/spots' });
-        }
-    }, [spotId, deleteMutation, navigate]);
-
-    const handleDirections = useCallback(() => {
-        if (!spot) return;
-
-        analytics.capture('spot_navigated_to', {
-            spot_id: spot.id,
-            spot_name: spot.name
-        });
-
-        window.open(`https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}`, '_blank');
-    }, [spot]);
-
-    const handleShare = useCallback(() => {
-        const url = window.location.href;
-        if (navigator.share) {
-            navigator.share({
-                title: spot?.name,
-                url: url
-            }).catch(console.error);
-        } else {
-            navigator.clipboard.writeText(url);
-            alert('Link copied to clipboard!');
-        }
-    }, [spot?.name]);
+    
+    const {
+        auth,
+        currentUserProfile,
+        spot,
+        isLoading,
+        error,
+        activeSlide,
+        setActiveSlide,
+        isLargeScreen,
+        isFavorited,
+        toggleFavorite,
+        toggleMediaLike,
+        mediaLoadingStates,
+        mediaCommentItem,
+        setMediaCommentItem,
+        flagSpot,
+        lightboxOpen,
+        setLightboxOpen,
+        lightboxIndex,
+        setLightboxIndex,
+        handleOpenLightbox,
+        handleDelete,
+        handleDirections,
+        handleShare,
+        setRightSidebarContent
+    } = useSpotDetailsState(spotId);
 
     const sidebarContent = useMemo(() => spot ? (
         <DetailsSidebar
@@ -195,7 +150,7 @@ export function SpotDetails() {
                         spot={spot}
                         isFavorited={isFavorited}
                         onToggleFavorite={toggleFavorite}
-                        onOpenComments={() => { }} // Spot-level comments disabled
+                        onOpenComments={() => { }} 
                         onShare={handleShare}
                         onFlag={() => flagSpot(spot.id, 'inappropriate_content')}
                     />

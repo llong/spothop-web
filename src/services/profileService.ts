@@ -1,13 +1,12 @@
 import supabase from "../supabase";
-import type { UserProfile, Spot, LikedMediaItem, UserMediaItem, AppNotification } from "../types";
-import { getSpotThumbnail } from "../utils/media-utils";
+import type { UserProfile } from "../types";
+import { followService } from './profile/followService';
+import { contentService } from './profile/contentService';
+import { notificationService } from './profile/notificationService';
 
 export const PROFILE_SELECT = `id, username, "displayName", "avatarUrl", city, country, "riderType", bio, "instagramHandle", role, "isBanned"`;
 
 export const profileService = {
-    /**
-     * Fetches basic identity (for AppBar/Avatar).
-     */
     async fetchIdentity(userId: string): Promise<UserProfile | null> {
         const { data, error, status } = await supabase
             .from("profiles")
@@ -23,281 +22,6 @@ export const profileService = {
         return data as UserProfile;
     },
 
-    /**
-     * Fetches follower/following counts using optimized RPC.
-     */
-    async fetchFollowStats(userId: string): Promise<{ followerCount: number, followingCount: number }> {
-        console.log('🚀 fetchFollowStats called for userId:', userId);
-        const { data, error } = await supabase.rpc('get_user_follow_stats_simple', { p_user_id: userId });
-        console.log('📊 RPC Response:', data, error);
-
-        if (error) throw error;
-        if (!data || data.length === 0) {
-            console.log('⚠️ No data returned from RPC');
-            return { followerCount: 0, followingCount: 0 };
-        }
-        // Handle single row result (works)
-        const stats = Array.isArray(data) ? data[0] : data;
-        const result = {
-            followerCount: Number(stats.follower_count) || 0,
-            followingCount: Number(stats.following_count) || 0
-        };
-        console.log('✅ Returning stats:', result);
-        return result;
-    },
-
-    /**
-     * Fetches user followers with efficient cursor-based pagination.
-     */
-    async fetchUserFollowers(userId: string, cursor?: string | null, limit = 20): Promise<{
-        followers: Array<{
-            user_id: string;
-            username: string;
-            avatar_url: string | null;
-        }>;
-        cursor: string | null;
-        hasMore: boolean;
-    }> {
-        const { data, error } = await supabase.rpc('get_user_followers_batch', {
-            p_user_id: userId,
-            p_cursor: cursor || null,
-            p_limit: limit
-        });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            return {
-                followers: [],
-                cursor: null,
-                hasMore: false
-            };
-        }
-
-        const followers = data.map((row: any) => ({
-            user_id: row.user_id,
-            username: row.username,
-            avatar_url: row.avatar_url
-        }));
-
-        const lastFollower = data[data.length - 1];
-        const nextCursor = lastFollower?.cursor || null;
-        const hasMore = data.length > limit;
-
-        return {
-            followers,
-            cursor: nextCursor,
-            hasMore
-        };
-    },
-
-    /**
-     * Fetches users that current user is following with efficient cursor-based pagination.
-     */
-    async fetchUserFollowing(userId: string, cursor?: string | null, limit = 20): Promise<{
-        following: Array<{
-            user_id: string;
-            username: string;
-            avatar_url: string | null;
-        }>;
-        cursor: string | null;
-        hasMore: boolean;
-    }> {
-        const { data, error } = await supabase.rpc('get_user_following_batch', {
-            p_user_id: userId,
-            p_cursor: cursor || null,
-            p_limit: limit
-        });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            return {
-                following: [],
-                cursor: null,
-                hasMore: false
-            };
-        }
-
-        const following = data.map((row: any) => ({
-            user_id: row.user_id,
-            username: row.username,
-            avatar_url: row.avatar_url
-        }));
-
-        const lastFollowing = data[data.length - 1];
-        const nextCursor = lastFollowing?.cursor || null;
-        const hasMore = data.length > limit;
-
-        return {
-            following,
-            cursor: nextCursor,
-            hasMore
-        };
-    },
-
-    /**
-     * Fetches a user's favorite spots.
-     */
-    async fetchFavoriteSpots(userId: string): Promise<Spot[]> {
-        const { data, error } = await supabase
-            .from('user_favorite_spots')
-            .select(`spots (*, spot_photos (url))`)
-            .eq('user_id', userId);
-
-        if (error) throw error;
-
-        const spots = (data || []).map((item: any) => {
-            if (!item.spots) return null;
-            return {
-                ...item.spots,
-                photoUrl: getSpotThumbnail(item.spots.spot_photos)
-            };
-        });
-
-        return spots.filter(Boolean) as Spot[];
-    },
-
-    /**
-     * Fetches media items liked by the user.
-     */
-    async fetchLikedMedia(userId: string): Promise<LikedMediaItem[]> {
-        const { data: likes, error: likesError } = await supabase
-            .from('media_likes')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-
-        if (likesError) throw likesError;
-        if (!likes?.length) return [];
-
-        const photoIds = likes.filter(l => l.media_type === 'photo').map(l => l.photo_id);
-        const videoIds = likes.filter(l => l.media_type === 'video').map(l => l.video_id);
-
-        const [photosResult, videosResult] = await Promise.all([
-            photoIds.length ? supabase.from('spot_photos').select('*, spot:spots(id, name, city, country, latitude, longitude)').in('id', photoIds) : { data: [] },
-            videoIds.length ? supabase.from('spot_videos').select('*, spot:spots(id, name, city, country, latitude, longitude)').in('id', videoIds) : { data: [] }
-        ]);
-
-        const authorIds = [...new Set([...(photosResult.data || []), ...(videosResult.data || [])].map((m: any) => m.user_id))];
-        const { data: profiles } = await supabase.from('profiles').select('id, username, "avatarUrl"').in('id', authorIds);
-        const profileMap = new Map(profiles?.map(p => [p.id, p]));
-
-        const formattedMedia = likes.map((like) => {
-            const mediaData = like.media_type === 'photo'
-                ? photosResult.data?.find((p: any) => p.id === like.photo_id)
-                : videosResult.data?.find((v: any) => v.id === like.video_id);
-
-            if (!mediaData) return null;
-            const authorProfile = profileMap.get(mediaData.user_id);
-
-            return {
-                id: like.id,
-                mediaId: mediaData.id,
-                url: mediaData.url,
-                thumbnailUrl: mediaData.thumbnail_url,
-                type: like.media_type,
-                spot: mediaData.spot,
-                author: {
-                    id: mediaData.user_id,
-                    username: authorProfile?.username || 'Unknown',
-                    avatarUrl: authorProfile?.avatarUrl || null
-                }
-            };
-        });
-
-        return formattedMedia.filter(Boolean) as LikedMediaItem[];
-    },
-
-    /**
-     * Fetches spots and media created by the user.
-     */
-    async fetchUserContent(userId: string): Promise<{ createdSpots: Spot[], userMedia: UserMediaItem[] }> {
-        const [spotsRes, photosRes, videosRes] = await Promise.all([
-            supabase.from('spots').select('*, spot_photos(url)').eq('created_by', userId).order('created_at', { ascending: false }),
-            supabase.from('spot_photos').select('id, url, created_at, spots(id, name, city, country, latitude, longitude)').eq('user_id', userId).order('created_at', { ascending: false }),
-            supabase.from('spot_videos').select('id, url, thumbnail_url, created_at, spots(id, name, city, country, latitude, longitude)').eq('user_id', userId).order('created_at', { ascending: false })
-        ]);
-
-        if (spotsRes.error) throw spotsRes.error;
-
-        const formattedSpots = (spotsRes.data || []).map((s: any) => ({
-            ...s,
-            photoUrl: s.spot_photos?.[0]?.url || null
-        }));
-
-        // PASSIVE FORMATTING: No automated enrichment logic in lists to avoid geocoding floods
-        const formattedPhotos = (photosRes.data || []).map((p: any) => ({
-            id: p.id,
-            url: p.url,
-            type: 'photo' as const,
-            created_at: p.created_at,
-            spot: {
-                id: p.spots?.id || 'unknown',
-                name: p.spots?.name || 'Unknown Spot',
-                city: p.spots?.city || 'Unknown City',
-                country: p.spots?.country || 'Unknown Country'
-            }
-        }));
-
-        const formattedVideos = (videosRes.data || []).map((v: any) => ({
-            id: v.id,
-            url: v.url,
-            thumbnailUrl: v.thumbnail_url,
-            type: 'video' as const,
-            created_at: v.created_at,
-            spot: {
-                id: v.spots?.id || 'unknown',
-                name: v.spots?.name || 'Unknown Spot',
-                city: v.spots?.city || 'Unknown City',
-                country: v.spots?.country || 'Unknown Country'
-            }
-        }));
-
-        return {
-            createdSpots: formattedSpots as Spot[],
-            userMedia: [...formattedPhotos, ...formattedVideos].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-        };
-    },
-
-    /**
-     * Fetches notifications for a user.
-     */
-    async fetchNotifications(userId: string): Promise<AppNotification[]> {
-        // 1. Fetch Notifications
-        const { data, error } = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        if (!data) return [];
-
-        // 2. Fetch Actors separately to avoid join issues
-        const actorIds = [...new Set(data.map((n: any) => n.actor_id))];
-        const { data: profiles } = await supabase
-            .from('profiles')
-            .select('id, username, "avatarUrl"')
-            .in('id', actorIds);
-
-        const profileMap = new Map(profiles?.map(p => [p.id, p]));
-
-        return data.map((n: any) => {
-            const actor = profileMap.get(n.actor_id);
-            return {
-                ...n,
-                actor: {
-                    username: actor?.username || 'unknown',
-                    avatarUrl: actor?.avatarUrl || null
-                }
-            };
-        });
-    },
-
-    /**
-     * Fetches a profile by username.
-     */
     async fetchProfileByUsername(username: string): Promise<UserProfile | null> {
         const { data, error } = await supabase
             .from("profiles")
@@ -313,15 +37,10 @@ export const profileService = {
         return data as UserProfile;
     },
 
-    /**
-     * Searches for users by username or display name.
-     */
     async searchUsers(query: string, limit: number = 5): Promise<Array<{ id: string, username: string, displayName: string, avatarUrl: string | null }>> {
         const cleanQuery = query.trim().startsWith('@') ? query.trim().substring(1) : query.trim();
         if (!cleanQuery || cleanQuery.length < 2) return [];
 
-        // PostgREST ilike inside .or() uses * as wildcard, not %
-        // We also use double quotes for column names to ensure case sensitivity matches DB schema
         const orFilter = `"username".ilike.*${cleanQuery}*,"displayName".ilike.*${cleanQuery}*`;
 
         const { data, error } = await supabase
@@ -341,5 +60,11 @@ export const profileService = {
             displayName: user.displayName,
             avatarUrl: user.avatarUrl
         }));
-    }
+    },
+
+    // Spread sub-services
+    ...followService,
+    ...contentService,
+    ...notificationService,
 };
+export { followService, contentService, notificationService };

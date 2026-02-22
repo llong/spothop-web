@@ -9,8 +9,12 @@ export const useFeedFilters = (initialFilters: FeedFilters, onApply: (f: FeedFil
     const { centerMapOnUser } = useGeolocation(null);
 
     // Keep temp state in sync if initialFilters change externally
+    const prevInitialFiltersRef = useRef(initialFilters);
     useEffect(() => {
-        setTempFilters(initialFilters);
+        if (JSON.stringify(prevInitialFiltersRef.current) !== JSON.stringify(initialFilters)) {
+            setTempFilters(initialFilters);
+            prevInitialFiltersRef.current = initialFilters;
+        }
     }, [initialFilters]);
 
     const toggleArrayItem = (key: keyof FeedFilters, item: string) => {
