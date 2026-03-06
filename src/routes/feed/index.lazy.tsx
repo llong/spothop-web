@@ -15,7 +15,7 @@ import { useState, useMemo } from 'react';
 import { FeedFilterPanel } from './-components/FeedFilterPanel';
 import { FeedContent } from './-components/FeedContent';
 import { FeedHeader } from './-components/FeedHeader';
-import { useGlobalFeed, useFollowingFeed } from './hooks/useFeedData';
+import { useGlobalFeed, useFollowingFeed } from './hooks/-useFeedData';
 import SEO from 'src/components/SEO/SEO';
 import { analytics } from 'src/lib/posthog';
 

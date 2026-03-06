@@ -8,7 +8,7 @@ import {
     Divider,
 } from '@mui/material';
 import { ImageUploader } from '@/components/ImageUploader';
-import { useContestForm } from '../hooks/useContestForm';
+import { useContestForm } from '../hooks/-useContestForm';
 import { ContestBasicInfoFields } from './ContestBasicInfoFields';
 import { ContestStatusVotingFields } from './ContestStatusVotingFields';
 import { ContestSubmissionCriteriaFields } from './ContestSubmissionCriteriaFields';

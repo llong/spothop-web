@@ -18,7 +18,7 @@ import {
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
-import { useContestSubmission } from '../hooks/useContestSubmission';
+import { useContestSubmission } from '../hooks/-useContestSubmission';
 import { SpotSelectionCard } from './SpotSelectionCard';
 import { MediaSelectionCard } from './MediaSelectionCard';
 import { SubmissionConfirmStep } from './SubmissionConfirmStep';
@@ -62,7 +62,7 @@ export function ContestSubmissionModal({ open, onClose, contest }: Props) {
     };
 
     const handleBack = () => {
-        setActiveStep((prev) => prev - 1);
+        setActiveStep((prev: number) => prev - 1);
     };
 
     if (!open) return null;
@@ -89,7 +89,7 @@ export function ContestSubmissionModal({ open, onClose, contest }: Props) {
                                 {eligibleSpots.map(spot => (
                                     <Grid size={{ xs: 12 }} key={spot.id}>
                                         <SpotSelectionCard
-                                            spot={spot}
+                                            spot={spot as any}
                                             isSelected={selectedSpotId === spot.id}
                                             onSelect={setSelectedSpotId}
                                         />
@@ -116,7 +116,7 @@ export function ContestSubmissionModal({ open, onClose, contest }: Props) {
                                 {eligibleMedia.map(item => (
                                     <Grid size={{ xs: 6 }} key={item.id}>
                                         <MediaSelectionCard
-                                            item={item}
+                                            item={item as any}
                                             isSelected={selectedMediaId === item.id}
                                             onSelect={(id, type) => {
                                                 setSelectedMediaId(id);

@@ -1,6 +1,6 @@
 import { useFeedQuery, useFollowingFeedQuery } from 'src/hooks/useFeedQueries';
 import { useConstructFeedFilters } from 'src/hooks/useConstructFeedFilters';
-import { useInfiniteScroll } from './useInfiniteScroll';
+import { useInfiniteScroll } from './-useInfiniteScroll';
 
 export function useGlobalFeed(userId: string | undefined, filters: any, userLocation: any) {
     const queryFilters = useConstructFeedFilters(filters, userLocation, 0);

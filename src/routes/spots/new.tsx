@@ -19,7 +19,7 @@ import { PhotoUpload } from './-components/PhotoUpload';
 import { LocationPreview } from './-components/LocationPreview';
 import { SpotDetailsForm } from './-components/SpotDetailsForm';
 import { SpotCharacteristics } from './-components/SpotCharacteristics';
-import { useNewSpotForm } from './hooks/useNewSpotForm';
+import { useNewSpotForm } from './hooks/-useNewSpotForm';
 
 export const NewSpotComponent = () => {
     const { lat, lng } = Route.useSearch();

@@ -4,7 +4,7 @@ import type { Spot, UserMediaItem } from 'src/types';
 import { SpotGalleryItem } from './SpotGalleryItem';
 import { MediaGalleryItem } from './MediaGalleryItem';
 import { LightboxDialog } from './LightboxDialog';
-import { useLightbox } from '../hooks/useLightbox';
+import { useLightbox } from '../hooks/-useLightbox';
 
 interface UserContentGalleryProps {
     createdSpots: Spot[];

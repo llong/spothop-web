@@ -12,7 +12,7 @@ import { useProfileQuery } from 'src/hooks/useProfileQueries';
 import { spotService } from 'src/services/spotService';
 import { AddVideoLinkDialog } from './AddVideoLinkDialog';
 import { VideoPlayerModal } from './VideoPlayerModal';
-import { useYoutubePlayer } from '../../hooks/useYoutubePlayer';
+import { useYoutubePlayer } from '../../hooks/-useYoutubePlayer';
 
 interface VideoLinkItemProps {
     link: SpotVideoLink;

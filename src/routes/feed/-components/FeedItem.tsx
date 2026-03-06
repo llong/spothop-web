@@ -17,6 +17,7 @@ import { Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
 import type { FeedItem as FeedItemType } from 'src/types';
 import { useToggleFollow } from 'src/hooks/useFeedQueries';
+import { OptimizedImage } from '@/components/OptimizedImage';
 import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
 import { FeedCommentDialog } from './FeedCommentDialog';
 import { MediaCarousel } from 'src/routes/spots/-components/MediaCarousel';
@@ -106,7 +107,12 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
             {/* Header Row: User Info & Follow Button */}
             <Box sx={{ display: 'flex', px: 2, pt: 1.5, pb: 1, gap: 1.5, alignItems: 'center' }}>
                 <Link to="/profile/$username" params={{ username: item.uploader_username || '' }}>
-                    <Avatar src={item.uploader_avatar_url || undefined} sx={{ cursor: 'pointer', width: 40, height: 40 }} />
+                    <Avatar sx={{ cursor: 'pointer', width: 40, height: 40 }}>
+                        <OptimizedImage 
+                            src={item.uploader_avatar_url || ''} 
+                            alt={item.uploader_username || ''}
+                        />
+                    </Avatar>
                 </Link>
 
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>

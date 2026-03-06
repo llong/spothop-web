@@ -29,8 +29,8 @@ export function MediaSelectionCard({ item, isSelected, onSelect, onFullscreen }:
                 position: 'relative'
             }}
         >
-            <CardActionArea onClick={() => onSelect(item.id, item.type)}>
-                <Box sx={{ position: 'relative' }}>
+            <Box sx={{ position: 'relative' }}>
+                <CardActionArea onClick={() => onSelect(item.id, item.type)} component="div">
                     <CardMedia
                         component={item.type === 'video' ? 'video' : 'img'}
                         height="120"
@@ -54,12 +54,18 @@ export function MediaSelectionCard({ item, isSelected, onSelect, onFullscreen }:
                             <PlayArrowIcon sx={{ color: 'white' }} />
                         </Box>
                     )}
+                </CardActionArea>
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 4,
+                        left: 4,
+                        zIndex: 1,
+                    }}
+                >
                     <IconButton
                         size="small"
                         sx={{
-                            position: 'absolute',
-                            top: 4,
-                            left: 4,
                             bgcolor: 'rgba(255,255,255,0.7)',
                             '&:hover': { bgcolor: 'white' }
                         }}
@@ -76,7 +82,7 @@ export function MediaSelectionCard({ item, isSelected, onSelect, onFullscreen }:
                         <CheckCircleIcon color="primary" />
                     </Box>
                 )}
-            </CardActionArea>
+            </Box>
         </Card>
     );
 }

@@ -6,6 +6,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import MovieIcon from '@mui/icons-material/Movie';
 import type { MediaItem } from 'src/types';
 import React from 'react';
+import { OptimizedImage } from '@/components/OptimizedImage';
 
 interface MediaCarouselProps {
     media: MediaItem[];
@@ -45,11 +46,9 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
     return (
         <Box sx={{ position: 'relative', width: '100%', pt: '75%', bgcolor: 'grey.100', overflow: 'hidden' }}>
             {currentItem.type === 'photo' ? (
-                <Box
-                    component="img"
+                <OptimizedImage
                     src={currentItem.url}
                     alt="Spot media"
-                    crossOrigin="anonymous"
                     onClick={() => onItemClick?.(activeSlide)}
                     sx={{
                         position: 'absolute',
@@ -57,7 +56,6 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        objectFit: 'cover',
                         cursor: onItemClick ? 'pointer' : 'default'
                     }}
                 />
@@ -86,11 +84,10 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                             }}
                         >
                             {currentItem.thumbnailUrl ? (
-                                <Box
-                                    component="img"
+                                <OptimizedImage
                                     src={currentItem.thumbnailUrl}
-                                    crossOrigin="anonymous"
-                                    sx={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }}
+                                    alt="Video thumbnail"
+                                    sx={{ width: '100%', height: '100%', opacity: 0.8 }}
                                 />
                             ) : (
                                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'grey.500' }}>

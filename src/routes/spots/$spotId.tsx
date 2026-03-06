@@ -23,7 +23,7 @@ import { DetailsActions } from './-components/DetailsActions';
 import { DetailsMediaSection } from './-components/DetailsMediaSection';
 import SEO from 'src/components/SEO/SEO';
 import type { FeedItem } from 'src/types';
-import { useSpotDetailsState } from './hooks/useSpotDetailsState';
+import { useSpotDetailsState } from './hooks/-useSpotDetailsState';
 
 const loader = async ({ params, context }: { params: { spotId: string }, context: any }) => {
     const { queryClient } = context;
@@ -166,7 +166,7 @@ export function SpotDetails() {
                         }}
                         onComment={setMediaCommentItem}
                         onShare={handleShare}
-                        onItemClick={handleOpenLightbox}
+                        onItemClick={(m: any) => handleOpenLightbox(m)}
                     />
 
                     {!isLargeScreen && (

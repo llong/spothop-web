@@ -8,7 +8,7 @@ export const initPostHog = () => {
       person_profiles: 'identified_only',
       capture_pageview: false,
       persistence: 'localStorage+cookie',
-      autocapture: true, // Let's enable autocapture temporarily to see if basic clicks get through
+      autocapture: false,
     });
   }
   return posthog;

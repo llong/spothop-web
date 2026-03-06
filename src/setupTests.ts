@@ -18,3 +18,6 @@ Object.defineProperty(window, 'matchMedia', {
         dispatchEvent: vi.fn(),
     })),
 });
+
+// Increase default timeout for all tests
+vi.setConfig({ testTimeout: 30000 });

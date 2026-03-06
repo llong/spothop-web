@@ -5,7 +5,7 @@ import {
     Paper,
 } from '@mui/material';
 import supabase from 'src/supabase';
-import { useOnboarding } from './hooks/useOnboarding';
+import { useOnboarding } from './hooks/-useOnboarding';
 import { OnboardingStep1 } from './-components/OnboardingStep1';
 import { OnboardingStep2 } from './-components/OnboardingStep2';
 

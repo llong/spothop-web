@@ -5,7 +5,7 @@ import { VideoThumbnailSelector } from './VideoThumbnailSelector';
 import { VideoTrimmer } from './VideoTrimmer';
 import { VideoAssetCard } from './VideoAssetCard';
 import { VideoPreviewDialog } from './VideoPreviewDialog';
-import { useVideoUpload } from '../hooks/useVideoUpload';
+import { useVideoUpload } from '../hooks/-useVideoUpload';
 
 interface VideoUploadProps {
     onFilesSelect: (videos: VideoAsset[]) => void;
