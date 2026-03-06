@@ -67,8 +67,11 @@ const ChatRoomComponent = () => {
                     <IconButton edge="start" onClick={() => router.history.back()} sx={{ mr: 2 }}>
                         <ArrowBack />
                     </IconButton>
-                    <Avatar src={chat?.is_group ? "" : otherParticipant?.profile?.avatarUrl || ""} sx={{ mr: 2 }}>
-                        {chat?.is_group ? 'G' : 'U'}
+                    <Avatar 
+                        src={(!chat?.is_group && otherParticipant?.profile?.avatarUrl) || undefined} 
+                        sx={{ mr: 2 }}
+                    >
+                        {chat?.is_group ? 'G' : (otherParticipant?.profile?.username?.[0]?.toUpperCase() || 'U')}
                     </Avatar>
                     <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="subtitle1" fontWeight={700}>{chatTitle || 'Chat'}</Typography>
@@ -104,9 +107,11 @@ const ChatRoomComponent = () => {
                                     <Stack direction={isMe ? 'row-reverse' : 'row'} spacing={1} alignItems="flex-end">
                                         {!isMe && showAvatar && (
                                             <Avatar
-                                                src={msg.author?.avatarUrl || ""}
+                                                src={msg.author?.avatarUrl || undefined}
                                                 sx={{ width: 28, height: 28, mb: 0.5 }}
-                                            />
+                                            >
+                                                {msg.author?.username?.[0]?.toUpperCase() || 'U'}
+                                            </Avatar>
                                         )}
                                         {!isMe && !showAvatar && <Box sx={{ width: 36 }} />}
 

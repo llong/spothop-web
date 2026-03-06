@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useCallback } from 'react';
+import { memo, useState, useMemo, useCallback, type FC } from 'react';
 import {
     Box,
     Avatar,
@@ -32,7 +32,7 @@ interface FeedItemCardProps {
  * FeedItemCard displays a single item in the global feed.
  * Redesigned for a flat, modern X-style layout.
  */
-export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) => {
+export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }) => {
     const [activeSlide, setActiveSlide] = useState(0);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const toggleFollowMutation = useToggleFollow();
@@ -92,6 +92,18 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
         }
     }, [item.spot_name, item.spot_id]);
 
+    const getFullUrl = (path: string) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        // If it's a supabase storage path (e.g. "avatars/xyz.webp")
+        if (path.includes('/') && !path.includes('storage/v1')) {
+             // Handle both possible path types: "avatars/xyz.webp" and "spot-media/spots/xyz/..."
+             const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+             return `https://wbkpofmvjcmdqbivocqc.supabase.co/storage/v1/object/public/${cleanPath}`;
+        }
+        return path;
+    };
+
     return (
         <Box
             sx={{
@@ -107,10 +119,12 @@ export const FeedItemCard = memo(({ item, currentUserId }: FeedItemCardProps) =>
             {/* Header Row: User Info & Follow Button */}
             <Box sx={{ display: 'flex', px: 2, pt: 1.5, pb: 1, gap: 1.5, alignItems: 'center' }}>
                 <Link to="/profile/$username" params={{ username: item.uploader_username || '' }}>
-                    <Avatar sx={{ cursor: 'pointer', width: 40, height: 40 }}>
-                        <OptimizedImage 
-                            src={item.uploader_avatar_url || ''} 
-                            alt={item.uploader_username || ''}
+                    <Avatar 
+                        sx={{ cursor: 'pointer', width: 40, height: 40, bgcolor: 'grey.200' }}
+                    >
+                        <OptimizedImage
+                            src={getFullUrl(item.uploader_avatar_url || '')}
+                            alt={item.uploader_username || 'user'}
                         />
                     </Avatar>
                 </Link>

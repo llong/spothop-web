@@ -20,12 +20,12 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
     const [showVideo, setShowVideo] = useState<Record<string, boolean>>({});
 
     const handleNext = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         onSlideChange((activeSlide + 1) % media.length);
     }, [activeSlide, media.length, onSlideChange]);
 
     const handleBack = useCallback((e: React.MouseEvent) => {
-        e.stopPropagation();
+        if (e) e.stopPropagation();
         onSlideChange((activeSlide - 1 + media.length) % media.length);
     }, [activeSlide, media.length, onSlideChange]);
 
@@ -47,7 +47,7 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
         <Box sx={{ position: 'relative', width: '100%', pt: '75%', bgcolor: 'grey.100', overflow: 'hidden' }}>
             {currentItem.type === 'photo' ? (
                 <OptimizedImage
-                    src={currentItem.url}
+                    src={currentItem.url.startsWith('http') ? currentItem.url : `https://wbkpofmvjcmdqbivocqc.supabase.co/storage/v1/object/public/spot-media/${currentItem.url}`}
                     alt="Spot media"
                     onClick={() => onItemClick?.(activeSlide)}
                     sx={{

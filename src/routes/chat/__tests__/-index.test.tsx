@@ -153,5 +153,5 @@ describe('ChatInboxComponent', () => {
 
             expect(chatHeader || messagesTab || invitesTab).toBeInTheDocument();
         });
-    }, 30000);
+    });
 });

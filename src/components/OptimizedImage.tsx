@@ -16,13 +16,17 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     alt,
     sx,
     onClick,
-    crossOrigin = "anonymous",
+    crossOrigin,
     objectFit = 'cover'
 }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
 
+    // Track original src for potential retry
+    const [currentSrc, setCurrentSrc] = useState(src);
+
     useEffect(() => {
+        setCurrentSrc(src);
         setIsLoading(true);
         setError(false);
     }, [src]);
@@ -32,9 +36,30 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     };
 
     const handleError = () => {
+        // If image fails to load, try once without crossOrigin if it wasn't already tried
+        // Actually, let's just mark as error for now but maybe it's a CORS issue
+        console.error(`OptimizedImage failed to load: ${currentSrc}`);
         setIsLoading(false);
         setError(true);
     };
+
+    if (!src) {
+        return (
+            <Box
+                sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'grey.100',
+                    ...sx
+                }}
+            >
+                <ImageNotSupportedIcon sx={{ fontSize: 24, opacity: 0.3 }} />
+            </Box>
+        );
+    }
 
     return (
         <Box
@@ -66,14 +91,19 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     color: 'text.disabled',
-                    p: 2,
-                    textAlign: 'center'
+                    p: 1,
+                    textAlign: 'center',
+                    width: '100%',
+                    height: '100%'
                 }}>
-                    <ImageNotSupportedIcon sx={{ fontSize: 40, mb: 1, opacity: 0.5 }} />
-                    <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                        Image failed to load
-                    </Typography>
+                    <ImageNotSupportedIcon sx={{ fontSize: sx && (sx as any).width < 50 ? 20 : 40, mb: 0.5, opacity: 0.5 }} />
+                    {(sx && (sx as any).width >= 100) && (
+                        <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
+                            Failed to load
+                        </Typography>
+                    )}
                 </Box>
             ) : (
                 <Box

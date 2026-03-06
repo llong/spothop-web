@@ -22,6 +22,22 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         navigateFallbackAllowlist: [/^(?!\/__).*/], // Allow all routes except those starting with /__ (Firebase/Vercel internals)
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/wbkpofmvjcmdqbivocqc\.supabase\.co\/storage\/v1\/object\/public\/.*/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'supabase-media-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
       manifest: {
         name: "SpotHop",
