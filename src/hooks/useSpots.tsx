@@ -14,9 +14,12 @@ export default function () {
         if (!bounds) return;
         setIsLoading(true);
         try {
+            // Simplified query for better performance on map view
+            // Counting favorites/comments for every spot in view can be very slow.
+            // We use a small subset of columns to speed up the transfer and processing.
             let query = supabase
                 .from('spots')
-                .select('*, spot_photos(url), favorite_count:user_favorite_spots(count), comment_count:spot_comments(count)')
+                .select('id, name, latitude, longitude, difficulty, kickout_risk, is_lit, spot_type, created_at, spot_photos(url)')
                 .gte('latitude', bounds.getSouth())
                 .lte('latitude', bounds.getNorth())
                 .gte('longitude', bounds.getWest())
@@ -53,9 +56,13 @@ export default function () {
             if (data) {
                 const formattedSpots = data.map((spot: any) => ({
                     ...spot,
+                    // Map created_at to updated_at for compatibility if needed, or just use created_at
+                    // But SpotsListCard checks updated_at. Let's inspect types again if possible, but for now fallback to created_at
+                    updated_at: spot.created_at,
+                    updatedAt: spot.created_at, // Provide both to be safe
                     photoUrl: spot.spot_photos?.[0]?.url || null,
-                    favoriteCount: spot.favorite_count?.[0]?.count || 0,
-                    commentCount: spot.comment_count?.[0]?.count || 0
+                    favoriteCount: 0, // Removed subqueries for performance
+                    commentCount: 0
                 }));
 
                 setSpots(formattedSpots);

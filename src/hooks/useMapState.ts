@@ -17,8 +17,25 @@ export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngB
     useEffect(() => {
         if (!map) return;
 
+        // Ensure Leaflet is fully initialized and sized correctly before first fetch
+        // especially on mobile where tabs might render map before it's visible
+        if (typeof map.invalidateSize === 'function') {
+            map.invalidateSize();
+        }
+        
+        // Force an immediate fetch on mount if bounds are already valid
         const bounds = map.getBounds();
-        getSpots(bounds);
+        if (bounds && typeof bounds.isValid === 'function' && bounds.isValid()) {
+            getSpots(bounds);
+        } else {
+            // If bounds are not valid yet, fetch shortly after
+            setTimeout(() => {
+                const newBounds = map.getBounds();
+                if (newBounds && newBounds.isValid()) {
+                    getSpots(newBounds);
+                }
+            }, 300);
+        }
 
         const handleZoom = () => {
             const zoom = map.getZoom();
@@ -26,6 +43,7 @@ export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngB
         };
 
         map.on('zoomend', handleZoom);
+        
         return () => {
             map.off('zoomend', handleZoom);
         };
@@ -53,11 +71,9 @@ export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngB
                         // This prevents micro-stuttering updates from refreshing the list constantly
                         if (dist > 50) {
                             map.panTo([coords.lat, coords.lng]);
-                            
-                            // Debounce/Throttle this in a real app, but for now just check distance
-                            setTimeout(() => {
-                                getSpots(map.getBounds());
-                            }, 500);
+                            // getSpots will be triggered by moveend event if we use it, 
+                            // but currently we call it manually here too. 
+                            // Let's rely on the debounced effect or use a safer approach.
                         }
                     }
                 },

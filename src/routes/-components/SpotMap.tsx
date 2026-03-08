@@ -134,7 +134,7 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
                 )}
 
                 <MarkerClusterGroup
-                    key={`cluster-${spots.length}-${JSON.stringify(filters)}`}
+                    key={`cluster-${spots.length > 0 ? spots[0].id : 'empty'}-${spots.length}-${JSON.stringify(filters)}`}
                     chunkedLoading
                     maxClusterRadius={50}
                     showCoverageOnHover={false}

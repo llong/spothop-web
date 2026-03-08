@@ -22,12 +22,13 @@ describe('useMapState', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mockMap = {
-            getBounds: vi.fn().mockReturnValue({ getNorth: () => 0 }),
+            getBounds: vi.fn().mockReturnValue({ getNorth: () => 0, isValid: () => true }),
             getZoom: vi.fn().mockReturnValue(15),
             on: vi.fn(),
             off: vi.fn(),
             getCenter: vi.fn().mockReturnValue({ lat: 0, lng: 0 }),
             panTo: vi.fn(),
+            invalidateSize: vi.fn(),
         };
         mockGetSpots = vi.fn();
         mockSetGlobalUserLocation = vi.fn();
@@ -46,9 +47,12 @@ describe('useMapState', () => {
     });
 
     it('initializes and fetches spots', () => {
+        vi.useFakeTimers();
         renderHook(() => useMapState(mockMap as LeafletMap, mockGetSpots));
+        vi.runAllTimers();
         expect(mockGetSpots).toHaveBeenCalled();
         expect(mockMap.on).toHaveBeenCalledWith('zoomend', expect.any(Function));
+        vi.useRealTimers();
     });
 
     it('handles move correctly', () => {

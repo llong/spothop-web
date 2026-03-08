@@ -22,6 +22,9 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         navigateFallbackAllowlist: [/^(?!\/__).*/], // Allow all routes except those starting with /__ (Firebase/Vercel internals)
+        // Completely exclude Google Maps from Service Worker interception
+        // Setting handler: 'NetworkOnly' still intercepts the request and breaks Google Maps strict loader checks.
+        navigateFallbackDenylist: [/^\/api\//, /maps\.googleapis\.com/, /fonts\.googleapis\.com/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/wbkpofmvjcmdqbivocqc\.supabase\.co\/storage\/v1\/object\/public\/.*/,
