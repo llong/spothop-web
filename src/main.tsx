@@ -11,6 +11,8 @@ import './index.css'
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
+// @ts-ignore
+import { registerSW } from 'virtual:pwa-register'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { get, set, del } from 'idb-keyval'
 import { PostHogProvider } from 'posthog-js/react'
@@ -61,6 +63,27 @@ persistQueryClient({
   persister,
   maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
 })
+
+// Explicitly delete problematic caches on boot to ensure returning users don't break
+if ('caches' in window) {
+  caches.delete('google-maps-cache').then((wasDeleted) => {
+    if (wasDeleted) console.log('Deleted legacy google-maps-cache');
+  });
+}
+
+// Auto-update service worker and reload the page if a new one is found
+if ('serviceWorker' in navigator) {
+  const updateSW = registerSW({
+    onNeedRefresh() {
+      // Force reload when a new service worker is available
+      console.log('New content available, reloading...');
+      updateSW(true);
+    },
+    onOfflineReady() {
+      console.log('App ready to work offline');
+    },
+  })
+}
 
 // For now, let's just use a more robust way to exclude it from production
 const renderApp = async () => {
