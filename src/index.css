@@ -50,3 +50,18 @@ button.jotai-devtools-trigger-button img {
   background: transparent !important;
   border: none !important;
 }
+
+/* Leaflet Popup overrides for Dark Mode */
+.leaflet-popup-content-wrapper {
+  padding: 0;
+  overflow: hidden;
+  background-color: transparent !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: inherit !important;
+}
+.leaflet-popup-tip {
+  display: none !important;
+}

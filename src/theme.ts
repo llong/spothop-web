@@ -1,15 +1,39 @@
 import { createTheme } from '@mui/material/styles';
 
-export const theme = createTheme({
+export const getAppTheme = (mode: 'light' | 'dark') => {
+  const isLight = mode === 'light';
+  const divider = isLight ? '#eff3f4' : '#2d3336';
+  
+  return createTheme({
   palette: {
-    primary: {
-      main: '#1d9bf0', // X Blue
-    },
-    background: {
-      default: '#ffffff',
-      paper: '#ffffff',
-    },
-    divider: '#eff3f4',
+    mode,
+    ...(isLight
+      ? {
+          primary: {
+            main: '#05668d', // Baltic Blue
+          },
+          secondary: {
+            main: '#028090', // Teal
+          },
+          background: {
+            default: '#ffffff',
+            paper: '#ffffff',
+          },
+          divider,
+        }
+      : {
+          primary: {
+            main: '#02c39a', // Mint Leaf (High vibrance for dark mode)
+          },
+          secondary: {
+            main: '#00a896', // Verdigris
+          },
+          background: {
+            default: '#121212',
+            paper: '#1e1e1e',
+          },
+          divider,
+        }),
   },
   shape: {
     borderRadius: 16,
@@ -78,9 +102,10 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           boxShadow: 'none',
-          borderBottom: '1px solid #eff3f4',
+          borderBottom: `1px solid ${divider}`,
         },
       },
     },
   },
 });
+};
