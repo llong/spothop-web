@@ -12,7 +12,7 @@ import { useState } from 'react';
 import type { Contest } from '../../types';
 import { ContestTable } from './-components/ContestTable';
 import { ContestFormDialog } from './-components/ContestFormDialog';
-import { useAdminContests } from './hooks/useAdminContests';
+import { useAdminContests } from './hooks/-useAdminContests';
 
 export const Route = createFileRoute('/admin/contests')({
     component: AdminContestsPage,

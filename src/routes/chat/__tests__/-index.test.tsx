@@ -141,10 +141,9 @@ describe('ChatInboxComponent', () => {
     });
 
     it('renders component without crashing', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const component = (Route as any).options.component;
+        const ActualComponent = component.component || component;
+        await renderComponent(<ActualComponent />);
 
         await waitFor(() => {
             const chatHeader = screen.queryByText('Chat');

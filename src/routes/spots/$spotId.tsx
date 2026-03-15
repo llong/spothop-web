@@ -10,6 +10,7 @@ import {
     Stack,
     Button,
     CircularProgress,
+    alpha,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DirectionsIcon from '@mui/icons-material/Directions';
@@ -104,7 +105,7 @@ export function SpotDetails() {
     );
 
     return (
-        <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+        <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
             <SEO
                 title={spot.name}
                 description={`Check out ${spot.name} in ${spot.city}, ${spot.country}. A ${spot.spot_type} with ${spot.kickout_risk} kickout risk.`}
@@ -126,16 +127,16 @@ export function SpotDetails() {
                         position: 'absolute',
                         top: 16,
                         left: 16,
-                        bgcolor: 'rgba(255, 255, 255, 0.9)',
-                        color: 'black',
+                        bgcolor: (theme) => alpha(theme.palette.background.paper, 0.9),
+                        color: 'text.primary',
                         fontWeight: 700,
                         textTransform: 'none',
                         borderRadius: 9999,
                         px: 2,
-                        '&:hover': { bgcolor: 'white' },
+                        '&:hover': { bgcolor: 'background.paper' },
                         zIndex: 10,
                         backdropFilter: 'blur(4px)',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                        boxShadow: (theme) => theme.shadows[2]
                     }}
                 >
                     Back

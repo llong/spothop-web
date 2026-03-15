@@ -5,6 +5,7 @@ import {
     Drawer,
     Tabs,
     Tab,
+    alpha,
 } from '@mui/material';
 import { useAtomValue, useAtom } from 'jotai';
 import { userAtom } from 'src/atoms/auth';
@@ -42,7 +43,7 @@ export function FeedScreen() {
     }, [filters]);
 
     return (
-        <Box sx={{ bgcolor: 'background.paper', minHeight: '100vh' }}>
+        <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
             <SEO
                 title="Feed"
                 description="Stay up to date with the latest skate spots and media from the SpotHop community."
@@ -52,7 +53,7 @@ export function FeedScreen() {
                 position: 'sticky',
                 top: 0,
                 zIndex: 1100,
-                bgcolor: 'rgba(255, 255, 255, 0.85)',
+                bgcolor: (theme) => alpha(theme.palette.background.default, 0.85),
                 backdropFilter: 'blur(12px)',
                 borderBottom: '1px solid',
                 borderColor: 'divider'
@@ -85,7 +86,7 @@ export function FeedScreen() {
                                 backgroundColor: 'transparent',
                             },
                             '& .MuiTabs-indicatorSpan': {
-                                width: 56,
+                                width: '100%',
                                 height: 4,
                                 borderRadius: '4px 4px 0 0',
                                 backgroundColor: 'primary.main',

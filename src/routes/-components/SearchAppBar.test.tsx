@@ -15,6 +15,7 @@ vi.mock('@react-google-maps/api', () => ({
 vi.mock('@tanstack/react-router', () => ({
     useNavigate: () => vi.fn(),
     useLocation: () => ({ pathname: '/spots' }),
+    Link: ({ children }: any) => <a>{children}</a>,
 }));
 
 vi.mock('jotai', async (importOriginal) => {
@@ -69,10 +70,7 @@ describe('SearchAppBar', () => {
 
     it('renders logo and search components when online on spots page', () => {
         (useMediaQuery as any).mockReturnValue(true); // Simulate mobile view for this test
-        vi.mock('@tanstack/react-router', () => ({
-            useNavigate: () => vi.fn(),
-            useLocation: () => ({ pathname: '/spots' }), // Ensure isSpotsPage is true
-        }));
+// Redundant mock removed
 
         render(
             <QueryClientProvider client={queryClient}>

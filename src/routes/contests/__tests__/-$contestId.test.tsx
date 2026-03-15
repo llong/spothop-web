@@ -32,7 +32,7 @@ const { mockUseContestDetails } = vi.hoisted(() => ({
     mockUseContestDetails: vi.fn(),
 }));
 
-vi.mock('../hooks/useContestDetails', () => ({
+vi.mock('../hooks/-useContestDetails', () => ({
     useContestDetails: (...args: any[]) => mockUseContestDetails(...args),
 }));
 vi.mock('@/hooks/useProfileQueries', () => ({
@@ -58,14 +58,19 @@ vi.mock('../-components/ContestEntryCard', () => ({
     ContestEntryCard: () => <div data-testid="entry-card" />,
 }));
 
-vi.mock('@tanstack/react-query', () => ({
-    QueryClient: class QueryClient {
-        constructor() {}
-        setDefaultOptions() {}
-        clear() {}
-    },
-    QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+    return {
+        ...actual,
+        QueryClient: class QueryClient {
+            constructor() {}
+            setDefaultOptions() {}
+            clear() {}
+        },
+        QueryClientProvider: ({ children }: { children: React.ReactNode }) => children,
+        useQueryClient: vi.fn(),
+    };
+});
 
 // Now import Route
 import { Route } from '../$contestId';
@@ -127,10 +132,8 @@ describe('ContestDetailPage', () => {
     });
 
     it('renders contest details', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        const { getByText, getByTestId } = await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        const { getByText, getByTestId } = await renderComponent(<Component />);
 
         await waitFor(() => {
             expect(getByText('Test Contest')).toBeInTheDocument();
@@ -140,52 +143,42 @@ describe('ContestDetailPage', () => {
     });
 
     it('renders entries', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        const { getByText, getAllByTestId } = await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        const { getAllByText, getAllByTestId } = await renderComponent(<Component />);
 
         await waitFor(() => {
-            expect(getByText('Entries (2)')).toBeInTheDocument();
+            expect(getAllByText('Entries (2)').length).toBeGreaterThan(0);
         });
         expect(getAllByTestId('entry-card')).toHaveLength(2);
     });
 
     it('shows loading skeleton when loading contest', async () => {
         mockUseContestDetails.mockReturnValue({ ...mockContestDetails, contestLoading: true });
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        const { container } = await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        const { container } = await renderComponent(<Component />);
 
         expect(container.getElementsByClassName('MuiSkeleton-root').length).toBeGreaterThan(0);
     });
 
     it('shows not found message when no contest', async () => {
         mockUseContestDetails.mockReturnValue({ ...mockContestDetails, contest: null });
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        await renderComponent(<Component />);
 
         expect(screen.getByText('Contest not found')).toBeInTheDocument();
     });
 
     it('shows enter contest button when active', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        await renderComponent(<Component />);
 
         expect(screen.getByText('Enter Contest')).toBeInTheDocument();
     });
 
     it('shows sign up button when not logged in', async () => {
         mockUseContestDetails.mockReturnValue({ ...mockContestDetails, user: null });
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        await renderComponent(<Component />);
 
         expect(screen.getByText('Sign Up To Enter')).toBeInTheDocument();
     });

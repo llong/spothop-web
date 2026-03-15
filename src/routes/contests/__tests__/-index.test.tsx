@@ -105,10 +105,13 @@ describe('ContestsPage', () => {
     });
 
     it('renders contests list', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        const { getByText } = await renderComponent(React.createElement(actualComponent));
+        const component = (Route as any).options.component;
+        console.log("Component is:", typeof component, component);
+        if (component && typeof component === 'object') {
+            console.log("Component keys:", Object.keys(component));
+        }
+        const ActualComponent = component.component || component;
+        const { getByText } = await renderComponent(<ActualComponent />);
 
         await waitFor(() => {
             expect(getByText('Contests & Challenges')).toBeInTheDocument();
@@ -125,10 +128,9 @@ describe('ContestsPage', () => {
             isLoading: true,
             error: null,
         });
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        const { container } = await renderComponent(React.createElement(actualComponent));
+        const component = (Route as any).options.component;
+        const ActualComponent = component.component || component;
+        const { container } = await renderComponent(<ActualComponent />);
 
         expect(container.getElementsByClassName('MuiSkeleton-root').length).toBeGreaterThan(0);
     });
@@ -139,10 +141,9 @@ describe('ContestsPage', () => {
             isLoading: false,
             error: new Error('Failed to fetch'),
         });
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const component = (Route as any).options.component;
+        const ActualComponent = component.component || component;
+        await renderComponent(<ActualComponent />);
 
         expect(screen.getByText('Error loading contests: Failed to fetch')).toBeInTheDocument();
     });
@@ -153,19 +154,17 @@ describe('ContestsPage', () => {
             isLoading: false,
             error: null,
         });
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const component = (Route as any).options.component;
+        const ActualComponent = component.component || component;
+        await renderComponent(<ActualComponent />);
 
         expect(screen.getByText('No active contests right now. Check back soon!')).toBeInTheDocument();
     });
 
     it('opens image preview on click', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const component = (Route as any).options.component;
+        const ActualComponent = component.component || component;
+        await renderComponent(<ActualComponent />);
 
         const viewFullButton = screen.getAllByText('View Full')[0];
         fireEvent.click(viewFullButton);

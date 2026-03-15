@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { InputBase } from "@mui/material";
+import { InputBase, GlobalStyles } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useAtomValue } from "jotai";
 import { isGoogleMapsLoadedAtom } from "src/atoms/map";
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
+    color: theme.palette.text.primary,
     '& .MuiInputBase-input': {
         padding: theme.spacing(1, 1, 1, 0),
         // vertical padding + font size from searchIcon
@@ -41,5 +41,34 @@ export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment, place
         }
     }, [isLoaded, onPlaceSelect, inputRef]);
 
-    return <StyledInputBase placeholder={placeholder} fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'Search spots', ref: inputRef }} />;
+    return (
+        <>
+            <GlobalStyles styles={(theme) => ({
+                '.pac-container': {
+                    backgroundColor: theme.palette.background.paper,
+                    borderColor: theme.palette.divider,
+                    color: theme.palette.text.primary,
+                    boxShadow: theme.shadows[4],
+                },
+                '.pac-item': {
+                    borderTop: `1px solid ${theme.palette.divider}`,
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                        backgroundColor: theme.palette.action.hover,
+                    }
+                },
+                '.pac-item-query': {
+                    color: theme.palette.text.primary,
+                },
+                '.pac-matched': {
+                    color: theme.palette.text.primary,
+                },
+                '.pac-logo:after': {
+                     // Can't easily change the logo without a custom image, but doing our best
+                     display: theme.palette.mode === 'dark' ? 'none' : 'block'
+                }
+            })} />
+            <StyledInputBase placeholder={placeholder} fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'Search spots', ref: inputRef }} />
+        </>
+    );
 }

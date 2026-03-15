@@ -28,16 +28,19 @@ describe('BottomNav', () => {
         
         expect(screen.getByText('Feed')).toBeInTheDocument();
         expect(screen.getByText('Spots')).toBeInTheDocument();
-        expect(screen.getByText('Sign In')).toBeInTheDocument();
+        expect(screen.getByText('Contests')).toBeInTheDocument();
         expect(screen.queryByText('Inbox')).not.toBeInTheDocument();
+        expect(screen.queryByText('Profile')).not.toBeInTheDocument();
     });
 
     it('renders extra items when authenticated', () => {
         vi.mocked(useAtomValue).mockReturnValue({ user: { id: 'u1' } });
         render(<BottomNav />);
         
+        expect(screen.getByText('Feed')).toBeInTheDocument();
+        expect(screen.getByText('Spots')).toBeInTheDocument();
+        expect(screen.getByText('Contests')).toBeInTheDocument();
         expect(screen.getByText('Inbox')).toBeInTheDocument();
-        expect(screen.getByText('Alerts')).toBeInTheDocument();
         expect(screen.getByText('Profile')).toBeInTheDocument();
     });
 });

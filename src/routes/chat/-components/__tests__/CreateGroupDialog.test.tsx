@@ -21,7 +21,9 @@ vi.mock('@tanstack/react-query', async () => {
     };
 });
 vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children }: any) => <a>{children}</a>,
     useNavigate: vi.fn(),
+
 }));
 
 describe('CreateGroupDialog', () => {

@@ -1,5 +1,6 @@
 import { Box, Paper, Stack, Typography } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import { useTheme } from '@mui/material/styles';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { useEffect } from 'react';
 
@@ -10,6 +11,12 @@ interface LocationPreviewContentProps {
 }
 
 const LocationPreviewContent = ({ lat, lng, address }: LocationPreviewContentProps) => {
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
+    const tileUrl = isDark 
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
     // Lazy load the CSS only when the map component mounts
     useEffect(() => {
         import('leaflet/dist/leaflet.css');
@@ -25,7 +32,7 @@ const LocationPreviewContent = ({ lat, lng, address }: LocationPreviewContentPro
                     style={{ height: '100%', width: '100%' }}
                     attributionControl={false}
                 >
-                    <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+                    <TileLayer url={tileUrl} />
                     <Marker position={[lat, lng]} />
                 </MapContainer>
             </Box>

@@ -44,7 +44,14 @@ export const MapMarker = memo(({ spot, onClick }: MapMarkerProps) => {
             >
                 <Popup closeButton={false} autoPan={false}>
                     <Box
-                        sx={{ cursor: "pointer", minWidth: 220, p: 0.5 }}
+                        sx={{ 
+                            cursor: "pointer", 
+                            minWidth: 220, 
+                            p: 1.5,
+                            bgcolor: 'background.paper',
+                            color: 'text.primary',
+                            borderRadius: 2
+                        }}
                         onClick={() => navigate({ to: "/spots/$spotId", params: { spotId: spot.id.toString() } })}
                     >
                         {spot.photoUrl && (

@@ -49,6 +49,7 @@ const { mockRoute, mockHistoryBack } = vi.hoisted(() => ({
 }));
 
 vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children }: any) => <a>{children}</a>,
     createFileRoute: vi.fn(() => (options: any) => {
         mockRoute.options = options;
         return mockRoute;
@@ -60,6 +61,7 @@ vi.mock('@tanstack/react-router', () => ({
         },
     }),
     Route: mockRoute,
+
 }));
 
 vi.mock('src/supabase', () => ({
@@ -125,21 +127,17 @@ describe('ChatRoomComponent', () => {
     });
 
     it('renders chat messages', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        await renderComponent(<Component />);
 
         expect(screen.getByText('Hello')).toBeInTheDocument();
         expect(screen.getByText('Hi there')).toBeInTheDocument();
         expect(screen.getByText('OtherUser')).toBeInTheDocument();
-    }, 30000);
+    });
 
     it('sends a message', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        await renderComponent(<Component />);
 
         const inputs = screen.getAllByPlaceholderText('Type a message...');
         const input = inputs[inputs.length - 1]; // Use the last one in case of multiple renders
@@ -157,10 +155,8 @@ describe('ChatRoomComponent', () => {
     });
 
     it('navigates back when back button is clicked', async () => {
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        await renderComponent(<Component />);
 
         const backButton = screen.getByTestId('ArrowBackIcon').closest('button');
         fireEvent.click(backButton!);
@@ -170,10 +166,8 @@ describe('ChatRoomComponent', () => {
 
     it('shows loading state', async () => {
         mockUseMessagesQuery.mockReturnValue({ data: [], isLoading: true });
-        const Component = (Route as any).options.component as any;
-        const resolved = await Component;
-        const actualComponent = resolved.component || resolved;
-        await renderComponent(React.createElement(actualComponent));
+        const Component = (Route as any).options.component;
+        await renderComponent(<Component />);
 
         expect(screen.getByRole('progressbar')).toBeInTheDocument();
     });

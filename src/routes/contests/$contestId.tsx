@@ -20,14 +20,14 @@ import { useState } from 'react';
 import { ContestSubmissionModal } from './-components/ContestSubmissionModal';
 import { ContestCriteriaInfo } from './-components/ContestCriteriaInfo';
 import { ContestEntryCard } from './-components/ContestEntryCard';
-import { useContestDetails } from './hooks/useContestDetails';
+import { useContestDetails } from './hooks/-useContestDetails';
 import SEO from '@/components/SEO/SEO';
 
 export const Route = createFileRoute('/contests/$contestId')({
     component: ContestDetailPage,
 });
 
-function ContestDetailPage() {
+export function ContestDetailPage() {
     const { contestId } = Route.useParams();
     const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
 

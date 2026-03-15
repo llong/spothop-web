@@ -23,8 +23,10 @@ vi.mock('src/supabase', () => ({
     }
 }));
 vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children }: any) => <a>{children}</a>,
     useNavigate: () => vi.fn(),
     createFileRoute: () => () => ({ component: vi.fn() }),
+
 }));
 
 const queryClient = new QueryClient({

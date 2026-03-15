@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useContestDetails } from '../useContestDetails';
+import { useContestDetails } from '../-useContestDetails';
 import { contestService } from '@/services/contestService';
 import { adminContestService } from '@/services/adminContestService';
 import { useAtomValue } from 'jotai';

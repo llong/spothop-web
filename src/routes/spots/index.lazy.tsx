@@ -20,9 +20,10 @@ import SEO from 'src/components/SEO/SEO';
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
     borderRadius: 9999,
-    backgroundColor: '#eff3f4',
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.divider,
+    border: theme.palette.mode === 'dark' ? `1px solid ${theme.palette.divider}` : 'none',
     '&:hover': {
-        backgroundColor: '#e2e8f0',
+        backgroundColor: theme.palette.mode === 'dark' ? theme.palette.action.hover : theme.palette.action.selected,
     },
     width: '100%',
     marginBottom: theme.spacing(2),
@@ -162,7 +163,7 @@ function SpotsIndex() {
                 {mapVisible && (
                     <Box sx={{ flexGrow: 1, position: 'relative', overflow: 'hidden' }}>
                         <Suspense fallback={
-                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', bgcolor: 'grey.100' }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', bgcolor: 'background.default' }}>
                                 <CircularProgress />
                             </Box>
                         }>
@@ -177,7 +178,7 @@ function SpotsIndex() {
                     </Box>
                 )}
                 {!isLargeScreen && listVisible && (
-                    <Box sx={{ height: view === 'list' ? '100%' : 'auto', overflowY: 'auto', bgcolor: 'grey.100' }}>
+                    <Box sx={{ height: view === 'list' ? '100%' : 'auto', overflowY: 'auto', bgcolor: 'background.default' }}>
                         {listContent}
                     </Box>
                 )}

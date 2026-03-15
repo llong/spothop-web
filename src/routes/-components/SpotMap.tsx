@@ -9,6 +9,8 @@ import { filtersAtom } from 'src/atoms/spots';
 import { isLoggedInAtom } from 'src/atoms/auth';
 import type { Spot } from 'src/types';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { useMediaQuery } from '@mui/material';
+import { themeModeAtom } from 'src/atoms/ui';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import L, { Icon } from 'leaflet';
 import { useGeolocation } from 'src/hooks/useGeolocation';
@@ -35,9 +37,9 @@ Icon.Default.mergeOptions({
 
 const DEFAULT_CENTER = [43.088947, -76.154480] as [number, number];
 
-const currentTheme = {
-    name: 'Positron (Light)',
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+const THEMES = {
+    light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
 };
 
 function MapEvents({ onMove, onRightClick }: { onMove: () => void, onRightClick: (latlng: L.LatLng) => void }) {
@@ -68,6 +70,13 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
     const [searchedLocation, setSearchedLocation] = useAtom(searchedLocationAtom);
     const isLoggedIn = useAtomValue(isLoggedInAtom);
     const filters = useAtomValue(filtersAtom);
+    
+    // Theme logic
+    const themeModePreference = useAtomValue(themeModeAtom);
+    // Actual implementation of system preference:
+    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const isDark = themeModePreference === 'dark' || (themeModePreference === 'system' && prefersDarkMode);
+    const tileUrl = isDark ? THEMES.dark : THEMES.light;
 
     const searchIcon = useMemo(() => {
         const iconHtml = renderToStaticMarkup(
@@ -127,7 +136,7 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
                 ref={setMap}
             >
                 <MapEvents onMove={handleMove} onRightClick={onRightClick} />
-                <TileLayer url={currentTheme.url} attribution='' />
+                <TileLayer url={tileUrl} attribution='' />
 
                 {userLocation && (
                     <UserLocationMarker location={userLocation} circleSize={circleSize} />

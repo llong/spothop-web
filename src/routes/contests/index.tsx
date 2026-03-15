@@ -15,7 +15,8 @@ import {
     Divider,
     Dialog,
     IconButton,
-    Button
+    Button,
+    alpha,
 } from '@mui/material';
 import { Close as CloseIcon, ZoomIn as ZoomInIcon, EmojiEvents as EmojiEventsIcon } from '@mui/icons-material';
 import type { ContestStatus } from '@/types';
@@ -26,7 +27,7 @@ export const Route = createFileRoute('/contests/')({
     component: ContestsPage,
 });
 
-function ContestsPage() {
+export function ContestsPage() {
     const [previewImage, setPreviewImage] = useState<string | null>(null);
     const { data: contests, isLoading, error } = useQuery({
         queryKey: ['contests', 'active'],
@@ -119,20 +120,21 @@ function ContestsPage() {
                                                 e.stopPropagation();
                                                 setPreviewImage(contest.flyer_url || '/spothopIcon.png');
                                             }}
-                                            sx={{
-                                                position: 'absolute',
-                                                top: 16,
-                                                right: 16,
-                                                bgcolor: 'rgba(0,0,0,0.6)',
-                                                borderRadius: 8, // Pill shape
-                                                textTransform: 'none',
-                                                backdropFilter: 'blur(4px)',
-                                                boxShadow: 'none',
-                                                '&:hover': {
-                                                    bgcolor: 'rgba(0,0,0,0.8)',
-                                                    boxShadow: 'none'
-                                                }
-                                            }}
+                                                sx={{
+                                                    position: 'absolute',
+                                                    top: 16,
+                                                    right: 16,
+                                                    bgcolor: (theme) => alpha(theme.palette.common.black, 0.6),
+                                                    borderRadius: 8, // Pill shape
+                                                    textTransform: 'none',
+                                                    backdropFilter: 'blur(4px)',
+                                                    boxShadow: 'none',
+                                                    '&:hover': {
+                                                        bgcolor: (theme) => alpha(theme.palette.common.black, 0.8),
+                                                        boxShadow: 'none'
+                                                    },
+                                                    color: 'white'
+                                                }}
                                         >
                                             View Full
                                         </Button>

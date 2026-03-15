@@ -13,7 +13,7 @@ import { CreateGroupDialog } from './-components/CreateGroupDialog';
 import { Add } from '@mui/icons-material';
 import { ListItemSecondaryAction } from '@mui/material';
 
-const ChatInboxComponent = () => {
+export const ChatInboxComponent = () => {
     const user = useAtomValue(userAtom);
     const { data: conversations = [], isLoading } = useConversationsQuery(user?.user.id);
     const [tab, setTab] = useState(0);

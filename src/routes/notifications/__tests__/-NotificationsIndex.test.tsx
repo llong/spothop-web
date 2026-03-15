@@ -5,8 +5,10 @@ import { useNotifications } from 'src/hooks/useNotifications';
 
 vi.mock('src/hooks/useNotifications');
 vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children }: any) => <a>{children}</a>,
     useNavigate: () => vi.fn(),
     createFileRoute: () => () => ({ component: vi.fn() }),
+
 }));
 
 describe('NotificationsComponent', () => {

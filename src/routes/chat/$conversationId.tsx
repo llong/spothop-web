@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import supabase from 'src/supabase';
 import { ChatSettingsDialog } from './-components/ChatSettingsDialog';
 
-const ChatRoomComponent = () => {
+export const ChatRoomComponent = () => {
     const { conversationId } = Route.useParams();
     const user = useAtomValue(userAtom);
     const router = useRouter();

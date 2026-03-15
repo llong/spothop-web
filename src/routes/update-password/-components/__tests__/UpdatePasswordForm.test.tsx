@@ -12,7 +12,9 @@ vi.mock('@/supabase', () => ({
 }));
 
 vi.mock('@tanstack/react-router', () => ({
+    Link: ({ children }: any) => <a>{children}</a>,
     useNavigate: () => vi.fn(),
+
 }));
 
 describe('UpdatePasswordForm', () => {
