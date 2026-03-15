@@ -1,7 +1,7 @@
 import { IconButton, Tooltip } from '@mui/material';
 import { DarkMode, LightMode, SettingsBrightness } from '@mui/icons-material';
 import { useAtom } from 'jotai';
-import { themeModeAtom } from 'src/atoms/ui';
+import { themeModeAtom } from '@/atoms/ui';
 
 export function ThemeToggle({ showLabel }: { showLabel?: boolean }) {
     const [mode, setMode] = useAtom(themeModeAtom);
