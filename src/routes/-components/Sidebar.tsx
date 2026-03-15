@@ -1,4 +1,4 @@
-import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Button, Stack, Avatar } from '@mui/material';
+import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Button, Stack, Avatar, IconButton, alpha } from '@mui/material';
 import { Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { AccountCircle, ChatBubble, Notifications, DynamicFeed, Shield, Logout, Explore, Login, EmojiEvents } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
@@ -6,6 +6,7 @@ import { userAtom } from 'src/atoms/auth';
 import supabase from 'src/supabase';
 import { useProfileQuery } from 'src/hooks/useProfileQueries';
 import { useMediaQuery, useTheme } from '@mui/material';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Sidebar() {
     const muiTheme = useTheme();
@@ -78,9 +79,9 @@ export function Sidebar() {
                                 sx={{
                                     borderRadius: 10,
                                     py: 1.5,
-                                    bgcolor: isActive ? 'rgba(29, 155, 240, 0.1)' : 'transparent',
+                                    bgcolor: isActive ? alpha(muiTheme.palette.primary.main, 0.1) : 'transparent',
                                     '&:hover': {
-                                        bgcolor: 'rgba(0, 0, 0, 0.05)',
+                                        bgcolor: muiTheme.palette.action.hover,
                                     }
                                 }}
                             >
@@ -108,6 +109,9 @@ export function Sidebar() {
             </List>
 
             <Box sx={{ mt: 'auto', p: isMini ? 0 : 2 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                    <ThemeToggle showLabel={!isMini} />
+                </Box>
                 {user ? (
                     <Stack spacing={2} alignItems="center">
                         <Button
@@ -180,5 +184,3 @@ export function Sidebar() {
         </Box>
     );
 }
-
-import { IconButton } from '@mui/material';
