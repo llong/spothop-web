@@ -19,6 +19,8 @@ This sprint focuses on implementing a global dark mode toggle, creating refined 
     -   Update `Sidebar.tsx` to include the Theme Toggle at the bottom of the navigation menu.
 6.  **[Fix] Build Errors** #task6
     -   Fix unused imports and type mismatches in test files.
+7.  **[Feature] PWA Update Notification** #task7
+    -   Add manual update notification toast and periodic update check.
 
 ## Quality Gate
 - Theme correctly persists across full page reloads.

@@ -9,6 +9,7 @@ import { useDevtools } from 'src/hooks/useDevTools'
 import SearchAppBar from './-components/SearchAppBar'
 import { BottomNav } from './-components/BottomNav'
 import { Sidebar } from './-components/Sidebar'
+import { PWAUpdateToast } from './-components/PWAUpdateToast'
 import { useProfileQuery } from 'src/hooks/useProfileQueries'
 import { globalToastAtom } from 'src/hooks/useNotifications'
 import { rightSidebarAtom, themeModeAtom } from 'src/atoms/ui'
@@ -179,6 +180,9 @@ export function RootComponent() {
 
             {/* Mobile Bottom Navigation */}
             {isMobile && <BottomNav />}
+
+            {/* PWA Update Notification */}
+            <PWAUpdateToast />
 
             <Snackbar
                 open={!!toast?.open}

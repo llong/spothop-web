@@ -8,6 +8,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './index.css'
+import { pwaUpdateAtom } from '@/atoms/pwa'
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
@@ -75,14 +76,25 @@ if ('caches' in window) {
 if ('serviceWorker' in navigator) {
   const updateSW = registerSW({
     onNeedRefresh() {
-      // Force reload when a new service worker is available
-      console.log('New content available, reloading...');
-      updateSW(true);
+      // Notify user when a new service worker is available
+      console.log('New content available, notifying user...');
+      customStore.set(pwaUpdateAtom, {
+        needRefresh: true,
+        updateFunction: async (reloadPage?: boolean) => {
+          await updateSW(reloadPage);
+        }
+      });
     },
     onOfflineReady() {
       console.log('App ready to work offline');
     },
-  })
+  });
+
+  // Check for updates every 60 minutes
+  setInterval(() => {
+    console.log('Checking for PWA updates...');
+    updateSW();
+  }, 60 * 60 * 1000);
 }
 
 // For now, let's just use a more robust way to exclude it from production
