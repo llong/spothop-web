@@ -1,5 +1,5 @@
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import { Home, AccountCircle, ChatBubble, Notifications, DynamicFeed } from '@mui/icons-material';
+import { Home, AccountCircle, ChatBubble, DynamicFeed, EmojiEvents } from '@mui/icons-material';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useAtomValue } from 'jotai'; // Import useAtomValue
 import { userAtom } from 'src/atoms/auth'; // Import userAtom
@@ -12,15 +12,11 @@ export const BottomNav = () => {
     const menuItems = [
         { label: 'Feed', to: '/feed', icon: <DynamicFeed /> },
         { label: 'Spots', to: '/spots', icon: <Home /> },
+        { label: 'Contests', to: '/contests', icon: <EmojiEvents /> },
         ...(auth?.user ? [ // Only show for logged-in users
             { label: 'Inbox', to: '/chat', icon: <ChatBubble /> },
-            { label: 'Alerts', to: '/notifications', icon: <Notifications /> },
+            { label: 'Profile', to: '/profile', icon: <AccountCircle /> },
         ] : []),
-        { 
-            label: auth?.user ? 'Profile' : 'Sign In', // Change label based on auth status
-            to: auth?.user ? '/profile' : '/login', // Change route based on auth status
-            icon: <AccountCircle /> 
-        },
     ];
 
     return (

@@ -10,6 +10,8 @@ import { useProfile } from 'src/hooks/useProfile';
 import { isGoogleMapsLoadedAtom, viewAtom } from 'src/atoms/map';
 import { useMediaQuery, Box, Badge, Stack } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
+import MenuIcon from '@mui/icons-material/Menu';
+import { MobileDrawer } from './MobileDrawer';
 import { useAtom, useAtomValue } from 'jotai';
 import { CloudOff } from '@mui/icons-material';
 import { Tooltip, Chip } from '@mui/material';
@@ -20,12 +22,13 @@ import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
 import { useRef, useState } from 'react';
 import { useMapSearch } from 'src/hooks/useMapSearch'; // Import new hook
 
-const Search = styled('div')(() => ({
+const Search = styled('div')(({ theme }) => ({
     position: 'relative',
     borderRadius: 9999,
-    backgroundColor: '#eff3f4',
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.paper : theme.palette.divider,
+    border: theme.palette.mode === 'dark' ? `1px solid ${theme.palette.divider}` : 'none',
     '&:hover': {
-        backgroundColor: '#e2e8f0',
+        backgroundColor: theme.palette.mode === 'dark' ? theme.palette.action.hover : theme.palette.action.selected,
     },
     width: '100%',
     display: 'flex',
@@ -60,6 +63,7 @@ export default function SearchAppBar() {
     const [filters, setFilters] = useAtom(filtersAtom);
     const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
     const inputRef = useRef<HTMLInputElement>(null!);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     const activeFilterCount = [
         filters.difficulty && filters.difficulty !== 'all',
@@ -74,6 +78,17 @@ export default function SearchAppBar() {
 
     return (
         <Toolbar sx={{ gap: 1 }}>
+            {isMobile && (
+                <IconButton
+                    edge="start"
+                    color="inherit"
+                    aria-label="menu"
+                    onClick={() => setDrawerOpen(true)}
+                    sx={{ mr: 1, display: { md: 'none' } }}
+                >
+                    <MenuIcon />
+                </IconButton>
+            )}
             <Box
                 component="img"
                 src="/spothopIcon.png"
@@ -162,6 +177,7 @@ export default function SearchAppBar() {
                     </Box>
                 )}
             </Box>
+            {isMobile && <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />}
         </Toolbar>
     );
 }
