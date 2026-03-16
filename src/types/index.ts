@@ -179,7 +179,10 @@ export interface FeedItem {
     created_at: string;
     spot_name: string;
     city?: string;
+    state?: string;
     country?: string;
+    latitude?: number;
+    longitude?: number;
     uploader_username: string | null;
     uploader_display_name: string | null;
     uploader_avatar_url: string | null;

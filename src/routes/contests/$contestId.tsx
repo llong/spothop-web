@@ -68,7 +68,7 @@ export function ContestDetailPage() {
                 Back to Contests
             </Button>
 
-            <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'grey.200', mb: 4, overflow: 'hidden' }}>
+            <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', mb: 4, overflow: 'hidden' }}>
                 <CardMedia
                     component="img"
                     image={flyerImageSrc}

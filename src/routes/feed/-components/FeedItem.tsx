@@ -13,7 +13,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import ShareIcon from '@mui/icons-material/Share';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
 import type { FeedItem as FeedItemType } from 'src/types';
 import { useToggleFollow } from 'src/hooks/useFeedQueries';
@@ -36,6 +36,7 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }
     const [activeSlide, setActiveSlide] = useState(0);
     const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const toggleFollowMutation = useToggleFollow();
+    const navigate = useNavigate();
 
     // Convert single feed item media to array for carousel
     const media = useMemo(() => [{
@@ -68,8 +69,12 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }
 
     const handleFavorite = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
+        if (!currentUserId) {
+            navigate({ to: '/signup' });
+            return;
+        }
         toggleFavorite();
-    }, [toggleFavorite]);
+    }, [toggleFavorite, currentUserId, navigate]);
 
     const handleFollow = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
@@ -120,7 +125,7 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }
             <Box sx={{ display: 'flex', px: 2, pt: 1.5, pb: 1, gap: 1.5, alignItems: 'center' }}>
                 <Link to="/profile/$username" params={{ username: item.uploader_username || '' }}>
                     <Avatar 
-                        sx={{ cursor: 'pointer', width: 40, height: 40, bgcolor: 'grey.200' }}
+                        sx={{ cursor: 'pointer', width: 40, height: 40, bgcolor: 'transparent', '& img': { border: 'none' } }}
                     >
                         <OptimizedImage
                             src={getFullUrl(item.uploader_avatar_url || '')}
@@ -197,7 +202,7 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }
                 {item.city && (
                     <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <LocationOnIcon sx={{ fontSize: 16 }} />
-                        {item.city}{item.city && item.country ? ', ' : ''}{item.country}
+                        {[item.city, item.state, item.country].filter(Boolean).join(', ')}
                     </Typography>
                 )}
             </Box>

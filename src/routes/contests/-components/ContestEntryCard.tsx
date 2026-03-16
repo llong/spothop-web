@@ -41,7 +41,7 @@ export function ContestEntryCard({
     isVoting,
 }: ContestEntryCardProps) {
     return (
-        <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'grey.200', position: 'relative' }}>
+        <Card elevation={0} sx={{ borderRadius: 2, border: '1px solid', borderColor: 'divider', position: 'relative' }}>
             {isAdmin && (
                 <Button
                     size="small"

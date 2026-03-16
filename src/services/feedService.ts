@@ -1,5 +1,6 @@
-import supabase from "../supabase";
-import type { FeedItem, MediaComment } from "../types";
+import supabase from "@/supabase";
+import type { FeedItem, MediaComment } from "@/types";
+import { reverseGeocode } from "@/utils/geocoding";
 
 export const feedService = {
     /**
@@ -81,6 +82,8 @@ export const feedService = {
             }));
         }
 
+        feedItems = await enrichLocations(feedItems);
+
         return feedItems;
     },
 
@@ -131,6 +134,8 @@ export const feedService = {
             }));
         }
         
+        feedItems = await enrichLocations(feedItems);
+
         return feedItems;
     },
 
@@ -248,3 +253,27 @@ export const feedService = {
         return data as MediaComment;
     }
 };
+
+/**
+ * Helper to recover missing location info for feed items
+ */
+async function enrichLocations(items: FeedItem[]): Promise<FeedItem[]> {
+    const enrichmentPromises = items.map(async (item) => {
+        if ((!item.city || !item.state || !item.country) && item.latitude && item.longitude) {
+            try {
+                const info = await reverseGeocode(item.latitude, item.longitude);
+                return {
+                    ...item,
+                    city: item.city || info.city,
+                    state: item.state || info.state,
+                    country: item.country || info.country
+                };
+            } catch (e) {
+                console.warn("[FeedService] Geocoding failed for media:", item.media_id);
+            }
+        }
+        return item;
+    });
+
+    return Promise.all(enrichmentPromises);
+}

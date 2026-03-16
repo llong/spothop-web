@@ -153,7 +153,7 @@ export function SignupForm() {
                             }
                             label={
                                 <Typography variant="body2">
-                                    I agree to the <MuiLink component={Link} to="/terms" target="_blank">Terms of Service</MuiLink> and permit SpotHop to use my uploaded content.
+                                    I agree to the <MuiLink component={Link} to="/terms">Terms of Service</MuiLink> and permit SpotHop to use my uploaded content.
                                 </Typography>
                             }
                         />
@@ -172,10 +172,15 @@ export function SignupForm() {
                     >
                         {isLoading ? 'Creating account...' : 'Sign Up'}
                     </Button>
-                    <Box sx={{ textAlign: 'right' }}>
-                        <MuiLink component={Link} to="/login" variant="body2">
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Button
+                            component={Link}
+                            to="/login"
+                            variant="outlined"
+                            fullWidth
+                        >
                             Already have an account? Sign in
-                        </MuiLink>
+                        </Button>
                     </Box>
                 </Box>
             </Box>

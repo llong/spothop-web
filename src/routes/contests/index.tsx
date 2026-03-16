@@ -83,7 +83,7 @@ export function ContestsPage() {
                 <Grid container spacing={4}>
                     {contests.map((contest) => (
                         <Grid size={{ xs: 12 }} key={contest.id}>
-                            <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'grey.200', overflow: 'hidden' }}>
+                            <Card elevation={0} sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
                                 <CardActionArea
                                     component={Link}
                                     {...({

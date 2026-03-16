@@ -201,6 +201,7 @@ export function SpotDetails() {
                         created_at: mediaCommentItem.createdAt,
                         spot_name: spot.name,
                         city: spot.city,
+                        state: spot.state,
                         country: spot.country,
                         uploader_username: mediaCommentItem.author.username,
                         uploader_display_name: mediaCommentItem.author.username,

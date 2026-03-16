@@ -1,12 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { feedService } from '../feedService';
-import supabase from '../../supabase';
+import { feedService } from '@/services/feedService';
+import supabase from '@/supabase';
+import { reverseGeocode } from '@/utils/geocoding';
 
-vi.mock('../../supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         rpc: vi.fn(),
         from: vi.fn()
     }
+}));
+
+vi.mock('@/utils/geocoding', () => ({
+    reverseGeocode: vi.fn()
 }));
 
 describe('feedService', () => {
@@ -78,6 +83,20 @@ describe('feedService', () => {
             expect(result[0].is_favorited_by_user).toBe(true);
             expect(result[1].is_liked_by_user).toBe(false);
             expect(result[1].is_favorited_by_user).toBe(false);
+        });
+
+        it('enriches feed items with missing location info via reverse geocoding', async () => {
+            const mockFeed = [
+                { media_id: 'm1', spot_id: 's1', latitude: 40.7128, longitude: -74.0060, city: 'New York', country: 'USA' } // missing state
+            ];
+            vi.mocked(supabase.rpc).mockResolvedValue({ data: mockFeed, error: null } as any);
+            vi.mocked(reverseGeocode).mockResolvedValue({ state: 'NY' });
+
+            const result = await feedService.fetchGlobalFeed();
+
+            expect(reverseGeocode).toHaveBeenCalledWith(40.7128, -74.0060);
+            expect(result[0].state).toBe('NY');
+            expect(result[0].city).toBe('New York');
         });
     });
 

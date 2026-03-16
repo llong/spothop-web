@@ -71,7 +71,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: 'grey.100',
+                bgcolor: 'transparent',
                 ...sx
             }}
             onClick={onClick}

@@ -176,7 +176,7 @@ export const FeedCommentDialog = memo(({
                         sx={{
                             '& .MuiOutlinedInput-root': {
                                 borderRadius: 10,
-                                bgcolor: 'grey.100',
+                                bgcolor: 'action.hover',
                                 '& fieldset': { border: 'none' }
                             }
                         }}

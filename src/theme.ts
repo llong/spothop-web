@@ -36,7 +36,7 @@ export const getAppTheme = (mode: 'light' | 'dark') => {
         }),
   },
   shape: {
-    borderRadius: 16,
+    borderRadius: 8,
   },
   typography: {
     fontFamily: [
@@ -103,6 +103,13 @@ export const getAppTheme = (mode: 'light' | 'dark') => {
         root: {
           boxShadow: 'none',
           borderBottom: `1px solid ${divider}`,
+        },
+      },
+    },
+    MuiAvatar: {
+      styleOverrides: {
+        root: {
+          border: 'none',
         },
       },
     },
