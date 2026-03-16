@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import {
     Box,
     Typography,
@@ -8,8 +9,10 @@ import {
 } from '@mui/material';
 import AddLocationIcon from '@mui/icons-material/AddLocation';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import { Virtuoso } from 'react-virtuoso';
 import { FeedItemCard } from './FeedItem';
 import { FeedItemSkeleton } from './FeedItemSkeleton';
+import { FeedCommentDialog } from './FeedCommentDialog';
 import type { FeedItem } from 'src/types';
 import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
 
@@ -23,7 +26,7 @@ interface FeedContentProps {
     setFilters: (filters: typeof INITIAL_FEED_FILTERS) => void;
     isFetchingNextPage: boolean;
     hasNextPage: boolean;
-    lastElementRef: (node: HTMLDivElement | null) => void;
+    fetchNextPage: () => void;
     currentUserId?: string;
 }
 
@@ -37,9 +40,19 @@ export function FeedContent({
     setFilters,
     isFetchingNextPage,
     hasNextPage,
-    lastElementRef,
+    fetchNextPage,
     currentUserId
 }: FeedContentProps) {
+    const [activeCommentItem, setActiveCommentItem] = useState<FeedItem | null>(null);
+
+    const handleCommentClick = useCallback((item: FeedItem) => {
+        setActiveCommentItem(item);
+    }, []);
+
+    const handleCloseCommentDialog = useCallback(() => {
+        setActiveCommentItem(null);
+    }, []);
+
     if (isLoading || (isFetching && allItems.length === 0)) {
         return (
             <Stack spacing={0}>
@@ -97,29 +110,48 @@ export function FeedContent({
 
     return (
         <>
-            {allItems.map((item, index) => (
-                <div
-                    key={`${item.media_id}-${index}`}
-                    ref={index === allItems.length - 1 ? lastElementRef : null}
-                >
+            <Virtuoso
+                useWindowScroll
+                data={allItems}
+                endReached={() => {
+                    if (hasNextPage && !isFetchingNextPage) {
+                        fetchNextPage();
+                    }
+                }}
+                itemContent={(index, item) => (
                     <FeedItemCard
+                        key={`${item.media_id}-${index}`}
                         item={item}
                         currentUserId={currentUserId}
+                        onCommentClick={handleCommentClick}
                     />
-                </div>
-            ))}
+                )}
+                components={{
+                    Footer: () => (
+                        <Box sx={{ pb: 4 }}>
+                            {isFetchingNextPage && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                                    <CircularProgress size={32} />
+                                </Box>
+                            )}
+                            {!hasNextPage && allItems.length > 0 && (
+                                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 8 }}>
+                                    You've reached the end of the global feed.
+                                </Typography>
+                            )}
+                        </Box>
+                    )
+                }}
+            />
 
-            {isFetchingNextPage && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                    <CircularProgress size={32} />
-                </Box>
-            )}
-
-            {!hasNextPage && allItems.length > 0 && (
-                <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 8 }}>
-                    You've reached the end of the global feed.
-                </Typography>
+            {activeCommentItem && (
+                <FeedCommentDialog
+                    open={Boolean(activeCommentItem)}
+                    onClose={handleCloseCommentDialog}
+                    item={activeCommentItem}
+                    userId={currentUserId}
+                />
             )}
         </>
     );
-}
+}

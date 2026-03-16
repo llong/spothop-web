@@ -1,23 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Spot } from 'src/types';
 import { useToggleFavoriteMutation } from './useSpotQueries';
 
 // ... (imports remain the same)
 
 export const useSpotFavorites = (spot: Spot | undefined, userId: string | undefined, initialCount: number = 0) => {
-    const [isFavorited, setIsFavorited] = useState(false);
-    const [favoriteCount, setFavoriteCount] = useState(initialCount);
+    const [isFavorited, setIsFavorited] = useState(!!spot?.isFavorited);
+    const [favoriteCount, setFavoriteCount] = useState(spot?.favoriteCount ?? initialCount);
 
     const toggleMutation = useToggleFavoriteMutation();
 
-    // Sync favorite state with spot data from props
-    useEffect(() => {
-        if (spot) {
-            setIsFavorited(!!spot.isFavorited);
-            // If spot has a favoriteCount property, use it, otherwise fallback to initialCount passed
-            setFavoriteCount(spot.favoriteCount ?? initialCount);
-        }
-    }, [spot?.isFavorited, spot?.favoriteCount, initialCount]);
+    // Sync favorite state with spot data from props during render (Task 4)
+    const [prevSpotId, setPrevSpotId] = useState(spot?.id);
+    if (spot?.id !== prevSpotId) {
+        setIsFavorited(!!spot?.isFavorited);
+        setFavoriteCount(spot?.favoriteCount ?? initialCount);
+        setPrevSpotId(spot?.id);
+    }
 
     const toggleFavorite = async () => {
         if (!userId || !spot || toggleMutation.isPending) return;

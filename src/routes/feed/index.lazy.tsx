@@ -166,7 +166,7 @@ function GlobalFeedContent({ userId, filters, userLocation, setFilters, hasActiv
         error,
         hasNextPage,
         isFetchingNextPage,
-        lastElementRef
+        fetchNextPage
     } = useGlobalFeed(userId, filters, userLocation);
 
     return (
@@ -180,7 +180,7 @@ function GlobalFeedContent({ userId, filters, userLocation, setFilters, hasActiv
             setFilters={setFilters}
             isFetchingNextPage={isFetchingNextPage}
             hasNextPage={hasNextPage}
-            lastElementRef={lastElementRef}
+            fetchNextPage={fetchNextPage}
             currentUserId={userId}
         />
     );
@@ -194,7 +194,7 @@ function FollowingFeedContent({ userId }: { userId?: string }) {
         error,
         hasNextPage,
         isFetchingNextPage,
-        lastElementRef
+        fetchNextPage
     } = useFollowingFeed(userId);
 
     return (
@@ -208,7 +208,7 @@ function FollowingFeedContent({ userId }: { userId?: string }) {
             setFilters={() => { }}
             isFetchingNextPage={isFetchingNextPage}
             hasNextPage={hasNextPage}
-            lastElementRef={lastElementRef}
+            fetchNextPage={fetchNextPage}
             currentUserId={userId}
         />
     );

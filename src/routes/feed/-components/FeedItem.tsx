@@ -19,22 +19,33 @@ import type { FeedItem as FeedItemType } from 'src/types';
 import { useToggleFollow } from 'src/hooks/useFeedQueries';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
-import { FeedCommentDialog } from './FeedCommentDialog';
 import { MediaCarousel } from 'src/routes/spots/-components/MediaCarousel';
 import React from 'react';
+
+const getFullUrl = (path: string) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    // If it's a supabase storage path (e.g. "avatars/xyz.webp")
+    if (path.includes('/') && !path.includes('storage/v1')) {
+         // Handle both possible path types: "avatars/xyz.webp" and "spot-media/spots/xyz/..."
+         const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+         return `https://wbkpofmvjcmdqbivocqc.supabase.co/storage/v1/object/public/${cleanPath}`;
+    }
+    return path;
+};
 
 interface FeedItemCardProps {
     item: FeedItemType;
     currentUserId?: string;
+    onCommentClick?: (item: FeedItemType) => void;
 }
 
 /**
  * FeedItemCard displays a single item in the global feed.
  * Redesigned for a flat, modern X-style layout.
  */
-export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }) => {
+export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId, onCommentClick }) => {
     const [activeSlide, setActiveSlide] = useState(0);
-    const [commentDialogOpen, setCommentDialogOpen] = useState(false);
     const toggleFollowMutation = useToggleFollow();
     const navigate = useNavigate();
 
@@ -97,17 +108,6 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }
         }
     }, [item.spot_name, item.spot_id]);
 
-    const getFullUrl = (path: string) => {
-        if (!path) return '';
-        if (path.startsWith('http')) return path;
-        // If it's a supabase storage path (e.g. "avatars/xyz.webp")
-        if (path.includes('/') && !path.includes('storage/v1')) {
-             // Handle both possible path types: "avatars/xyz.webp" and "spot-media/spots/xyz/..."
-             const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-             return `https://wbkpofmvjcmdqbivocqc.supabase.co/storage/v1/object/public/${cleanPath}`;
-        }
-        return path;
-    };
 
     return (
         <Box
@@ -240,7 +240,7 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }
                     <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary' }}>
                         <IconButton
                             size="small"
-                            onClick={() => setCommentDialogOpen(true)}
+                            onClick={() => onCommentClick?.(item)}
                             sx={{ '&:hover': { color: 'primary.main', bgcolor: 'rgba(29, 155, 240, 0.1)' } }}
                         >
                             <ChatBubbleOutlineIcon fontSize="small" />
@@ -261,12 +261,6 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId }
                 </Stack>
             </Box>
 
-            <FeedCommentDialog
-                open={commentDialogOpen}
-                onClose={() => setCommentDialogOpen(false)}
-                item={item}
-                userId={currentUserId}
-            />
         </Box>
     );
 });

@@ -80,10 +80,11 @@ describe('FeedItemCard', () => {
         expect(img).toHaveAttribute('src', mockItem.media_url);
     });
 
-    it('opens comment dialog when comment button is clicked', () => {
-        render(<FeedItemCard item={mockItem} />, { wrapper });
+    it('calls onCommentClick when comment button is clicked', () => {
+        const onCommentClick = vi.fn();
+        render(<FeedItemCard item={mockItem} onCommentClick={onCommentClick} />, { wrapper });
         const commentBtn = screen.getByTestId('ChatBubbleOutlineIcon').parentElement;
         fireEvent.click(commentBtn!);
-        expect(screen.getByText('Comments')).toBeInTheDocument();
+        expect(onCommentClick).toHaveBeenCalledWith(mockItem);
     });
 });

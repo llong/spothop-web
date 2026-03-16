@@ -7,6 +7,19 @@ vi.mock('@tanstack/react-router', () => ({
     Link: ({ children }: any) => <div>{children}</div>
 }));
 
+vi.mock('../FeedItem', () => ({
+    FeedItemCard: () => <div data-testid="feed-item-card" />
+}));
+
+vi.mock('react-virtuoso', () => ({
+    Virtuoso: ({ data, itemContent, components }: any) => (
+        <div>
+            {data.map((item: any, index: number) => itemContent(index, item))}
+            {components?.Footer && <components.Footer />}
+        </div>
+    )
+}));
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
@@ -22,7 +35,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 describe('FeedContent', () => {
-    const mockProps = {
+const mockProps = {
         isLoading: false,
         error: null,
         allItems: [],
@@ -31,7 +44,7 @@ describe('FeedContent', () => {
         setFilters: vi.fn(),
         isFetchingNextPage: false,
         hasNextPage: false,
-        lastElementRef: vi.fn(),
+        fetchNextPage: vi.fn(),
     };
 
     it('renders loading state with skeletons', () => {
@@ -64,15 +77,35 @@ describe('FeedContent', () => {
 
     it('renders feed items', () => {
         const mockItems = [
-            { media_id: 'm1', spot_id: 's1', author: { username: 'user1' }, media_url: 'url1', created_at: new Date().toISOString(), type: 'photo' }
+            { 
+                media_id: 'm1', 
+                spot_id: 's1', 
+                uploader_username: 'user1', 
+                media_url: 'url1', 
+                media_type: 'photo',
+                created_at: new Date().toISOString(), 
+                spot_name: 'Test Spot',
+                favorite_count: 0,
+                comment_count: 0
+            }
         ];
         render(<FeedContent {...mockProps} allItems={mockItems as any} />, { wrapper });
         // FeedItemCard should be rendered
-        expect(screen.getByTestId('FavoriteBorderIcon')).toBeInTheDocument();
+        expect(screen.getByTestId('feed-item-card')).toBeInTheDocument();
     });
 
     it('renders end of feed message', () => {
-        const mockItems = [{ media_id: 'm1', spot_id: 's1', author: { username: 'user1' }, media_url: 'url1', created_at: new Date().toISOString(), type: 'photo' }];
+        const mockItems = [{ 
+            media_id: 'm1', 
+            spot_id: 's1', 
+            uploader_username: 'user1', 
+            media_url: 'url1', 
+            media_type: 'photo',
+            created_at: new Date().toISOString(), 
+            spot_name: 'Test Spot',
+            favorite_count: 0,
+            comment_count: 0
+        }];
         render(<FeedContent {...mockProps} allItems={mockItems as any} hasNextPage={false} />, { wrapper });
         expect(screen.getByText(/reached the end/i)).toBeInTheDocument();
     });

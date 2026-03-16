@@ -259,7 +259,8 @@ export const feedService = {
  */
 async function enrichLocations(items: FeedItem[]): Promise<FeedItem[]> {
     const enrichmentPromises = items.map(async (item) => {
-        if ((!item.city || !item.state || !item.country) && item.latitude && item.longitude) {
+        const isMissingInfo = !item.city || !item.state || !item.country;
+        if (isMissingInfo && item.latitude && item.longitude) {
             try {
                 const info = await reverseGeocode(item.latitude, item.longitude);
                 return {
