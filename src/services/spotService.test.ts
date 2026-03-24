@@ -42,13 +42,15 @@ describe('spotService', () => {
                 latitude: 1.23,
                 longitude: 4.56,
                 created_by: 'user1',
+                favorite_count: 1,
                 spot_photos: [{
                     id: 'p1',
                     url: 'url1',
                     user_id: 'user1',
                     created_at: '2025-01-01',
-                    media_likes: [{ user_id: 'user2' }],
-                    media_comments: []
+                    like_count: 1,
+                    comment_count: 0,
+                    media_likes: [{ user_id: 'user2' }]
                 }],
                 spot_videos: [],
             };
@@ -66,22 +68,10 @@ describe('spotService', () => {
                     maybeSingle: vi.fn(),
                     then: vi.fn().mockImplementation((onFulfilled) => {
                         let result: any = { data: [], error: null, count: 0 };
-                        if (table === 'user_favorite_spots') {
-                            // Check if it's the count query or the profiles query
-                            const lastSelect = queryBuilder.select.mock.calls.at(-1);
-                            if (lastSelect?.[1]?.count === 'exact') {
-                                result = { count: 1, data: [], error: null };
-                            } else if (lastSelect?.[0]?.includes('profiles')) {
-                                result = { data: [{ user_id: 'user2', profiles: { username: 'userTwo', avatarUrl: 'avatar2' } }], error: null };
-                            } else {
-                                result = { data: [{ user_id: 'user2' }], error: null };
-                            }
-                        } else if (table === 'spot_comments') {
-                            result = { count: 2, data: [], error: null };
-                        } else if (table === 'content_reports') {
-                            result = { count: 0, data: [], error: null };
-                        } else if (table === 'profiles') {
+                        if (table === 'profiles') {
                             result = { data: mockProfiles, error: null };
+                        } else if (table === 'user_favorite_spots') {
+                            result = { data: [{ user_id: 'user2', profiles: { username: 'userTwo', avatarUrl: 'avatar2' } }], error: null };
                         }
                         return Promise.resolve(onFulfilled(result));
                     })

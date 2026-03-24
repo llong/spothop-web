@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { Box, Skeleton, Typography, type SxProps, type Theme } from '@mui/material';
 import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported';
 
@@ -26,24 +26,18 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     const [isLoading, setIsLoading] = useState(() => !loadedImageUrls.has(src));
     const [error, setError] = useState(false);
 
-    // Track original src for potential retry
-    const [currentSrc, setCurrentSrc] = useState(src);
-
-    // Sync src during render (not via useEffect) to avoid an extra render cycle
-    // that causes a visible flash of the skeleton
-    if (src !== currentSrc) {
-        setCurrentSrc(src);
+    useLayoutEffect(() => {
         setIsLoading(!loadedImageUrls.has(src));
         setError(false);
-    }
+    }, [src]);
 
     const handleLoad = () => {
-        loadedImageUrls.add(currentSrc);
+        loadedImageUrls.add(src);
         setIsLoading(false);
     };
 
     const handleError = () => {
-        console.error(`OptimizedImage failed to load: ${currentSrc}`);
+        console.error(`OptimizedImage failed to load: ${src}`);
         setIsLoading(false);
         setError(true);
     };
@@ -103,8 +97,12 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
                     width: '100%',
                     height: '100%'
                 }}>
-                    <ImageNotSupportedIcon sx={{ fontSize: sx && (sx as any).width < 50 ? 20 : 40, mb: 0.5, opacity: 0.5 }} />
-                    {(sx && (sx as any).width >= 100) && (
+                    <ImageNotSupportedIcon sx={{ 
+                        fontSize: sx && typeof sx === 'object' && 'width' in sx && Number(sx.width) < 50 ? 20 : 40, 
+                        mb: 0.5, 
+                        opacity: 0.5 
+                    }} />
+                    {(sx && typeof sx === 'object' && 'width' in sx && Number(sx.width) >= 100) && (
                         <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.7rem' }}>
                             Failed to load
                         </Typography>
@@ -115,6 +113,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
                     component="img"
                     src={src}
                     alt={alt}
+                    loading="lazy"
                     crossOrigin={crossOrigin}
                     onLoad={handleLoad}
                     onError={handleError}

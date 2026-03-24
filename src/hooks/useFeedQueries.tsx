@@ -31,16 +31,18 @@ export function useFeedQuery(
     options?: { enabled?: boolean }
 ) {
     const query = useInfiniteQuery({
-        queryKey: [...feedKeys.global(), userId, JSON.stringify(filters)], // Stringify filters to ensure deep comparison
-        queryFn: ({ pageParam = 0 }) => {
-            console.log('[useFeedQuery] Fetching feed. User:', userId, 'Filters:', filters);
-            return feedService.fetchGlobalFeed(limit, pageParam, userId, filters);
+        queryKey: [...feedKeys.global(), userId, JSON.stringify(filters)], 
+        queryFn: ({ pageParam = null }) => {
+            console.log('[useFeedQuery] Fetching feed. User:', userId, 'Cursor:', pageParam);
+            return feedService.fetchGlobalFeed(limit, pageParam as string | null, userId, filters);
         },
-        getNextPageParam: (lastPage, allPages) => {
-            return lastPage.length === limit ? allPages.length * limit : undefined;
+        getNextPageParam: (lastPage) => {
+            if (!lastPage || lastPage.length < limit) return undefined;
+            // Use the created_at of the last item as the cursor for the next page
+            return lastPage[lastPage.length - 1].created_at;
         },
-        initialPageParam: 0,
-        staleTime: 0,
+        initialPageParam: null as string | null,
+        staleTime: 1000 * 60 * 5, 
         refetchOnMount: true,
         refetchOnWindowFocus: true,
         enabled: options?.enabled,
@@ -65,7 +67,7 @@ export function useFollowingFeedQuery(userId: string | undefined, limit: number 
         },
         initialPageParam: 0,
         enabled: !!userId,
-        staleTime: 0,
+        staleTime: 1000 * 60 * 5, // 5 mins
         refetchOnMount: true,
     });
 }
@@ -77,12 +79,61 @@ export function useToggleMediaLike() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ mediaId, mediaType }: { mediaId: string; mediaType: 'photo' | 'video' }) =>
-            feedService.toggleMediaLike(mediaId, mediaType),
-        onSuccess: () => {
-            // Invalidate feed to show updated like counts/status
-            queryClient.invalidateQueries({ queryKey: feedKeys.all });
+        mutationFn: ({ mediaId }: { mediaId: string; mediaType: 'photo' | 'video' }) =>
+            feedService.toggleMediaLike(mediaId),
+        onMutate: async ({ mediaId }) => {
+            await queryClient.cancelQueries({ queryKey: feedKeys.all });
+            const previousFeeds = queryClient.getQueriesData({ queryKey: feedKeys.all });
+
+            queryClient.setQueriesData({ queryKey: feedKeys.all }, (oldData: any) => {
+                if (!oldData?.pages) return oldData;
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: any[]) => 
+                        page.map((item) => 
+                            item.media_id === mediaId 
+                                ? { 
+                                    ...item, 
+                                    is_liked_by_user: !item.is_liked_by_user,
+                                    like_count: item.like_count + (item.is_liked_by_user ? -1 : 1)
+                                  } 
+                                : item
+                        )
+                    )
+                };
+            });
+
+            return { previousFeeds };
         },
+        onSuccess: (data, { mediaId }) => {
+            // Confirm the server state
+            if (data) {
+                queryClient.setQueriesData({ queryKey: feedKeys.all }, (oldData: any) => {
+                    if (!oldData?.pages) return oldData;
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map((page: any[]) => 
+                            page.map((item) => 
+                                item.media_id === mediaId 
+                                    ? { 
+                                        ...item, 
+                                        is_liked_by_user: data.new_is_liked,
+                                        like_count: data.new_like_count
+                                      } 
+                                    : item
+                            )
+                        )
+                    };
+                });
+            }
+        },
+        onError: (_err, _vars, context) => {
+            if (context?.previousFeeds) {
+                context.previousFeeds.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey, data);
+                });
+            }
+        }
     });
 }
 
@@ -95,15 +146,54 @@ export function useToggleFollow() {
 
     return useMutation({
         mutationFn: (followingId: string) => feedService.toggleFollow(followingId),
-        onSuccess: () => {
-            // Invalidate feed to show updated follow status across all items from this uploader
-            queryClient.invalidateQueries({ queryKey: feedKeys.all });
+        onMutate: async (followingId) => {
+            await queryClient.cancelQueries({ queryKey: feedKeys.all });
+            const previousFeeds = queryClient.getQueriesData({ queryKey: feedKeys.all });
+
+            queryClient.setQueriesData({ queryKey: feedKeys.all }, (oldData: any) => {
+                if (!oldData?.pages) return oldData;
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map((page: any[]) => 
+                        page.map((item) => 
+                            item.uploader_id === followingId 
+                                ? { ...item, is_followed_by_user: !item.is_followed_by_user } 
+                                : item
+                        )
+                    )
+                };
+            });
+
+            return { previousFeeds };
         },
-        onError: (error: any) => {
-            console.error("Follow toggle failed", error);
+        onSuccess: (data, followingId) => {
+            if (data) {
+                queryClient.setQueriesData({ queryKey: feedKeys.all }, (oldData: any) => {
+                    if (!oldData?.pages) return oldData;
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map((page: any[]) => 
+                            page.map((item) => 
+                                item.uploader_id === followingId 
+                                    ? { ...item, is_followed_by_user: data.new_is_followed } 
+                                    : item
+                            )
+                        )
+                    };
+                });
+            }
+        },
+        onError: (err: unknown, _vars, context) => {
+            console.error("Follow toggle failed", err);
+            if (context?.previousFeeds) {
+                context.previousFeeds.forEach(([queryKey, data]) => {
+                    queryClient.setQueryData(queryKey, data);
+                });
+            }
+            const message = err instanceof Error ? err.message : 'Unknown error';
             setToast({
                 open: true,
-                message: `Follow failed: ${error.message || 'Unknown error'}`,
+                message: `Follow failed: ${message}`,
                 severity: 'error'
             } as any);
         }

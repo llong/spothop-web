@@ -103,26 +103,21 @@ describe('spotService', () => {
     });
 
     it('toggles favorite status (delete)', async () => {
-        const mockFrom = vi.mocked(supabase.from);
-        mockFrom.mockReturnValue({
-            delete: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            then: (cb: any) => Promise.resolve(cb({ error: null }))
-        } as any);
+        vi.mocked(supabase.rpc).mockResolvedValue({ data: [{ new_is_favorited: false, new_favorite_count: 0 }], error: null } as any);
 
-        await spotService.toggleFavorite('s1', 'u1', true);
-        expect(mockFrom).toHaveBeenCalledWith('user_favorite_spots');
+        await spotService.toggleFavorite('s1');
+        expect(supabase.rpc).toHaveBeenCalledWith('toggle_spot_favorite', {
+            p_spot_id: 's1'
+        });
     });
 
     it('toggles favorite status (insert)', async () => {
-        const mockFrom = vi.mocked(supabase.from);
-        mockFrom.mockReturnValue({
-            upsert: vi.fn().mockReturnThis(),
-            then: (cb: any) => Promise.resolve(cb({ error: null }))
-        } as any);
+        vi.mocked(supabase.rpc).mockResolvedValue({ data: [{ new_is_favorited: true, new_favorite_count: 1 }], error: null } as any);
 
-        await spotService.toggleFavorite('s1', 'u1', false);
-        expect(mockFrom).toHaveBeenCalledWith('user_favorite_spots');
+        await spotService.toggleFavorite('s1');
+        expect(supabase.rpc).toHaveBeenCalledWith('toggle_spot_favorite', {
+            p_spot_id: 's1'
+        });
     });
 
     it('adds a video link', async () => {

@@ -28,7 +28,7 @@ describe('feedService', () => {
 
         expect(supabase.rpc).toHaveBeenCalledWith('get_global_feed_content', {
             p_limit: 10,
-            p_offset: 0,
+            p_cursor_timestamp: null,
             p_user_id: null,
             p_lat: null,
             p_lng: null,
@@ -44,45 +44,20 @@ describe('feedService', () => {
         expect(result).toEqual(mockData);
     });
 
-        it('enriches feed with user interaction status', async () => {
+        it('receives user interaction status from RPC', async () => {
             const mockFeed = [
-                { media_id: 'p1', spot_id: 's1', media_type: 'photo' },
-                { media_id: 'v1', spot_id: 's2', media_type: 'video' }
+                { media_id: 'p1', spot_id: 's1', is_liked_by_user: true, is_favorited_by_user: true },
+                { media_id: 'v1', spot_id: 's2', is_liked_by_user: false, is_favorited_by_user: false }
             ];
             vi.mocked(supabase.rpc).mockResolvedValue({ data: mockFeed, error: null } as any);
 
-            const mockSelect = vi.fn();
-            const mockEq = vi.fn();
-            const mockOr = vi.fn();
-            const mockIn = vi.fn();
-
-            vi.mocked(supabase.from).mockImplementation((table: string) => {
-                if (table === 'media_likes') {
-                    return {
-                        select: mockSelect.mockReturnValue({
-                            eq: mockEq.mockReturnValue({
-                                or: mockOr.mockResolvedValue({ data: [{ photo_id: 'p1' }], error: null })
-                            })
-                        })
-                    } as any;
-                }
-                if (table === 'user_favorite_spots') {
-                    return {
-                        select: mockSelect.mockReturnValue({
-                            eq: mockEq.mockReturnValue({
-                                in: mockIn.mockResolvedValue({ data: [{ spot_id: 's1' }], error: null })
-                            })
-                        })
-                    } as any;
-                }
-                return {} as any;
-            });
-
-            const result = await feedService.fetchGlobalFeed(10, 0, 'u1');
+            const result = await feedService.fetchGlobalFeed(10, null, 'u1');
+            
+            expect(supabase.rpc).toHaveBeenCalledWith('get_global_feed_content', expect.objectContaining({
+                p_user_id: 'u1'
+            }));
             expect(result[0].is_liked_by_user).toBe(true);
             expect(result[0].is_favorited_by_user).toBe(true);
-            expect(result[1].is_liked_by_user).toBe(false);
-            expect(result[1].is_favorited_by_user).toBe(false);
         });
 
         it('enriches feed items with missing location info via reverse geocoding', async () => {
@@ -101,13 +76,12 @@ describe('feedService', () => {
     });
 
     describe('toggleMediaLike', () => {
-        it('calls handle_media_like RPC', async () => {
-            vi.mocked(supabase.rpc).mockResolvedValue({ error: null } as any);
+        it('calls toggle_media_like RPC', async () => {
+            vi.mocked(supabase.rpc).mockResolvedValue({ data: [{ new_is_liked: true, new_like_count: 5 }], error: null } as any);
 
-            await feedService.toggleMediaLike('m1', 'photo');
-            expect(supabase.rpc).toHaveBeenCalledWith('handle_media_like', {
-                p_media_id: 'm1',
-                p_media_type: 'photo'
+            await feedService.toggleMediaLike('m1');
+            expect(supabase.rpc).toHaveBeenCalledWith('toggle_media_like', {
+                p_media_id: 'm1'
             });
         });
     });

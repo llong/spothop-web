@@ -11,16 +11,16 @@ export const spotService = {
             .from('spots')
             .select(`
                 id, name, description, latitude, longitude, address, city, state, country, created_by, created_at, difficulty, kickout_risk, is_lit, spot_type,
+                favorite_count,
                 spot_photos (
                     id,
                     url,
                     created_at,
                     user_id,
+                    like_count,
+                    comment_count,
                     media_likes!photo_id (
                         user_id
-                    ),
-                    media_comments!photo_id (
-                        id
                     )
                 ),
                 spot_videos (
@@ -29,11 +29,10 @@ export const spotService = {
                     thumbnail_url,
                     created_at,
                     user_id,
+                    like_count,
+                    comment_count,
                     media_likes!video_id (
                         user_id
-                    ),
-                    media_comments!video_id (
-                        id
                     )
                 ),
                 spot_video_links (
@@ -62,10 +61,6 @@ export const spotService = {
                 .eq('spot_id', spotId)
             : Promise.resolve({ data: null, error: null });
 
-        const favoriteCountPromise = supabase
-            .from('user_favorite_spots')
-            .select('user_id', { count: 'exact' })
-            .eq('spot_id', spotId);
 
         const commentCountPromise = supabase
             .from('spot_comments')
@@ -90,10 +85,9 @@ export const spotService = {
             `)
             .eq('spot_id', spotId);
 
-        const [spotResult, favoriteStatusResult, favoriteCountResult, commentCountResult, flagCountResult, favoritedUsersResult] = await Promise.all([
+        const [spotResult, favoriteStatusResult, commentCountResult, flagCountResult, favoritedUsersResult] = await Promise.all([
             spotPromise,
             favoriteStatusPromise,
-            favoriteCountPromise,
             commentCountPromise,
             flagCountPromise,
             favoritedUsersPromise
@@ -128,7 +122,7 @@ export const spotService = {
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
         const creatorProfile = profileMap.get(spotData.created_by);
 
-        const photos: MediaItem[] = (spotData.spot_photos || []).map((p: any) => {
+        const photos = (spotData.spot_photos || []).map((p): MediaItem => {
             const author = profileMap.get(p.user_id);
             return {
                 id: p.id,
@@ -140,13 +134,13 @@ export const spotService = {
                     username: author?.username || 'unknown',
                     avatarUrl: author?.avatarUrl || null
                 },
-                likeCount: p.media_likes?.length || 0,
-                commentCount: p.media_comments?.length || 0,
+                likeCount: p.like_count || 0,
+                commentCount: p.comment_count || 0,
                 isLiked: userId ? p.media_likes?.some((l: any) => l.user_id === userId) : false
             };
         });
 
-        const videos: MediaItem[] = (spotData.spot_videos || []).map((v: any) => {
+        const videos = (spotData.spot_videos || []).map((v): MediaItem => {
             const author = profileMap.get(v.user_id);
             return {
                 id: v.id,
@@ -159,8 +153,8 @@ export const spotService = {
                     username: author?.username || 'unknown',
                     avatarUrl: author?.avatarUrl || null
                 },
-                likeCount: v.media_likes?.length || 0,
-                commentCount: v.media_comments?.length || 0,
+                likeCount: v.like_count || 0,
+                commentCount: v.comment_count || 0,
                 isLiked: userId ? v.media_likes?.some((l: any) => l.user_id === userId) : false
             };
         });
@@ -189,7 +183,7 @@ export const spotService = {
                 displayName: creatorProfile?.displayName || null,
             },
             username: creatorProfile?.username || 'unknown',
-            favoriteCount: favoriteCountResult.count || 0,
+            favoriteCount: spotData.favorite_count || 0,
             commentCount: commentCountResult.count || 0,
             flagCount: flagCountResult.count || 0,
             isFavorited: !!(userId && favoriteStatusResult.data && favoriteStatusResult.data.length > 0),

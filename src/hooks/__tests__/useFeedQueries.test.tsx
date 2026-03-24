@@ -70,26 +70,26 @@ describe('useFeedQueries', () => {
 
             await waitFor(() => expect(result.current.isSuccess).toBe(true));
             expect(result.current.data?.pages[0]).toEqual(mockData);
-            expect(feedService.fetchGlobalFeed).toHaveBeenCalledWith(10, 0, 'u1', undefined);
+            expect(feedService.fetchGlobalFeed).toHaveBeenCalledWith(10, null, 'u1', undefined);
         });
     });
 
     describe('useToggleMediaLike', () => {
         it('toggles media like', async () => {
-            vi.mocked(feedService.toggleMediaLike).mockResolvedValue(undefined);
+            vi.mocked(feedService.toggleMediaLike).mockResolvedValue({ new_is_liked: true, new_like_count: 1 });
 
             const { result } = renderHook(() => useToggleMediaLike(), {
                 wrapper: createWrapper()
             });
 
             await result.current.mutateAsync({ mediaId: 'm1', mediaType: 'photo' });
-            expect(feedService.toggleMediaLike).toHaveBeenCalledWith('m1', 'photo');
+            expect(feedService.toggleMediaLike).toHaveBeenCalledWith('m1');
         });
     });
 
     describe('useToggleFollow', () => {
         it('toggles follow status', async () => {
-            vi.mocked(feedService.toggleFollow).mockResolvedValue(undefined);
+            vi.mocked(feedService.toggleFollow).mockResolvedValue({ new_is_followed: true, new_follower_count: 1 });
 
             const { result } = renderHook(() => useToggleFollow(), {
                 wrapper: createWrapper()

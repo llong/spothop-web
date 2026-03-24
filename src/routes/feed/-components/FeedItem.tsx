@@ -1,4 +1,6 @@
 import { memo, useState, useMemo, useCallback, type FC } from 'react';
+import { useAtomValue } from 'jotai';
+import { userAtom } from 'src/atoms/auth';
 import {
     Box,
     Avatar,
@@ -36,7 +38,6 @@ const getFullUrl = (path: string) => {
 
 interface FeedItemCardProps {
     item: FeedItemType;
-    currentUserId?: string;
     onCommentClick?: (item: FeedItemType) => void;
 }
 
@@ -44,7 +45,9 @@ interface FeedItemCardProps {
  * FeedItemCard displays a single item in the global feed.
  * Redesigned for a flat, modern X-style layout.
  */
-export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId, onCommentClick }) => {
+export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, onCommentClick }) => {
+    const auth = useAtomValue(userAtom);
+    const currentUserId = auth?.user?.id;
     const [activeSlide, setActiveSlide] = useState(0);
     // Lifted video play state — survives Virtuoso remounts when scrolling
     const [showVideo, setShowVideo] = useState(false);
@@ -53,21 +56,13 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId, 
     const navigate = useNavigate();
 
     // Convert single feed item media to array for carousel
-    // Apply getFullUrl to ensure all URLs are fully resolved before MediaCarousel
+    // Dependencies are strict primitives to prevent object literal traps triggering heavy carousel redraws
     const media = useMemo(() => [{
         id: item.media_id,
         url: getFullUrl(item.media_url),
         type: item.media_type,
         thumbnailUrl: item.thumbnail_url ? getFullUrl(item.thumbnail_url) : undefined,
-        createdAt: item.created_at,
-        author: {
-            id: item.uploader_id,
-            username: item.uploader_username,
-            avatarUrl: item.uploader_avatar_url
-        },
-        likeCount: item.like_count,
-        isLiked: item.is_liked_by_user || false
-    }], [item]);
+    }], [item.media_id, item.media_url, item.media_type, item.thumbnail_url]) as import('src/types').MediaItem[];
 
     // Minimal spot object for useSpotFavorites
     const spot = useMemo(() => ({
@@ -269,4 +264,4 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId, 
 
         </Box>
     );
-});
+}, (prevProps, nextProps) => prevProps.item === nextProps.item);

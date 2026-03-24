@@ -14,7 +14,7 @@ export function useSpotQuery(spotId: string, userId?: string) {
         queryKey: spotKeys.details(spotId),
         queryFn: () => spotService.fetchSpotDetails(spotId, userId),
         enabled: !!spotId,
-        staleTime: 0, // Always consider details stale to ensure fresh data on mount
+        staleTime: 1000 * 60 * 5, // 5 mins cache to prevent excessive fetching
         gcTime: 1000 * 60 * 10, // Keep in cache for 10 mins
     });
 }
@@ -41,12 +41,35 @@ export function useToggleFavoriteMutation() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ spotId, userId, isFavorited }: { spotId: string, userId: string, isFavorited: boolean }) => 
-            spotService.toggleFavorite(spotId, userId, isFavorited),
-        onSuccess: (_, { spotId }) => {
-            queryClient.invalidateQueries({ queryKey: spotKeys.details(spotId) });
-            // Also invalidate global spots list if needed
-            queryClient.invalidateQueries({ queryKey: spotKeys.all });
+        mutationFn: ({ spotId }: { spotId: string }) => 
+            spotService.toggleFavorite(spotId),
+        onMutate: async ({ spotId }) => {
+            await queryClient.cancelQueries({ queryKey: spotKeys.details(spotId) });
+            const previousSpot = queryClient.getQueryData<any>(spotKeys.details(spotId));
+            
+            if (previousSpot) {
+                const isFavorited = previousSpot.is_favorited_by_user;
+                queryClient.setQueryData(spotKeys.details(spotId), {
+                    ...previousSpot,
+                    is_favorited_by_user: !isFavorited,
+                    favorite_count: Math.max(0, (previousSpot.favorite_count || 0) + (isFavorited ? -1 : 1))
+                });
+            }
+            return { previousSpot };
         },
+        onSuccess: (data, { spotId }) => {
+            if (data) {
+                queryClient.setQueryData(spotKeys.details(spotId), (old: any) => ({
+                    ...old,
+                    is_favorited_by_user: data.new_is_favorited,
+                    favorite_count: data.new_favorite_count
+                }));
+            }
+        },
+        onError: (_err, _vars, context: any) => {
+            if (context?.previousSpot) {
+                queryClient.setQueryData(spotKeys.details(_vars.spotId), context.previousSpot);
+            }
+        }
     });
 }

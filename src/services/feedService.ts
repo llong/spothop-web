@@ -4,11 +4,11 @@ import { reverseGeocode } from "@/utils/geocoding";
 
 export const feedService = {
     /**
-     * Fetches paginated global feed content.
+     * Fetches paginated global feed content using a timestamp cursor.
      */
     async fetchGlobalFeed(
         limit: number = 10, 
-        offset: number = 0, 
+        cursor: string | null = null, 
         userId?: string,
         filters?: {
             lat?: number;
@@ -23,14 +23,11 @@ export const feedService = {
             authorId?: string;
         }
     ) {
-        console.error('[FeedService] Fetching feed. User:', userId, 'Filters:', JSON.stringify(filters));
+        console.log('[FeedService] Fetching feed. User:', userId, 'Cursor:', cursor);
         
-        let response;
-        
-        console.log('[FeedService] Calling get_global_feed_content');
-        response = await supabase.rpc('get_global_feed_content', {
+        const { data, error } = await supabase.rpc('get_global_feed_content', {
             p_limit: limit,
-            p_offset: offset,
+            p_cursor_timestamp: cursor,
             p_user_id: userId || null,
             p_lat: filters?.lat || null,
             p_lng: filters?.lng || null,
@@ -44,43 +41,12 @@ export const feedService = {
             p_author_id: filters?.authorId || null
         });
 
-        const { data, error } = response;
         if (error) throw error;
 
         let feedItems = (data as FeedItem[]) || [];
 
-        // If userId is provided, we need to check if the user has liked/favorited the items
-        // In a real scenario, this would be part of the RPC for better performance
-        if (userId && feedItems.length > 0) {
-            const photoIds = feedItems.filter(item => item.media_type === 'photo').map(item => item.media_id);
-            const videoIds = feedItems.filter(item => item.media_type === 'video').map(item => item.media_id);
-            const spotIds = feedItems.map(item => item.spot_id);
-
-            const [likesResult, favoritesResult] = await Promise.all([
-                supabase
-                    .from('media_likes')
-                    .select('photo_id, video_id')
-                    .eq('user_id', userId)
-                    .or(`photo_id.in.(${photoIds.join(',')}),video_id.in.(${videoIds.join(',')})`),
-                supabase
-                    .from('user_favorite_spots')
-                    .select('spot_id')
-                    .eq('user_id', userId)
-                    .in('spot_id', spotIds)
-            ]);
-
-            const likedPhotoIds = new Set(likesResult.data?.map(l => l.photo_id).filter(Boolean));
-            const likedVideoIds = new Set(likesResult.data?.map(l => l.video_id).filter(Boolean));
-            const favoritedSpotIds = new Set(favoritesResult.data?.map(f => f.spot_id));
-
-            feedItems = feedItems.map(item => ({
-                ...item,
-                is_liked_by_user: item.media_type === 'photo'
-                    ? likedPhotoIds.has(item.media_id)
-                    : likedVideoIds.has(item.media_id),
-                is_favorited_by_user: favoritedSpotIds.has(item.spot_id)
-            }));
-        }
+        // Note: is_liked_by_user and is_favorited_by_user are now returned by the RPC!
+        // No manual enrichment needed here anymore.
 
         feedItems = await enrichLocations(feedItems);
 
@@ -143,23 +109,24 @@ export const feedService = {
      * Toggles follow for a user.
      */
     async toggleFollow(followingId: string) {
-        const { error } = await supabase.rpc('handle_user_follow', {
+        const { data, error } = await supabase.rpc('toggle_user_follow', {
             p_following_id: followingId
         });
 
         if (error) throw error;
+        return data?.[0] as { new_is_followed: boolean, new_follower_count: number };
     },
 
     /**
      * Toggles a like on a media item.
      */
-    async toggleMediaLike(mediaId: string, mediaType: 'photo' | 'video') {
-        const { error } = await supabase.rpc('handle_media_like', {
-            p_media_id: mediaId,
-            p_media_type: mediaType
+    async toggleMediaLike(mediaId: string) {
+        const { data, error } = await supabase.rpc('toggle_media_like', {
+            p_media_id: mediaId
         });
 
         if (error) throw error;
+        return data?.[0] as { new_is_liked: boolean, new_like_count: number };
     },
 
     /**
