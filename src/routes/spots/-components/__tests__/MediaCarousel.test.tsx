@@ -59,10 +59,15 @@ describe('MediaCarousel', () => {
     expect(screen.getByRole('img')).toHaveAttribute('src', mockMedia[1].thumbnailUrl);
   });
 
-  it('switches to video player when "Show Video" is clicked', () => {
-    renderComponent({ media: [mockMedia[1]], activeSlide: 0, onSlideChange: vi.fn() });
+  it('calls onShowVideo when "Show Video" is clicked', () => {
+    const onShowVideo = vi.fn();
+    renderComponent({ media: [mockMedia[1]], activeSlide: 0, onSlideChange: vi.fn(), onShowVideo });
     fireEvent.click(screen.getByText(/Show Video/i));
-    // The video element doesn't have a role, but we can find it by tag
+    expect(onShowVideo).toHaveBeenCalled();
+  });
+
+  it('renders video player when showVideo is true', () => {
+    renderComponent({ media: [mockMedia[1]], activeSlide: 0, onSlideChange: vi.fn(), showVideo: true });
     const video = document.querySelector('video');
     expect(video).toBeInTheDocument();
     expect(video).toHaveAttribute('src', mockMedia[1].url);

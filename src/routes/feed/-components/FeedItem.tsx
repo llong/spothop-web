@@ -46,15 +46,19 @@ interface FeedItemCardProps {
  */
 export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId, onCommentClick }) => {
     const [activeSlide, setActiveSlide] = useState(0);
+    // Lifted video play state — survives Virtuoso remounts when scrolling
+    const [showVideo, setShowVideo] = useState(false);
+    const handleShowVideo = useCallback(() => setShowVideo(true), []);
     const toggleFollowMutation = useToggleFollow();
     const navigate = useNavigate();
 
     // Convert single feed item media to array for carousel
+    // Apply getFullUrl to ensure all URLs are fully resolved before MediaCarousel
     const media = useMemo(() => [{
         id: item.media_id,
-        url: item.media_url,
+        url: getFullUrl(item.media_url),
         type: item.media_type,
-        thumbnailUrl: item.thumbnail_url,
+        thumbnailUrl: item.thumbnail_url ? getFullUrl(item.thumbnail_url) : undefined,
         createdAt: item.created_at,
         author: {
             id: item.uploader_id,
@@ -214,6 +218,8 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, currentUserId, 
                         media={media}
                         activeSlide={activeSlide}
                         onSlideChange={setActiveSlide}
+                        showVideo={showVideo}
+                        onShowVideo={handleShowVideo}
                     />
                 </Box>
             </Box>

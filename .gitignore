@@ -26,3 +26,7 @@ dist-ssr
 # Coverage directory used by tools like istanbul
 coverage
 nul
+
+# Temporary test outputs
+text_output*.txt
+text_output.txt

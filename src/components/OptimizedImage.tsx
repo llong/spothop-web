@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Skeleton, Typography, type SxProps, type Theme } from '@mui/material';
 import ImageNotSupportedIcon from '@mui/icons-material/ImageNotSupported';
 
@@ -11,6 +11,9 @@ interface OptimizedImageProps {
     objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
 }
 
+// Global cache to track images that have already loaded to prevent skeleton flash on remount
+const loadedImageUrls = new Set<string>();
+
 export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     src,
     alt,
@@ -19,25 +22,27 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     crossOrigin,
     objectFit = 'cover'
 }) => {
-    const [isLoading, setIsLoading] = useState(true);
+    // Initialize loading to false if we've already loaded this image successfully in this session
+    const [isLoading, setIsLoading] = useState(() => !loadedImageUrls.has(src));
     const [error, setError] = useState(false);
 
     // Track original src for potential retry
     const [currentSrc, setCurrentSrc] = useState(src);
 
-    useEffect(() => {
+    // Sync src during render (not via useEffect) to avoid an extra render cycle
+    // that causes a visible flash of the skeleton
+    if (src !== currentSrc) {
         setCurrentSrc(src);
-        setIsLoading(true);
+        setIsLoading(!loadedImageUrls.has(src));
         setError(false);
-    }, [src]);
+    }
 
     const handleLoad = () => {
+        loadedImageUrls.add(currentSrc);
         setIsLoading(false);
     };
 
     const handleError = () => {
-        // If image fails to load, try once without crossOrigin if it wasn't already tried
-        // Actually, let's just mark as error for now but maybe it's a CORS issue
         console.error(`OptimizedImage failed to load: ${currentSrc}`);
         setIsLoading(false);
         setError(true);

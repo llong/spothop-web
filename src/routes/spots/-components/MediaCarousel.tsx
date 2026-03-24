@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react';
+import { useCallback, memo } from 'react';
 import { Box, IconButton, Typography, Button } from '@mui/material';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -14,10 +14,12 @@ interface MediaCarouselProps {
     activeSlide: number;
     onSlideChange: (index: number) => void;
     onItemClick?: (index: number) => void;
+    /** Lifted video play state — managed by FeedItemCard to survive Virtuoso remounts */
+    showVideo?: boolean;
+    onShowVideo?: () => void;
 }
 
-export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChange, onItemClick }: MediaCarouselProps) => {
-    const [showVideo, setShowVideo] = useState<Record<string, boolean>>({});
+export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChange, onItemClick, showVideo = false, onShowVideo }: MediaCarouselProps) => {
 
     const handleNext = useCallback((e: React.MouseEvent) => {
         if (e) e.stopPropagation();
@@ -28,10 +30,6 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
         if (e) e.stopPropagation();
         onSlideChange((activeSlide - 1 + media.length) % media.length);
     }, [activeSlide, media.length, onSlideChange]);
-
-    const toggleVideo = useCallback((id: string, play: boolean) => {
-        setShowVideo(prev => ({ ...prev, [id]: play }));
-    }, []);
 
     if (isLoading || media.length === 0) {
         return (
@@ -47,7 +45,7 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
         <Box sx={{ position: 'relative', width: '100%', pt: '75%', bgcolor: 'grey.100', overflow: 'hidden' }}>
             {currentItem.type === 'photo' ? (
                 <OptimizedImage
-                    src={currentItem.url.startsWith('http') ? currentItem.url : `https://wbkpofmvjcmdqbivocqc.supabase.co/storage/v1/object/public/spot-media/${currentItem.url}`}
+                    src={currentItem.url}
                     alt="Spot media"
                     onClick={() => onItemClick?.(activeSlide)}
                     sx={{
@@ -61,7 +59,7 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                 />
             ) : (
                 <Box sx={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
-                    {!showVideo[currentItem.id] ? (
+                    {!showVideo ? (
                         <Box
                             sx={{
                                 width: '100%',
@@ -74,10 +72,8 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                                 bgcolor: 'black'
                             }}
                             onClick={(e) => {
-                                // If they click the button, play video. 
-                                // If they click elsewhere, open lightbox.
                                 if ((e.target as HTMLElement).closest('button')) {
-                                    toggleVideo(currentItem.id, true);
+                                    onShowVideo?.();
                                 } else {
                                     onItemClick?.(activeSlide);
                                 }
@@ -104,12 +100,12 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                                     textTransform: 'none',
                                     fontWeight: 800,
                                     zIndex: 2,
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-                                    bgcolor: 'rgba(0,0,0,0.7)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                                    bgcolor: 'rgba(0,0,0,0.65)',
                                     color: 'white',
                                     px: 3,
                                     py: 1,
-                                    '&:hover': { bgcolor: 'grey.100' }
+                                    '&:hover': { bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }
                                 }}
                             >
                                 Show Video

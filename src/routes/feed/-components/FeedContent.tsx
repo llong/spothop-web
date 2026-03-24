@@ -113,14 +113,16 @@ export function FeedContent({
             <Virtuoso
                 useWindowScroll
                 data={allItems}
+                initialItemCount={import.meta.env.MODE === 'test' ? allItems.length : 0}
+                computeItemKey={(_, item) => item.media_id}
+                overscan={1200}
                 endReached={() => {
                     if (hasNextPage && !isFetchingNextPage) {
                         fetchNextPage();
                     }
                 }}
-                itemContent={(index, item) => (
+                itemContent={(_, item) => (
                     <FeedItemCard
-                        key={`${item.media_id}-${index}`}
                         item={item}
                         currentUserId={currentUserId}
                         onCommentClick={handleCommentClick}
