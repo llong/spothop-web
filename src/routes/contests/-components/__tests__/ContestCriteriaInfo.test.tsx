@@ -31,7 +31,8 @@ describe('ContestCriteriaInfo', () => {
 
         // Deadline
         expect(screen.getByText(/Deadline:/)).toBeInTheDocument();
-        expect(screen.getByText(/1\/1\/2026/)).toBeInTheDocument(); // Assuming US locale or similar date format
+        // The component formats in the runner's locale/time zone, so derive the expected text the same way
+        expect(screen.getByText(new Date('2026-01-01').toLocaleDateString())).toBeInTheDocument();
 
         // Open To
         expect(screen.getByText(/Open To:/)).toBeInTheDocument();

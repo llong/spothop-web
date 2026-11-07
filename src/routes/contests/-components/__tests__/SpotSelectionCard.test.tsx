@@ -26,7 +26,8 @@ describe('SpotSelectionCard', () => {
         expect(screen.getByText('Spot 1')).toBeInTheDocument();
         expect(screen.getByText('123 St, City, ST, Country')).toBeInTheDocument();
         expect(screen.getByText('skate_park')).toBeInTheDocument();
-        expect(screen.getByText(/1\/1\/2023/)).toBeInTheDocument();
+        // Derive from the same formatter the component uses so this passes in any locale/time zone
+        expect(screen.getByText(new Date('2023-01-01').toLocaleDateString())).toBeInTheDocument();
         expect(screen.getByRole('img')).toHaveAttribute('src', 'thumb.jpg');
     });
 
