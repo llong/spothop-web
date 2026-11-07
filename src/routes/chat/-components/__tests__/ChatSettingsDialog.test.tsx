@@ -33,9 +33,12 @@ describe('ChatSettingsDialog', () => {
         ],
     } as any;
     const currentUserId = 'user-id';
+    // Per-table results; tests override these to simulate RLS denials
+    let tableResults: Record<string, { error: any; data: any[] }> = {};
 
     beforeEach(() => {
         vi.clearAllMocks();
+        tableResults = {};
         (useQueryClient as any).mockReturnValue(mockQueryClient);
         
         // Mock supabase chain
@@ -46,11 +49,17 @@ describe('ChatSettingsDialog', () => {
         // const mockInsert = vi.fn().mockResolvedValue({ error: null });
         // const mockUpdate = vi.fn().mockReturnThis();
         // const mockDelete = vi.fn().mockReturnThis();
-        const createMockChain = () => {
+        // Chainable, awaitable query builder. Mirrors supabase-js: errors are returned as { error } unless
+        // .throwOnError() was chained, in which case the promise rejects.
+        const createMockChain = (table: string) => {
+             const result = tableResults[table] ?? { error: null, data: [{ id: 'new-user', username: 'newuser', avatarUrl: 'new.png' }] };
+             let shouldThrow = false;
              const chain: any = {
-                then: (resolve: any) => resolve({ error: null, data: [{ id: 'new-user', username: 'newuser', avatarUrl: 'new.png' }] }),
+                then: (resolve: any, reject: any) =>
+                    (shouldThrow && result.error ? reject(result.error) : resolve(result)),
              };
-             
+
+             chain.throwOnError = vi.fn(() => { shouldThrow = true; return chain; });
              chain.select = vi.fn().mockReturnValue(chain);
              chain.ilike = vi.fn().mockReturnValue(chain);
              chain.neq = vi.fn().mockReturnValue(chain);
@@ -63,7 +72,7 @@ describe('ChatSettingsDialog', () => {
              return chain;
         };
 
-        (supabase.from as any).mockImplementation(() => createMockChain());
+        (supabase.from as any).mockImplementation((table: string) => createMockChain(table));
     });
 
     it('renders dialog content', () => {
@@ -138,6 +147,44 @@ describe('ChatSettingsDialog', () => {
         await waitFor(() => {
             expect(supabase.from).toHaveBeenCalledWith('conversation_participants');
             expect(mockQueryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['chat'] });
+        });
+    });
+
+    describe('when the database refuses the change (RLS)', () => {
+        it('shows an error and does not refresh when renaming affects 0 rows', async () => {
+            tableResults.conversations = { error: null, data: [] };
+            render(<ChatSettingsDialog open={true} onClose={mockOnClose} chat={mockChat} currentUserId={currentUserId} />);
+
+            fireEvent.change(screen.getByDisplayValue('Test Group'), { target: { value: 'Nope' } });
+            fireEvent.click(screen.getByText('Save'));
+
+            expect(await screen.findByText(/Could not rename the group/)).toBeInTheDocument();
+            expect(mockQueryClient.invalidateQueries).not.toHaveBeenCalled();
+        });
+
+        it('shows an error when removing a participant affects 0 rows', async () => {
+            vi.spyOn(window, 'confirm').mockReturnValue(true);
+            tableResults.conversation_participants = { error: null, data: [] };
+            render(<ChatSettingsDialog open={true} onClose={mockOnClose} chat={mockChat} currentUserId={currentUserId} />);
+
+            fireEvent.click(screen.getAllByTestId('RemoveCircleOutlineIcon')[0].closest('button')!);
+
+            expect(await screen.findByText(/Could not remove that user/)).toBeInTheDocument();
+            expect(mockQueryClient.invalidateQueries).not.toHaveBeenCalled();
+        });
+
+        it('shows an error when inviting is rejected', async () => {
+            render(<ChatSettingsDialog open={true} onClose={mockOnClose} chat={mockChat} currentUserId={currentUserId} />);
+
+            fireEvent.change(screen.getByPlaceholderText('Search by username...'), { target: { value: 'new' } });
+            await waitFor(() => screen.getByText('newuser'));
+            fireEvent.click(screen.getByText('newuser'));
+            // From here on the participants table rejects the insert
+            tableResults.conversation_participants = { error: { message: 'new row violates row-level security policy' }, data: [] };
+            fireEvent.click(screen.getByText(/Invitation\(s\)/));
+
+            expect(await screen.findByText(/Could not invite those users/)).toBeInTheDocument();
+            expect(mockQueryClient.invalidateQueries).not.toHaveBeenCalled();
         });
     });
 });

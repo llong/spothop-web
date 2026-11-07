@@ -4,7 +4,7 @@ import {
     Dialog, DialogTitle, DialogContent, List, ListItem, ListItemAvatar,
     Avatar, ListItemText, ListItemSecondaryAction, IconButton, Button,
     TextField, Typography, Box, Stack, Tooltip, CircularProgress,
-    Chip, Checkbox, ListItemButton, Divider
+    Chip, Checkbox, ListItemButton, Divider, Alert
 } from '@mui/material';
 import { RemoveCircleOutline, Save } from '@mui/icons-material';
 import type { Conversation } from '@/services/chatService';
@@ -25,6 +25,7 @@ export const ChatSettingsDialog: FC<ChatSettingsDialogProps> = ({ open, onClose,
     const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
     const [isSaving, setIsSaving] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const queryClient = useQueryClient();
 
     const isAdmin = chat.participants.find(p => p.user_id === currentUserId)?.role === 'admin';
@@ -69,6 +70,7 @@ export const ChatSettingsDialog: FC<ChatSettingsDialogProps> = ({ open, onClose,
     const handleBulkInvite = async () => {
         if (selectedUsers.length === 0) return;
         setIsSaving(true);
+        setError(null);
         try {
             const participants = selectedUsers.map(user => ({
                 conversation_id: chat.id,
@@ -76,12 +78,13 @@ export const ChatSettingsDialog: FC<ChatSettingsDialogProps> = ({ open, onClose,
                 status: 'pending'
             }));
 
-            await supabase.from('conversation_participants').insert(participants);
+            await supabase.from('conversation_participants').insert(participants).throwOnError();
             queryClient.invalidateQueries({ queryKey: ['chat'] });
             setSelectedUsers([]);
             setSearchQuery('');
-        } catch (error) {
-            console.error('Error inviting users:', error);
+        } catch (err) {
+            console.error('Error inviting users:', err);
+            setError('Could not invite those users. Only chat admins can add people.');
         } finally {
             setIsSaving(false);
         }
@@ -90,15 +93,20 @@ export const ChatSettingsDialog: FC<ChatSettingsDialogProps> = ({ open, onClose,
     const handleRemoveParticipant = async (userId: string) => {
         if (!window.confirm('Remove this user from the chat?')) return;
         setIsSaving(true);
+        setError(null);
         try {
-            await supabase
+            const { data } = await supabase
                 .from('conversation_participants')
                 .delete()
                 .eq('conversation_id', chat.id)
-                .eq('user_id', userId);
+                .eq('user_id', userId)
+                .select()
+                .throwOnError();
+            if (!data?.length) throw new Error('No participant was removed');
             queryClient.invalidateQueries({ queryKey: ['chat'] });
-        } catch (error) {
-            console.error('Error removing participant:', error);
+        } catch (err) {
+            console.error('Error removing participant:', err);
+            setError('Could not remove that user. Only chat admins can remove people.');
         } finally {
             setIsSaving(false);
         }
@@ -106,14 +114,19 @@ export const ChatSettingsDialog: FC<ChatSettingsDialogProps> = ({ open, onClose,
 
     const handleUpdateName = async () => {
         setIsSaving(true);
+        setError(null);
         try {
-            await supabase
+            const { data } = await supabase
                 .from('conversations')
                 .update({ name: groupName, is_group: true })
-                .eq('id', chat.id);
+                .eq('id', chat.id)
+                .select()
+                .throwOnError();
+            if (!data?.length) throw new Error('No conversation was updated');
             queryClient.invalidateQueries({ queryKey: ['chat'] });
-        } catch (error) {
-            console.error('Error updating group name:', error);
+        } catch (err) {
+            console.error('Error updating group name:', err);
+            setError('Could not rename the group. Only chat admins can rename it.');
         } finally {
             setIsSaving(false);
         }
@@ -123,6 +136,7 @@ export const ChatSettingsDialog: FC<ChatSettingsDialogProps> = ({ open, onClose,
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ fontWeight: 700 }}>Chat Settings</DialogTitle>
             <DialogContent dividers>
+                {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>{error}</Alert>}
                 {/* Group Name Section - Group Admin Only */}
                 {isAdmin && chat.is_group && (
                     <Box sx={{ mb: 4 }}>
