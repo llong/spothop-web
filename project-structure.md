@@ -15,7 +15,7 @@ spothop-web/
 │   │   └── SEO/
 │   ├── constants/            # Application constants and configuration
 │   ├── hooks/                # Custom React hooks (Queries, Mutations, State)
-│   ├── lib/                  # Third-party library configurations (e.g., PostHog)
+│   ├── lib/                  # Third-party integrations (PostHog, on-demand Google Maps loader)
 │   ├── routes/               # File-based routing (TanStack Router)
 │   │   ├── admin/            # Admin dashboard routes
 │   │   ├── chat/             # Chat feature routes
@@ -31,9 +31,8 @@ spothop-web/
 │   ├── types/                # TypeScript type definitions
 │   └── utils/                # Helper functions and utilities
 ├── supabase/                 # Supabase backend configuration
-│   ├── functions/            # Edge functions
-│   ├── migrations/           # Database migrations
-│   └── snippets/             # SQL snippets
+│   ├── functions/            # Edge functions (moderate-content)
+│   └── migrations/           # Database migrations (RLS policies, RPCs, indexes)
 ├── DOCS/                     # Project documentation
 ├── TESTING/                  # Test cases and testing documentation
 ├── package.json              # Project dependencies and scripts
@@ -49,4 +48,5 @@ spothop-web/
 - **State Management**: Jotai (`src/atoms/`)
 - **Backend/BaaS**: Supabase (Database, Auth, Storage, Edge Functions)
 - **Styling**: Material-UI (MUI) and standard CSS
+- **Maps**: Leaflet (CARTO tiles); Google Places Autocomplete loaded lazily (`src/lib/googleMaps.ts`)
 - **Data Fetching**: Custom hooks abstracting API calls (`src/hooks/` and `src/services/`)

@@ -12,7 +12,7 @@
 - Advanced media processing (FFmpeg integration).
 - Performance and query optimizations.
 
-## Phase 3: Global Feed & Discovery (Sprints 10-11) - PLANNED
+## Phase 3: Global Feed & Discovery (Sprints 10-11) - COMPLETED
 - **Sprint 10: Minimum Viable Feed (MVF)**
   - Transition to a content-first entry point.
   - Infinite scroll media feed with core interactions (Like, Comment, Favorite).
@@ -35,3 +35,12 @@
   - Criteria-based entry submission (Date range, Spot Type, Rider Type).
   - Flexible voting models (Judges or Public).
   - Gamified incentives to drive spot creation and media quality.
+
+## Phase 6: Hardening & Performance (Sprints 15-19+)
+- **Sprint 15: Pro History** - video history links on spots.
+- **Sprint 17: Architectural Refactoring.**
+- **Sprint 18: Theme and Navigation Updates** - PWA update notifications.
+- **Sprint 19: Feed Optimization & Virtualization** - virtualized feed, cursor pagination.
+- **Security and bandwidth hardening (Nov 2026)** - tightened RLS and storage policies, feed RPCs trust
+  `auth.uid()`, chat inbox summary RPC, photo thumbnails in the feed, lazy Google Maps loading, stored
+  addresses instead of repeated geocoding.
