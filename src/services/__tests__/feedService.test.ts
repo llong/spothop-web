@@ -75,6 +75,52 @@ describe('feedService', () => {
         });
     });
 
+    describe('fetchFollowingFeed', () => {
+        const query = (result: unknown) => {
+            const chain: any = { then: (resolve: any) => resolve(result) };
+            ['select', 'eq', 'or', 'in'].forEach(m => { chain[m] = vi.fn().mockReturnValue(chain); });
+            return chain;
+        };
+
+        it('uses the interaction flags returned by the RPC without extra queries', async () => {
+            const items = [
+                { media_id: 'p1', spot_id: 's1', media_type: 'photo', is_liked_by_user: true, is_favorited_by_user: false },
+                { media_id: 'v1', spot_id: 's1', media_type: 'video', is_liked_by_user: false, is_favorited_by_user: true },
+            ];
+            (supabase.rpc as any).mockResolvedValue({ data: items, error: null });
+
+            const result = await feedService.fetchFollowingFeed(10, 0, 'u1');
+
+            expect(supabase.rpc).toHaveBeenCalledWith('get_following_feed_content', { p_limit: 10, p_offset: 0, p_user_id: 'u1' });
+            expect(supabase.from).not.toHaveBeenCalled();
+            expect(result).toEqual(items);
+        });
+
+        it('falls back to enrichment against an RPC without flags, never sending an empty in() filter', async () => {
+            // A feed with only photos: videoIds is empty, which used to produce "video_id.in.()"
+            const items = [{ media_id: 'p1', spot_id: 's1', media_type: 'photo' }];
+            (supabase.rpc as any).mockResolvedValue({ data: items, error: null });
+            const likes = query({ data: [{ photo_id: 'p1', video_id: null }] });
+            const favorites = query({ data: [{ spot_id: 's1' }] });
+            (supabase.from as any).mockImplementation((table: string) => (table === 'media_likes' ? likes : favorites));
+
+            const result = await feedService.fetchFollowingFeed(10, 0, 'u1');
+
+            expect(likes.or).toHaveBeenCalledWith('photo_id.in.(p1)');
+            expect((likes.or as any).mock.calls[0][0]).not.toContain('video_id');
+            expect(result[0]).toMatchObject({ is_liked_by_user: true, is_favorited_by_user: true });
+        });
+
+        it('skips the likes query entirely when there is nothing to look up', async () => {
+            (supabase.rpc as any).mockResolvedValue({ data: [], error: null });
+
+            const result = await feedService.fetchFollowingFeed(10, 0, 'u1');
+
+            expect(result).toEqual([]);
+            expect(supabase.from).not.toHaveBeenCalled();
+        });
+    });
+
     describe('toggleMediaLike', () => {
         it('calls toggle_media_like RPC', async () => {
             vi.mocked(supabase.rpc).mockResolvedValue({ data: [{ new_is_liked: true, new_like_count: 5 }], error: null } as any);

@@ -71,18 +71,30 @@ export const feedService = {
 
         let feedItems = (data as unknown as FeedItem[] | null) || [];
         
-        // Enrichment for following feed (similar to global)
-        if (userId && feedItems.length > 0) {
-             const photoIds = feedItems.filter(item => item.media_type === 'photo').map(item => item.media_id);
+        // get_following_feed_content now returns is_liked_by_user / is_favorited_by_user itself. The
+        // fallback below only runs against an older version of the RPC that omits them.
+        const needsEnrichment = feedItems.some(
+            item => item.is_liked_by_user === undefined || item.is_favorited_by_user === undefined
+        );
+        if (userId && feedItems.length > 0 && needsEnrichment) {
+            const photoIds = feedItems.filter(item => item.media_type === 'photo').map(item => item.media_id);
             const videoIds = feedItems.filter(item => item.media_type === 'video').map(item => item.media_id);
             const spotIds = feedItems.map(item => item.spot_id);
 
+            // Only include non-empty id lists: PostgREST rejects an empty in.() filter
+            const likeFilters = [
+                photoIds.length ? `photo_id.in.(${photoIds.join(',')})` : null,
+                videoIds.length ? `video_id.in.(${videoIds.join(',')})` : null,
+            ].filter(Boolean).join(',');
+
             const [likesResult, favoritesResult] = await Promise.all([
-                supabase
-                    .from('media_likes')
-                    .select('photo_id, video_id')
-                    .eq('user_id', userId)
-                    .or(`photo_id.in.(${photoIds.join(',')}),video_id.in.(${videoIds.join(',')})`),
+                likeFilters
+                    ? supabase
+                        .from('media_likes')
+                        .select('photo_id, video_id')
+                        .eq('user_id', userId)
+                        .or(likeFilters)
+                    : Promise.resolve({ data: [] as { photo_id: string | null; video_id: string | null }[] }),
                 supabase
                     .from('user_favorite_spots')
                     .select('spot_id')
