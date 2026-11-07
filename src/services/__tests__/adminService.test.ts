@@ -23,6 +23,7 @@ const mockChain: any = {
 vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => mockChain),
+        functions: { invoke: vi.fn().mockResolvedValue({ data: { ok: true }, error: null }) },
         storage: {
             from: vi.fn(() => ({
                 remove: vi.fn().mockResolvedValue({ error: null })
@@ -67,15 +68,12 @@ describe('adminService', () => {
         expect(supabase.from).toHaveBeenCalledWith('content_reports');
     });
 
-    it('deletes a spot target', async () => {
-        // Setup for spot deletion which now fetches media first
-        mockChain.then
-            .mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // photos
-            .mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) { return Promise.resolve({ data: [], error: null }).then(onFulfilled); }) // videos
-            .mockImplementationOnce(function (this: any, onFulfilled: (value: any) => any) { return Promise.resolve({ data: [{ id: 'spot-123' }], error: null }).then(onFulfilled); }); // delete
-
+    it('deletes a spot target through the delete-spot edge function', async () => {
         await adminService.deleteReportTarget('spot', 'spot-123');
-        expect(supabase.from).toHaveBeenCalledWith('spots');
+
+        // The function removes every file for the spot (any uploader) and then the row
+        expect((supabase as any).functions.invoke).toHaveBeenCalledWith('delete-spot', { body: { spotId: 'spot-123' } });
+        expect(supabase.from).not.toHaveBeenCalledWith('spots');
     });
 
     it('toggles user ban', async () => {

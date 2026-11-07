@@ -21,7 +21,7 @@ vi.mock('@/lib/posthog', () => ({ analytics: { capture: vi.fn() } }));
 vi.mock('@/supabase', () => ({ default: { from: () => ({ insert: mocks.insert }) } }));
 vi.mock('@/services/spotService', () => ({ spotService: { deleteSpot: mocks.deleteSpot } }));
 
-import { useNewSpotForm } from '../-useNewSpotForm';
+import { useNewSpotForm } from '@/routes/spots/hooks/-useNewSpotForm';
 
 const fillAndSubmit = async (result: ReturnType<typeof renderHook<ReturnType<typeof useNewSpotForm>, unknown>>['result']) => {
     await waitFor(() => expect(result.current.formState).toBeDefined());
