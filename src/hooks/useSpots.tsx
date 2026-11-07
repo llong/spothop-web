@@ -19,7 +19,7 @@ export default function useSpots() {
             // We use a small subset of columns to speed up the transfer and processing.
             let query = supabase
                 .from('spots')
-                .select('id, name, latitude, longitude, difficulty, kickout_risk, is_lit, spot_type, created_at, spot_photos(url)')
+                .select('id, name, latitude, longitude, difficulty, kickout_risk, is_lit, spot_type, created_at, spot_photos(url, thumbnail_small_url, thumbnail_large_url)')
                 .gte('latitude', bounds.getSouth())
                 .lte('latitude', bounds.getNorth())
                 .gte('longitude', bounds.getWest())
@@ -61,6 +61,9 @@ export default function useSpots() {
                     updated_at: spot.created_at,
                     updatedAt: spot.created_at, // Provide both to be safe
                     photoUrl: spot.spot_photos?.[0]?.url || null,
+                    // Small thumbnails for the map popup and list cards (originals are ~600KB)
+                    thumbnail_small_url: spot.spot_photos?.[0]?.thumbnail_small_url || undefined,
+                    thumbnail_large_url: spot.spot_photos?.[0]?.thumbnail_large_url || undefined,
                     favoriteCount: 0, // Removed subqueries for performance
                     commentCount: 0
                 }));

@@ -57,7 +57,7 @@ export const MapMarker = memo(({ spot, onClick }: MapMarkerProps) => {
                         {spot.photoUrl && (
                             <Box
                                 component="img"
-                                src={getOptimizedImageUrl(spot.photoUrl)}
+                                src={getOptimizedImageUrl(spot.thumbnail_small_url || spot.thumbnail_large_url || spot.photoUrl)}
                                 alt={spot.name}
                                 crossOrigin="anonymous"
                                 sx={{

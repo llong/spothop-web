@@ -33,13 +33,17 @@ export default defineConfig({
             urlPattern: /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\/.*/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'supabase-media-cache',
+              // v2: the old cache could hold opaque (status 0) responses that break CORS-mode <img crossorigin>
+              // requests for the same URL; main.tsx deletes the old cache.
+              cacheName: 'supabase-media-cache-v2',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
               },
+              // Only cache real (non-opaque) responses. An opaque response cached from a no-cors <img>
+              // is served for later CORS-mode requests of the same URL and fails, showing a broken image.
               cacheableResponse: {
-                statuses: [0, 200],
+                statuses: [200],
               },
             },
           },

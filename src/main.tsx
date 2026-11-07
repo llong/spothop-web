@@ -69,6 +69,10 @@ if ('caches' in window) {
   caches.delete('google-maps-cache').then((wasDeleted) => {
     if (wasDeleted) console.log('Deleted legacy google-maps-cache');
   });
+  // Replaced by supabase-media-cache-v2 (the old one could hold opaque responses that break CORS-mode images)
+  caches.delete('supabase-media-cache').then((wasDeleted) => {
+    if (wasDeleted) console.log('Deleted legacy supabase-media-cache');
+  });
 }
 
 // Auto-update service worker and reload the page if a new one is found
