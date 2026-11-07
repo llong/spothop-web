@@ -27,8 +27,20 @@ dist-ssr
 coverage
 nul
 
-# Temporary test outputs
-text_output*.txt
-text_output.txt
+# Temporary / debug outputs
+*_output*.txt
+errors.txt
+diff.txt
+curl_output.txt
+*.patch
+
+# Generated TypeScript artifacts
+*.tsbuildinfo
+vite.config.d.ts
+
+# Vercel
 .vercel
+
+# Environment files (keep the example)
 .env*
+!.env.example
