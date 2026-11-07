@@ -116,6 +116,12 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/setupTests.ts",
+    // Hermetic test env: tests must not depend on a developer's .env (CI has none).
+    // Real network calls are always mocked; these only let `createClient` construct.
+    env: {
+      VITE_SUPABASE_URL: "http://localhost:54321",
+      VITE_SUPABASE_ANON_KEY: "test-anon-key",
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "json-summary"],
