@@ -39,6 +39,11 @@ export default defineConfig([
     },
   },
   {
+    // Edge Functions run on Deno, which has no "@/" alias, so relative imports are required there.
+    files: ['supabase/functions/**/*.ts'],
+    rules: { 'no-restricted-imports': 'off' },
+  },
+  {
     // Tests and mocks routinely need `any` to stub partial objects.
     files: ['**/*.test.{ts,tsx}', '**/__tests__/**', '**/__mocks__/**', 'src/setupTests.ts'],
     rules: {
