@@ -58,12 +58,12 @@ export function useConversationsQuery(userId?: string) {
 /**
  * Hook for managing a specific message thread.
  */
-export function useMessagesQuery(conversationId?: string) {
+export function useMessagesQuery(conversationId?: string, limit: number = 50) {
     const queryClient = useQueryClient();
 
     const query = useQuery({
-        queryKey: conversationId ? chatKeys.thread(conversationId) : [],
-        queryFn: () => conversationId ? chatService.fetchMessages(conversationId) : null,
+        queryKey: conversationId ? [...chatKeys.thread(conversationId), limit] : [],
+        queryFn: () => conversationId ? chatService.fetchMessages(conversationId, limit) : null,
         enabled: !!conversationId,
     });
 

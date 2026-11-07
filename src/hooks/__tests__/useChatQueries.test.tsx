@@ -146,7 +146,7 @@ describe('useChatQueries', () => {
 
             await waitFor(() => expect(result.current.isLoading).toBeFalsy());
             expect(result.current.data).toEqual(mockMessages);
-            expect(chatService.fetchMessages).toHaveBeenCalledWith('conv1');
+            expect(chatService.fetchMessages).toHaveBeenCalledWith('conv1', 50);
         });
 
         it('does not fetch if conversationId is undefined', () => {

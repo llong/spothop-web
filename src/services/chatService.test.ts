@@ -38,7 +38,8 @@ describe('chatService', () => {
                     return {
                         select: vi.fn().mockReturnThis(),
                         eq: vi.fn().mockReturnThis(),
-                        order: vi.fn().mockResolvedValue({ data: mockMessages, error: null })
+                        order: vi.fn().mockReturnThis(),
+                        limit: vi.fn().mockResolvedValue({ data: mockMessages, error: null })
                     };
                 }
                 if (table === 'profiles') {
@@ -52,6 +53,7 @@ describe('chatService', () => {
 
             const result = await chatService.fetchMessages('conv123');
 
+            // Returned oldest-first
             expect(result).toHaveLength(1);
             expect(result[0].author?.username).toBe('userone');
             expect(result[0].content).toBe('Hello');

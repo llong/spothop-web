@@ -35,25 +35,31 @@ export interface Conversation {
     unreadCount: number;
 }
 
+interface InboxSummaryRow {
+    conversation_id: string;
+    unread_count: number;
+    last_message: ChatMessage | null;
+}
+
 export const chatService = {
-    async fetchConversations(userId: string): Promise<Conversation[]> {
-        const { data: participationData, error: partError } = await supabase
-            .from('conversation_participants')
-            .select('conversation_id')
-            .eq('user_id', userId)
-            .neq('status', 'rejected');
+    // userId is kept for call-site compatibility; the RPC and RLS scope results to auth.uid().
+    async fetchConversations(_userId: string): Promise<Conversation[]> {
+        // One indexed query: last message + unread count per conversation (excludes rejected invites).
+        const { data: summaries, error: summaryError } = await supabase.rpc('get_inbox_summary');
 
-        if (partError) throw partError;
-        if (!participationData?.length) return [];
+        if (summaryError) throw summaryError;
+        if (!summaries?.length) return [];
 
-        const conversationIds = participationData.map(p => p.conversation_id);
+        const summaryMap = new Map<string, InboxSummaryRow>(
+            (summaries as InboxSummaryRow[]).map(s => [s.conversation_id, s])
+        );
+        const conversationIds = [...summaryMap.keys()];
 
         const { data: convData, error: convError } = await supabase
             .from('conversations')
             .select(`
                 *,
-                conversation_participants (*),
-                messages (*)
+                conversation_participants (*)
             `)
             .in('id', conversationIds)
             .order('last_message_at', { ascending: false });
@@ -77,12 +83,8 @@ export const chatService = {
                 profile: profileMap.get(p.user_id)
             }));
 
-            const sortedMessages = [...(c.messages || [])].sort((a, b) =>
-                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-            );
-
-            const lastMsg = sortedMessages[0];
-            const unreadCount = sortedMessages.filter(m => !m.is_read && m.sender_id !== userId).length;
+            const summary = summaryMap.get(c.id);
+            const lastMsg = summary?.last_message ?? undefined;
 
             return {
                 ...c,
@@ -91,20 +93,25 @@ export const chatService = {
                     ...lastMsg,
                     author: profileMap.get(lastMsg.sender_id)
                 } : undefined,
-                unreadCount
+                unreadCount: summary?.unread_count ?? 0
             };
         });
     },
 
-    async fetchMessages(conversationId: string): Promise<ChatMessage[]> {
-        const { data, error } = await supabase
+    /**
+     * Fetches the most recent `limit` messages of a conversation, returned oldest-first.
+     */
+    async fetchMessages(conversationId: string, limit: number = 50): Promise<ChatMessage[]> {
+        const { data: latest, error } = await supabase
             .from('messages')
             .select('*')
             .eq('conversation_id', conversationId)
-            .order('created_at', { ascending: true });
+            .order('created_at', { ascending: false })
+            .limit(limit);
 
         if (error) throw error;
-        if (!data) return [];
+        if (!latest) return [];
+        const data = [...latest].reverse();
 
         const authorIds = [...new Set(data.map(m => m.sender_id))];
         const { data: profiles } = await supabase
@@ -231,8 +238,7 @@ export const chatService = {
             .from('conversations')
             .select(`
                 *,
-                conversation_participants (*),
-                messages (*)
+                conversation_participants (*)
             `)
             .eq('id', conversationId)
             .single();

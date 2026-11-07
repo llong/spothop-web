@@ -1,5 +1,5 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router';
-import { Container, Box, Typography, Paper, TextField, IconButton, Stack, Avatar, AppBar, Toolbar, CircularProgress } from '@mui/material';
+import { Container, Box, Typography, Paper, TextField, IconButton, Stack, Avatar, AppBar, Toolbar, CircularProgress, Button } from '@mui/material';
 import { Send, ArrowBack, InfoOutlined } from '@mui/icons-material';
 import { useMessagesQuery, useSendMessageMutation, useConversationQuery } from 'src/hooks/useChatQueries';
 import { useAtomValue } from 'jotai';
@@ -15,7 +15,12 @@ export const ChatRoomComponent = () => {
     const router = useRouter();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const { data: messages = [], isLoading: loadingMessages } = useMessagesQuery(conversationId);
+    const PAGE_SIZE = 50;
+    const [messageLimit, setMessageLimit] = useState(PAGE_SIZE);
+    const { data: messagesData, isLoading: loadingMessages, isFetching: fetchingMessages } = useMessagesQuery(conversationId, messageLimit);
+    const messages = messagesData ?? [];
+    // If we got a full page there may be older messages to load
+    const hasEarlierMessages = messages.length >= messageLimit;
     const { data: chat, isLoading: loadingChat } = useConversationQuery(conversationId, user?.user.id);
     const sendMessageMutation = useSendMessageMutation(conversationId);
 
@@ -29,8 +34,14 @@ export const ChatRoomComponent = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Only auto-scroll when a new message arrives, not when older messages are loaded at the top
+    const lastMessageIdRef = useRef<string | undefined>(undefined);
     useEffect(() => {
-        scrollToBottom();
+        const lastId = messages[messages.length - 1]?.id;
+        if (lastId !== lastMessageIdRef.current) {
+            lastMessageIdRef.current = lastId;
+            scrollToBottom();
+        }
     }, [messages]);
 
     const handleSend = async (e: React.FormEvent) => {
@@ -77,7 +88,7 @@ export const ChatRoomComponent = () => {
                         <Typography variant="subtitle1" fontWeight={700}>{chatTitle || 'Chat'}</Typography>
                         {chat?.is_group && (
                             <Typography variant="caption" color="text.secondary">
-                                {chat.participants.length} members
+                                {chat.participants.length} {chat.participants.length === 1 ? 'member' : 'members'}
                             </Typography>
                         )}
                     </Box>
@@ -91,6 +102,17 @@ export const ChatRoomComponent = () => {
             <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
                 <Container maxWidth="md">
                     <Stack spacing={2}>
+                        {hasEarlierMessages && (
+                            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                                <Button
+                                    size="small"
+                                    onClick={() => setMessageLimit(l => l + PAGE_SIZE)}
+                                    disabled={fetchingMessages}
+                                >
+                                    {fetchingMessages ? 'Loading…' : 'Load earlier messages'}
+                                </Button>
+                            </Box>
+                        )}
                         {(messages || []).map((msg, index) => {
                             const isMe = msg.sender_id === user?.user.id;
                             const showAvatar = index === 0 || (messages && messages[index - 1].sender_id !== msg.sender_id);
