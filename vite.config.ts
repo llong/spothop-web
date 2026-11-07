@@ -120,6 +120,14 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html", "json-summary"],
       include: ["src/**/*.{ts,tsx}"],
+      // Ratchet: set just under current coverage (Nov 2026: 58.9 / 50.9 / 53.8 / 61.4) so it can only go up.
+      // The target in .clinerules is 85%; raise these as tests are added.
+      thresholds: {
+        statements: 58,
+        branches: 50,
+        functions: 53,
+        lines: 61,
+      },
       exclude: [
         "src/**/*.test.{ts,tsx}",
         "src/**/__tests__/**",

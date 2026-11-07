@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "lint:ci": "eslint . --max-warnings 149",
+    "typecheck": "tsc -b",
     "preview": "vite preview",
     "test": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vitest",
     "coverage": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vitest run --coverage",
