@@ -40,9 +40,9 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
 
                 // Parallel uploads for this photo
                 await Promise.all([
-                    supabase.storage.from('spot-media').upload(originalPath, original.blob, { contentType: 'image/webp', cacheControl: '3600', upsert: false }),
-                    supabase.storage.from('spot-media').upload(thumbnailSmallPath, thumbnailSmall.blob, { contentType: 'image/webp', cacheControl: '3600', upsert: false }),
-                    supabase.storage.from('spot-media').upload(thumbnailLargePath, thumbnailLarge.blob, { contentType: 'image/webp', cacheControl: '3600', upsert: false }),
+                    supabase.storage.from('spot-media').upload(originalPath, original.blob, { contentType: 'image/webp', cacheControl: '31536000', upsert: false }),
+                    supabase.storage.from('spot-media').upload(thumbnailSmallPath, thumbnailSmall.blob, { contentType: 'image/webp', cacheControl: '31536000', upsert: false }),
+                    supabase.storage.from('spot-media').upload(thumbnailLargePath, thumbnailLarge.blob, { contentType: 'image/webp', cacheControl: '31536000', upsert: false }),
                 ]);
 
                 // Get Public URLs
@@ -89,7 +89,7 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
                 // Upload Video File
                 const { error: uploadError } = await supabase.storage.from('spot-media').upload(videoPath, videoFile, {
                     contentType: videoFile.type || 'video/mp4',
-                    cacheControl: '3600',
+                    cacheControl: '31536000',
                     upsert: false
                 });
                 if (uploadError) throw uploadError;
@@ -103,7 +103,7 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
                 if (videoAsset.thumbnail) {
                     const thumbFilename = `thumb_${videoFilename.replace(/\.[^/.]+$/, "")}.webp`;
                     const thumbPath = `spots/${spotId}/videos/thumbnails/${thumbFilename}`;
-                    const { error: thumbUploadError } = await supabase.storage.from('spot-media').upload(thumbPath, videoAsset.thumbnail, { contentType: 'image/webp' });
+                    const { error: thumbUploadError } = await supabase.storage.from('spot-media').upload(thumbPath, videoAsset.thumbnail, { contentType: 'image/webp', cacheControl: '31536000' });
 
                     if (!thumbUploadError) {
                         const { data: thumbData } = supabase.storage.from('spot-media').getPublicUrl(thumbPath);
