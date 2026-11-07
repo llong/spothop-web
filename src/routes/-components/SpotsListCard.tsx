@@ -63,7 +63,7 @@ const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = memo(({ spot
                     {spot.photoUrl ? (
                         <Box
                             component="img"
-                            src={getOptimizedImageUrl(spot.thumbnail_small_url || spot.thumbnail_large_url || spot.photoUrl || '')}
+                            src={getOptimizedImageUrl(spot.thumbnail_large_url || spot.thumbnail_small_url || spot.photoUrl || '')}
                             alt={spot.name}
                             loading={priority ? "eager" : "lazy"}
                             sx={{
