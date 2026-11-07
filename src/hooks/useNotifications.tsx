@@ -21,6 +21,11 @@ export function useNotifications() {
     const notifications = notificationsData || [];
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
+    const userId = user?.user.id;
+    const invalidateNotifications = () => {
+        if (userId) queryClient.invalidateQueries({ queryKey: profileKeys.notifications(userId) });
+    };
+
     const markAsRead = async (notificationId: string) => {
         try {
             const { error } = await supabase
@@ -29,7 +34,7 @@ export function useNotifications() {
                 .eq('id', notificationId);
 
             if (error) throw error;
-            queryClient.invalidateQueries({ queryKey: profileKeys.notifications(user!.user.id) });
+            invalidateNotifications();
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }
@@ -43,7 +48,7 @@ export function useNotifications() {
                 .eq('id', notificationId);
 
             if (error) throw error;
-            queryClient.invalidateQueries({ queryKey: profileKeys.notifications(user!.user.id) });
+            invalidateNotifications();
         } catch (error) {
             console.error('Error deleting notification:', error);
         }
@@ -108,6 +113,6 @@ export function useNotifications() {
         markAsRead,
         markAllAsRead,
         deleteNotification,
-        fetchNotifications: () => queryClient.invalidateQueries({ queryKey: profileKeys.notifications(user!.user.id) })
+        fetchNotifications: () => invalidateNotifications()
     };
 }
