@@ -31,7 +31,7 @@ const getFullUrl = (path: string) => {
     if (path.includes('/') && !path.includes('storage/v1')) {
          // Handle both possible path types: "avatars/xyz.webp" and "spot-media/spots/xyz/..."
          const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-         return `https://wbkpofmvjcmdqbivocqc.supabase.co/storage/v1/object/public/${cleanPath}`;
+         return `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/${cleanPath}`;
     }
     return path;
 };
