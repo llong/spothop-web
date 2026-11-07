@@ -8,10 +8,6 @@ import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
 import { useAtomValue } from 'jotai';
 
 // Mock dependencies
-vi.mock('@react-google-maps/api', () => ({
-    useLoadScript: () => ({ isLoaded: true }),
-}));
-
 vi.mock('@tanstack/react-router', () => ({
     useNavigate: () => vi.fn(),
     useLocation: () => ({ pathname: '/spots' }),
@@ -26,7 +22,6 @@ vi.mock('jotai', async (importOriginal) => {
         useAtomValue: vi.fn((atom) => {
             if (atom && (atom as any).debugLabel === 'filters') return {};
             if (atom && (atom as any).debugLabel === 'user') return null;
-            if (atom && (atom as any).debugLabel === 'isGoogleMapsLoaded') return true;
             return null;
         }),
     };
@@ -99,11 +94,10 @@ describe('SearchAppBar', () => {
 
     it('renders notification bell and navigation items on desktop', () => {
         (useMediaQuery as any).mockReturnValue(false); // Desktop
-        // Mock user as logged in and google maps as loaded
+        // Mock user as logged in
         vi.mocked(useAtomValue).mockImplementation((atom: any) => {
             if (atom && atom.debugLabel === 'user') return { user: { id: '1' } };
             if (atom && atom.debugLabel === 'filters') return {};
-            if (atom && atom.debugLabel === 'isGoogleMapsLoaded') return true;
             return null;
         });
 
@@ -116,6 +110,20 @@ describe('SearchAppBar', () => {
         );
 
         expect(screen.getByTestId('notification-bell')).toBeInTheDocument();
+        expect(screen.getByTestId('navigation-items')).toBeInTheDocument();
+    });
+
+    it('renders the app bar without waiting for Google Maps to load', () => {
+        (useMediaQuery as any).mockReturnValue(false);
+        render(
+            <QueryClientProvider client={queryClient}>
+                <ThemeProvider theme={theme}>
+                    <SearchAppBar />
+                </ThemeProvider>
+            </QueryClientProvider>
+        );
+
+        expect(screen.queryByText('Loading...')).not.toBeInTheDocument();
         expect(screen.getByTestId('navigation-items')).toBeInTheDocument();
     });
 });

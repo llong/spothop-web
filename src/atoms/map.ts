@@ -14,8 +14,5 @@ userLocationAtom.debugLabel = 'userLocation';
 export const viewAtom = atom<'map' | 'list'>('map');
 viewAtom.debugLabel = 'view';
 
-export const isGoogleMapsLoadedAtom = atom<boolean>(false);
-isGoogleMapsLoadedAtom.debugLabel = 'isGoogleMapsLoaded';
-
 export const searchedLocationAtom = atom<{ lat: number; lng: number; name: string } | null>(null);
 searchedLocationAtom.debugLabel = 'searchedLocation';

@@ -14,8 +14,6 @@ import { useProfileQuery } from 'src/hooks/useProfileQueries'
 import { globalToastAtom } from 'src/hooks/useNotifications'
 import { rightSidebarAtom, themeModeAtom } from 'src/atoms/ui'
 import { Snackbar, Alert } from '@mui/material'
-import { useLoadScript } from '@react-google-maps/api'
-import { isGoogleMapsLoadedAtom } from 'src/atoms/map'
 import { useMemo } from 'react'
 import { analytics } from 'src/lib/posthog'
 
@@ -25,16 +23,6 @@ export function RootComponent() {
     const appliedMode = themeMode === 'system' ? (prefersDarkMode ? 'dark' : 'light') : themeMode;
     const theme = useMemo(() => getAppTheme(appliedMode), [appliedMode]);
 
-    const setIsGoogleMapsLoaded = useSetAtom(isGoogleMapsLoadedAtom);
-    const libraries = useMemo(() => ["places"], []);
-    const { isLoaded } = useLoadScript({
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: libraries as any,
-    });
-
-    useEffect(() => {
-        setIsGoogleMapsLoaded(isLoaded);
-    }, [isLoaded, setIsGoogleMapsLoaded]);
     useDevtools();
 
     const isDesktop = useMediaQuery('(min-width:1200px)');

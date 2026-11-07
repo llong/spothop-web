@@ -7,7 +7,7 @@ import { NavigationItems } from './NavigationItems';
 import { NotificationBell } from './NotificationBell';
 import { userAtom } from 'src/atoms/auth';
 import { useProfile } from 'src/hooks/useProfile';
-import { isGoogleMapsLoadedAtom, viewAtom } from 'src/atoms/map';
+import { viewAtom } from 'src/atoms/map';
 import { useMediaQuery, Box, Badge, Stack } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -47,7 +47,6 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 
 export default function SearchAppBar() {
     const isOnline = useOnlineStatus();
-    const isLoaded = useAtomValue(isGoogleMapsLoadedAtom);
     const navigate = useNavigate();
     const location = useLocation();
     const isSpotsPage = location.pathname === '/spots';
@@ -71,10 +70,6 @@ export default function SearchAppBar() {
         filters.is_lit,
         filters.kickout_risk !== undefined && filters.kickout_risk < 10
     ].filter(Boolean).length;
-
-    if (!isLoaded) {
-        return <div>Loading...</div>;
-    }
 
     return (
         <Toolbar sx={{ gap: 1 }}>

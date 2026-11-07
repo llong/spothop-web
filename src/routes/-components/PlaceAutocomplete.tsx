@@ -1,8 +1,7 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { InputBase, GlobalStyles } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useAtomValue } from "jotai";
-import { isGoogleMapsLoadedAtom } from "src/atoms/map";
+import { isGoogleMapsReady, loadGoogleMaps } from "src/lib/googleMaps";
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
     color: theme.palette.text.primary,
@@ -25,7 +24,15 @@ interface PlaceAutocompleteProps {
 }
 
 export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment, placeholder = "Search…" }: PlaceAutocompleteProps) => {
-    const isLoaded = useAtomValue(isGoogleMapsLoadedAtom);
+    const [isLoaded, setIsLoaded] = useState(isGoogleMapsReady);
+
+    // Load the Google Maps script lazily, the first time the user interacts with the input.
+    const ensureLoaded = useCallback(() => {
+        if (isLoaded) return;
+        loadGoogleMaps()
+            .then(() => setIsLoaded(true))
+            .catch((error) => console.warn('Google Places unavailable:', error));
+    }, [isLoaded]);
 
     useEffect(() => {
         if (isLoaded && inputRef.current) {
@@ -68,7 +75,14 @@ export const PlaceAutocomplete = ({ onPlaceSelect, inputRef, endAdornment, place
                      display: theme.palette.mode === 'dark' ? 'none' : 'block'
                 }
             })} />
-            <StyledInputBase placeholder={placeholder} fullWidth endAdornment={endAdornment} inputProps={{ 'aria-label': 'Search spots', ref: inputRef }} />
+            <StyledInputBase
+                placeholder={placeholder}
+                fullWidth
+                endAdornment={endAdornment}
+                onFocus={ensureLoaded}
+                onPointerEnter={ensureLoaded}
+                inputProps={{ 'aria-label': 'Search spots', ref: inputRef }}
+            />
         </>
     );
 }
