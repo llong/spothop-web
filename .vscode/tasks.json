@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Lint (whole project)",
+      "type": "shell",
+      "command": "pnpm exec eslint . --format stylish",
+      "problemMatcher": "$eslint-stylish",
+      "presentation": { "reveal": "silent", "panel": "shared", "clear": true },
+      "group": "build"
+    }
+  ]
+}
