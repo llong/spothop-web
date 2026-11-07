@@ -60,7 +60,7 @@ export const ChatRoomComponent = () => {
     }
 
     return (
-        <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', bgcolor: 'grey.50' }}>
+        <Box sx={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
             {/* Chat Header */}
             <AppBar position="static" color="inherit" elevation={0} sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Toolbar>
@@ -120,12 +120,11 @@ export const ChatRoomComponent = () => {
                                             sx={{
                                                 p: 1.5,
                                                 maxWidth: '400px',
-                                                bgcolor: isMe ? 'primary.main' : 'white',
-                                                color: isMe ? 'primary.contrastText' : 'inherit',
+                                                bgcolor: isMe ? 'primary.main' : 'background.paper',
+                                                color: isMe ? 'primary.contrastText' : 'text.primary',
                                                 borderRadius: 2,
                                                 borderTopRightRadius: isMe && !showAvatar ? 2 : (isMe ? 0 : 2),
                                                 borderTopLeftRadius: !isMe && !showAvatar ? 2 : (!isMe ? 0 : 2),
-                                                boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
                                             }}
                                         >
                                             <Typography variant="body2">{msg.content}</Typography>
@@ -145,7 +144,7 @@ export const ChatRoomComponent = () => {
             </Box>
 
             {/* Input Area */}
-            <Box sx={{ p: 2, bgcolor: 'white', borderTop: 1, borderColor: 'divider' }}>
+            <Box sx={{ p: 2, bgcolor: 'background.paper', borderTop: 1, borderColor: 'divider' }}>
                 <Container maxWidth="md">
                     <Box component="form" onSubmit={handleSend} sx={{ display: 'flex', gap: 1 }}>
                         <TextField
@@ -158,7 +157,7 @@ export const ChatRoomComponent = () => {
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 4,
-                                    bgcolor: 'grey.50'
+                                    bgcolor: 'background.default'
                                 }
                             }}
                         />
@@ -173,12 +172,12 @@ export const ChatRoomComponent = () => {
                 </Container>
             </Box>
 
-            {chat && (
+            {chat && user && (
                 <ChatSettingsDialog
                     open={settingsOpen}
                     onClose={() => setSettingsOpen(false)}
                     chat={chat}
-                    currentUserId={user!.user.id}
+                    currentUserId={user.user.id}
                 />
             )}
         </Box>
