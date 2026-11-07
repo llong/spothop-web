@@ -13,8 +13,8 @@ import { Virtuoso } from 'react-virtuoso';
 import { FeedItemCard } from './FeedItem';
 import { FeedItemSkeleton } from './FeedItemSkeleton';
 import { FeedCommentDialog } from './FeedCommentDialog';
-import type { FeedItem } from 'src/types';
-import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
+import type { FeedItem } from '@/types';
+import { INITIAL_FEED_FILTERS } from '@/atoms/feed';
 
 interface FeedContentProps {
     isLoading: boolean;

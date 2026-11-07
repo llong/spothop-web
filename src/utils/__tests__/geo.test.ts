@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDistance } from '../geo';
+import { getDistance } from '@/utils/geo';
 
 describe('geo utils', () => {
     it('calculates distance between two points', () => {

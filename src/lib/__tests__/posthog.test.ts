@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import posthog from 'posthog-js';
-import { initPostHog, analytics } from '../posthog';
+import { initPostHog, analytics } from '@/lib/posthog';
 
 vi.mock('posthog-js', () => ({
     default: {

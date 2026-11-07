@@ -1,25 +1,25 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ContestSubmissionModal } from '../ContestSubmissionModal';
-import { useContestSubmission } from '../../hooks/-useContestSubmission';
+import { ContestSubmissionModal } from '@/routes/contests/-components/ContestSubmissionModal';
+import { useContestSubmission } from '@/routes/contests/hooks/-useContestSubmission';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('../../hooks/-useContestSubmission');
-vi.mock('../SpotSelectionCard', () => ({
+vi.mock('@/routes/contests/hooks/-useContestSubmission');
+vi.mock('@/routes/contests/-components/SpotSelectionCard', () => ({
     SpotSelectionCard: ({ spot, isSelected, onSelect }: any) => (
         <div data-testid="spot-card" onClick={() => onSelect(spot.id)}>
             {spot.name} {isSelected ? '(selected)' : ''}
         </div>
     ),
 }));
-vi.mock('../MediaSelectionCard', () => ({
+vi.mock('@/routes/contests/-components/MediaSelectionCard', () => ({
     MediaSelectionCard: ({ item, isSelected, onSelect }: any) => (
         <div data-testid="media-card" onClick={() => onSelect(item.id, item.type)}>
             Media {item.id} {isSelected ? '(selected)' : ''}
         </div>
     ),
 }));
-vi.mock('../SubmissionConfirmStep', () => ({
+vi.mock('@/routes/contests/-components/SubmissionConfirmStep', () => ({
     SubmissionConfirmStep: () => <div data-testid="confirm-step">Confirm Step</div>,
 }));
 

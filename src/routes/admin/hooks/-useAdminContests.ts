@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminContestService } from '../../../services/adminContestService';
+import { adminContestService } from '@/services/adminContestService';
 
 export function useAdminContests() {
     const queryClient = useQueryClient();

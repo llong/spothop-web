@@ -1,15 +1,15 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AvatarUpload } from '../AvatarUpload';
+import { AvatarUpload } from '@/routes/profile/-components/AvatarUpload';
 
 // Mock dependencies
-vi.mock('../../../atoms/auth', () => ({
+vi.mock('@/routes/atoms/auth', () => ({
     userAtom: {
         read: () => ({ user: { id: 'test-user-id' } })
     }
 }));
 
-vi.mock('src/utils/imageOptimization', () => ({
+vi.mock('@/utils/imageOptimization', () => ({
     getOptimizedImageUrl: (url: string) => url
 }));
 

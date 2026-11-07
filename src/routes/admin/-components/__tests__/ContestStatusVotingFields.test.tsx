@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ContestStatusVotingFields } from '../ContestStatusVotingFields';
+import { ContestStatusVotingFields } from '@/routes/admin/-components/ContestStatusVotingFields';
 
 describe('ContestStatusVotingFields', () => {
     const mockOnChange = vi.fn();

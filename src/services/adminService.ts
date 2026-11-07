@@ -1,6 +1,6 @@
-import supabase from "../supabase";
-import type { ContentReport, UserProfile } from "../types";
-import { extractStoragePath } from "../utils/media-utils";
+import supabase from "@/supabase";
+import type { ContentReport, UserProfile } from "@/types";
+import { extractStoragePath } from "@/utils/media-utils";
 
 export const adminService = {
     /**

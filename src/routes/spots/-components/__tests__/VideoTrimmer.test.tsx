@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { VideoTrimmer } from '../VideoTrimmer';
+import { VideoTrimmer } from '@/routes/spots/-components/VideoTrimmer';
 
-vi.mock('../../../utils/videoProcessing', () => ({
+vi.mock('@/routes/utils/videoProcessing', () => ({
     trimVideo: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4]))
 }));
 

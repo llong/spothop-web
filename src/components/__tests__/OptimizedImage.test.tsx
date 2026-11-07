@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { OptimizedImage } from '../OptimizedImage';
+import { OptimizedImage } from '@/components/OptimizedImage';
 
 describe('OptimizedImage', () => {
     it('renders without crashing', () => {

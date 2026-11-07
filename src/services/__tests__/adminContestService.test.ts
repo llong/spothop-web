@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { adminContestService } from '../adminContestService';
+import { adminContestService } from '@/services/adminContestService';
 import supabase from '@/supabase';
 import type { ContestStatus } from '@/types';
 

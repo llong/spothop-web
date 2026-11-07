@@ -33,7 +33,7 @@ const { mockUseConversationsQuery } = vi.hoisted(() => ({
     mockUseConversationsQuery: vi.fn(),
 }));
 
-vi.mock('src/hooks/useChatQueries', () => ({
+vi.mock('@/hooks/useChatQueries', () => ({
     useConversationsQuery: (...args: any[]) => mockUseConversationsQuery(...args),
 }));
 vi.mock('jotai', async (importOriginal) => {
@@ -43,7 +43,7 @@ vi.mock('jotai', async (importOriginal) => {
         useAtomValue: vi.fn().mockReturnValue({ user: { id: 'test-user-id' } }),
     };
 });
-vi.mock('src/services/chatService', () => ({
+vi.mock('@/services/chatService', () => ({
     chatService: {
         sendMessage: vi.fn().mockResolvedValue({}),
         markAsRead: vi.fn().mockResolvedValue({}),
@@ -62,7 +62,7 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 // We MUST mock supabase before importing the component that uses it directly outside of functions
-vi.mock('src/supabase', () => {
+vi.mock('@/supabase', () => {
     return {
         default: {
             auth: {
@@ -78,7 +78,7 @@ vi.mock('src/supabase', () => {
 });
 
 // Now import Route
-import { Route } from '../index';
+import { Route } from '@/routes/chat/index';
 
 const theme = createTheme();
 

@@ -43,7 +43,7 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 // Now import Route
-import { Route } from '../index';
+import { Route } from '@/routes/contests/index';
 
 // Mock other dependencies
 vi.mock('@/services/contestService', () => ({

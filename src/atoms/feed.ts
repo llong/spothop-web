@@ -1,4 +1,4 @@
-import { atomWithAsyncStorage } from "src/utils/cache";
+import { atomWithAsyncStorage } from "@/utils/cache";
 
 export interface FeedFilters {
     nearMe: boolean;

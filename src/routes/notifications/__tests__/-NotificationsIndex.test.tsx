@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotificationsComponent } from '../index';
-import { useNotifications } from 'src/hooks/useNotifications';
+import { NotificationsComponent } from '@/routes/notifications/index';
+import { useNotifications } from '@/hooks/useNotifications';
 
-vi.mock('src/hooks/useNotifications');
+vi.mock('@/hooks/useNotifications');
 vi.mock('@tanstack/react-router', () => ({
     Link: ({ children }: any) => <a>{children}</a>,
     useNavigate: () => vi.fn(),

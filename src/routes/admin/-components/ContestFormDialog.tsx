@@ -8,12 +8,12 @@ import {
     Divider,
 } from '@mui/material';
 import { ImageUploader } from '@/components/ImageUploader';
-import { useContestForm } from '../hooks/-useContestForm';
+import { useContestForm } from '@/routes/admin/hooks/-useContestForm';
 import { ContestBasicInfoFields } from './ContestBasicInfoFields';
 import { ContestStatusVotingFields } from './ContestStatusVotingFields';
 import { ContestSubmissionCriteriaFields } from './ContestSubmissionCriteriaFields';
 import { ContestUsageRestrictionFields } from './ContestUsageRestrictionFields';
-import type { Contest } from '../../../types';
+import type { Contest } from '@/types';
 
 interface ContestFormDialogProps {
     open: boolean;

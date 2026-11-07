@@ -2,8 +2,8 @@ import { Box, Typography, Button } from '@mui/material';
 import { ChatBubbleOutline } from '@mui/icons-material';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { chatService } from 'src/services/chatService';
+import { userAtom } from '@/atoms/auth';
+import { chatService } from '@/services/chatService';
 
 interface SpotCreatorInfoProps {
     createdAt?: string;

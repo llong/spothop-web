@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CommentSection } from '../CommentSection';
-import { useComments } from 'src/hooks/useComments';
+import { CommentSection } from '@/routes/spots/-components/CommentSection';
+import { useComments } from '@/hooks/useComments';
 import { useAtomValue } from 'jotai';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -12,11 +12,11 @@ vi.mock('jotai', async () => {
         useAtomValue: vi.fn(),
     };
 });
-vi.mock('src/hooks/useComments');
-vi.mock('../CommentForm', () => ({
+vi.mock('@/hooks/useComments');
+vi.mock('@/routes/spots/-components/CommentForm', () => ({
     CommentForm: () => <div data-testid="comment-form" />
 }));
-vi.mock('../CommentItem', () => ({
+vi.mock('@/routes/spots/-components/CommentItem', () => ({
     CommentItem: ({ comment }: any) => <div data-testid="comment-item">{comment.content}</div>
 }));
 

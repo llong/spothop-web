@@ -1,11 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SpotInfo } from '../SpotInfo/SpotInfo';
-import { reverseGeocode } from 'src/utils/geocoding';
+import { SpotInfo } from '@/routes/spots/-components/SpotInfo/SpotInfo';
+import { reverseGeocode } from '@/utils/geocoding';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock dependencies
-vi.mock('src/utils/geocoding', () => ({
+vi.mock('@/utils/geocoding', () => ({
     reverseGeocode: vi.fn(),
 }));
 
@@ -26,7 +26,7 @@ vi.mock('jotai', async (importOriginal) => {
     }
 });
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => ({
             select: vi.fn(() => ({

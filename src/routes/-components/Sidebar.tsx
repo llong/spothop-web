@@ -2,9 +2,9 @@ import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typogr
 import { Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { AccountCircle, ChatBubble, Notifications, DynamicFeed, Shield, Logout, Explore, Login, EmojiEvents } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import supabase from 'src/supabase';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { userAtom } from '@/atoms/auth';
+import supabase from '@/supabase';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { ThemeToggle } from './ThemeToggle';
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { navigationUtils } from '../navigation';
+import { navigationUtils } from '@/utils/navigation';
 
 describe('navigationUtils', () => {
     beforeEach(() => {

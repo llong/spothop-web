@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { InputBase, GlobalStyles } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { isGoogleMapsReady, loadGoogleMaps } from "src/lib/googleMaps";
+import { isGoogleMapsReady, loadGoogleMaps } from "@/lib/googleMaps";
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
     color: theme.palette.text.primary,

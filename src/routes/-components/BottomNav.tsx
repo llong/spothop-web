@@ -2,7 +2,7 @@ import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import { Home, AccountCircle, ChatBubble, DynamicFeed, EmojiEvents } from '@mui/icons-material';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useAtomValue } from 'jotai'; // Import useAtomValue
-import { userAtom } from 'src/atoms/auth'; // Import userAtom
+import { userAtom } from '@/atoms/auth'; // Import userAtom
 
 export const BottomNav = () => {
     const location = useLocation();

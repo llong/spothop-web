@@ -1,6 +1,6 @@
 import { Box, Chip, Stack, Typography } from "@mui/material"
 import { Link } from "@tanstack/react-router";
-import type { Spot } from "src/types";
+import type { Spot } from "@/types";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -9,8 +9,8 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import FlagIcon from '@mui/icons-material/Flag';
 import { useState, useEffect, memo, useMemo } from "react";
-import { useGeocoding } from "src/hooks/useGeocoding";
-import { getOptimizedImageUrl } from "src/utils/imageOptimization";
+import { useGeocoding } from "@/hooks/useGeocoding";
+import { getOptimizedImageUrl } from "@/utils/imageOptimization";
 
 const SpotsListCard: React.FC<{ spot: Spot; priority?: boolean }> = memo(({ spot, priority }) => {
     const [locationString, setLocationString] = useState<string>('Loading location...');

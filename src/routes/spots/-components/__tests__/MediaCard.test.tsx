@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { MediaCard } from '../MediaCard';
+import { MediaCard } from '@/routes/spots/-components/MediaCard';
 
 vi.mock('@tanstack/react-router', () => ({
     Link: ({ children }: any) => <div>{children}</div>

@@ -1,24 +1,24 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useProfileManagement } from '../useProfileManagement';
+import { useProfileManagement } from '@/hooks/useProfileManagement';
 import { useAtomValue } from 'jotai';
-import { useProfileUpdate } from '../useProfileUpdate';
-import supabase from 'src/supabase';
-import { navigationUtils } from 'src/utils/navigation';
+import { useProfileUpdate } from '@/hooks/useProfileUpdate';
+import supabase from '@/supabase';
+import { navigationUtils } from '@/utils/navigation';
 
 vi.mock('jotai', () => ({
     useAtomValue: vi.fn(),
 }));
 
-vi.mock('src/atoms/auth', () => ({
+vi.mock('@/atoms/auth', () => ({
     userAtom: {}
 }));
 
-vi.mock('../useProfileUpdate', () => ({
+vi.mock('@/hooks/useProfileUpdate', () => ({
     useProfileUpdate: vi.fn(),
 }));
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         auth: {
             signOut: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock('src/supabase', () => ({
     },
 }));
 
-vi.mock('src/utils/navigation', () => ({
+vi.mock('@/utils/navigation', () => ({
     navigationUtils: {
         redirectTo: vi.fn(),
     },

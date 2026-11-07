@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SpotHeader } from '../SpotHeader';
+import { SpotHeader } from '@/routes/spots/-components/SpotHeader';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 const queryClient = new QueryClient();
 
 // Mock FlagSpotDialog
-vi.mock('../FlagSpotDialog', () => ({
+vi.mock('@/routes/spots/-components/FlagSpotDialog', () => ({
     FlagSpotDialog: () => <div data-testid="flag-dialog" />,
 }));
 

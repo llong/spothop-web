@@ -10,7 +10,7 @@ export interface ModerationResult {
     details?: any;
 }
 
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 
 // Real implementation using Supabase Edge Function
 const checkContentReal = async (file: File): Promise<ModerationResult> => {

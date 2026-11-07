@@ -1,6 +1,6 @@
-import supabase from "../../supabase";
-import type { LikedMediaItem, UserMediaItem, Spot } from "../../types";
-import { getSpotThumbnail } from "../../utils/media-utils";
+import supabase from "@/supabase";
+import type { LikedMediaItem, UserMediaItem, Spot } from "@/types";
+import { getSpotThumbnail } from "@/utils/media-utils";
 
 export const contentService = {
     async fetchFavoriteSpots(userId: string): Promise<Spot[]> {

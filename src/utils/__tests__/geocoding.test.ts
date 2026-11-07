@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { reverseGeocode } from '../geocoding';
+import { reverseGeocode } from '@/utils/geocoding';
 
 describe('geocoding util', () => {
     beforeEach(() => {

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
-import type { FeedFilters } from 'src/atoms/feed';
-import { useGeolocation } from 'src/hooks/useGeolocation';
+import { INITIAL_FEED_FILTERS } from '@/atoms/feed';
+import type { FeedFilters } from '@/atoms/feed';
+import { useGeolocation } from '@/hooks/useGeolocation';
 
 export const useFeedFilters = (initialFilters: FeedFilters, onApply: (f: FeedFilters) => void) => {
     const [tempFilters, setTempFilters] = useState<FeedFilters>(initialFilters);

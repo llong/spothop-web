@@ -11,7 +11,7 @@ import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
-import type { Spot } from 'src/types';
+import type { Spot } from '@/types';
 
 interface DetailsInfoProps {
     spot: Spot;

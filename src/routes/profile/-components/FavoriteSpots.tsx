@@ -1,6 +1,6 @@
 import { Card, CardContent, Typography, List, ListItem, ListItemButton, ListItemAvatar, ListItemText, Avatar } from "@mui/material";
 import { Link } from "@tanstack/react-router";
-import type { Spot } from "src/types";
+import type { Spot } from "@/types";
 
 interface FavoriteSpotsProps {
     favoriteSpots: Spot[];

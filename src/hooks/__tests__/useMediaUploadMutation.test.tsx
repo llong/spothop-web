@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useMediaUploadMutation } from '../useMediaUploadMutation';
-import { useMediaUpload } from '../useMediaUpload';
+import { useMediaUploadMutation } from '@/hooks/useMediaUploadMutation';
+import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-vi.mock('../useMediaUpload');
+vi.mock('@/hooks/useMediaUpload');
 
 const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },

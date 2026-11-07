@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MediaGalleryItem } from '../MediaGalleryItem';
+import { MediaGalleryItem } from '@/routes/profile/-components/MediaGalleryItem';
 
 describe('MediaGalleryItem', () => {
     const mockOnClick = vi.fn();

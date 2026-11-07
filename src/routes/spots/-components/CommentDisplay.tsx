@@ -1,7 +1,7 @@
 import { Box, Typography, Avatar, Stack } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from '@tanstack/react-router';
-import type { SpotComment } from 'src/types';
+import type { SpotComment } from '@/types';
 
 interface CommentDisplayProps {
     comment: SpotComment;

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMediaUpload } from './useMediaUpload';
 import { spotKeys } from './useSpotQueries';
-import type { VideoAsset } from '../types';
+import type { VideoAsset } from '@/types';
 import type { User } from '@supabase/supabase-js';
 
 interface UseMediaUploadMutationProps {

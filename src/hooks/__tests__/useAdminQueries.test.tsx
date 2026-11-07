@@ -1,11 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useAdminQueries } from '../useAdminQueries';
-import { adminService } from '../../services/adminService';
+import { useAdminQueries } from '@/hooks/useAdminQueries';
+import { adminService } from '@/services/adminService';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock adminService
-vi.mock('../../services/adminService', () => ({
+vi.mock('@/services/adminService', () => ({
     adminService: {
         fetchReports: vi.fn(),
         resolveReport: vi.fn(),

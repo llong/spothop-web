@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { SpotStats } from '../SpotStats';
+import { SpotStats } from '@/routes/spots/-components/SpotInfo/SpotStats';
 
 describe('SpotStats', () => {
     it('renders all stats when provided', () => {

@@ -4,7 +4,7 @@ import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import MovieIcon from '@mui/icons-material/Movie';
-import type { MediaItem } from 'src/types';
+import type { MediaItem } from '@/types';
 import React from 'react';
 import { OptimizedImage } from '@/components/OptimizedImage';
 

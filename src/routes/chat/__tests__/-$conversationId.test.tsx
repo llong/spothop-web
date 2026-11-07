@@ -12,7 +12,7 @@ const { mockUseMessagesQuery, mockUseConversationQuery, mockUseSendMessageMutati
     mockUseSendMessageMutation: vi.fn(),
 }));
 
-vi.mock('src/hooks/useChatQueries', () => ({
+vi.mock('@/hooks/useChatQueries', () => ({
     useMessagesQuery: (...args: any[]) => mockUseMessagesQuery(...args),
     useConversationQuery: (...args: any[]) => mockUseConversationQuery(...args),
     useSendMessageMutation: (...args: any[]) => mockUseSendMessageMutation(...args),
@@ -64,7 +64,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 }));
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         auth: {
             getSession: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'test-user-id' } } } }),
@@ -73,7 +73,7 @@ vi.mock('src/supabase', () => ({
 }));
 
 // Now import Route
-import { Route } from '../$conversationId';
+import { Route } from '@/routes/chat/$conversationId';
 
 // Mock Route.useParams
 (Route as any).useParams = vi.fn().mockReturnValue({ conversationId: 'test-chat-id' });

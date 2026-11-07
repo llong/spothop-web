@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { Route } from '../index';
-import { ForgotPasswordForm } from '../-components/ForgotPasswordForm';
+import { Route } from '@/routes/forgot-password/index';
+import { ForgotPasswordForm } from '@/routes/forgot-password/-components/ForgotPasswordForm';
 
 // Mock the component
-vi.mock('../-components/ForgotPasswordForm', () => {
+vi.mock('@/routes/forgot-password/-components/ForgotPasswordForm', () => {
     return {
         ForgotPasswordForm: vi.fn(() => <div data-testid="mock-forgot-password-form" />)
     }

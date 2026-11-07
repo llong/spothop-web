@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Autocomplete, TextField, CircularProgress, Avatar, Box, Typography } from '@mui/material';
-import { profileService } from 'src/services/profileService';
+import { profileService } from '@/services/profileService';
 import { debounce } from 'lodash';
 
 interface UserOption {

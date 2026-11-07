@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { spotService } from '../services/spotService';
+import { spotService } from '@/services/spotService';
 
 export const spotKeys = {
     all: ['spots'] as const,

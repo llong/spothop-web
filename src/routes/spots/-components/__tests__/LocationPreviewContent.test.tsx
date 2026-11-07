@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import LocationPreviewContent from '../LocationPreviewContent';
+import LocationPreviewContent from '@/routes/spots/-components/LocationPreviewContent';
 import { vi, describe, it, expect } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 

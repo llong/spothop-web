@@ -3,7 +3,7 @@ import type { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
 import { useGeolocation } from './useGeolocation';
 import { useSetAtom } from 'jotai';
-import { userLocationAtom } from 'src/atoms/map';
+import { userLocationAtom } from '@/atoms/map';
 
 export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngBounds) => void, lat?: number, lng?: number) => {
     const [moved, setMoved] = useState(false);

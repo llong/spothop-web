@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import supabase from "../../../supabase";
+import supabase from "@/supabase";
 import {
     Box,
     CircularProgress,
@@ -13,8 +13,8 @@ import ReactCrop from 'react-image-crop';
 import type { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useAtom } from "jotai";
-import { userAtom } from "../../../atoms/auth";
-import { getOptimizedImageUrl } from "src/utils/imageOptimization";
+import { userAtom } from "@/atoms/auth";
+import { getOptimizedImageUrl } from "@/utils/imageOptimization";
 
 interface AvatarUploadProps {
     avatarUrl: string | null;

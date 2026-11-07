@@ -1,10 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useSpotQuery } from '../useSpotQueries';
+import { useSpotQuery } from '@/hooks/useSpotQueries';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { spotService } from 'src/services/spotService';
+import { spotService } from '@/services/spotService';
 
-vi.mock('src/services/spotService', () => ({
+vi.mock('@/services/spotService', () => ({
     spotService: {
         fetchSpotDetails: vi.fn(),
     }

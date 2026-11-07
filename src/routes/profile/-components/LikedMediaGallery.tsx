@@ -2,7 +2,7 @@ import { Card, CardContent, Grid, Typography, Box, CircularProgress } from "@mui
 import { Favorite, PlayCircleOutline } from "@mui/icons-material";
 import { Link } from "@tanstack/react-router";
 import { Avatar, Stack } from "@mui/material";
-import type { LikedMediaItem } from "src/types";
+import type { LikedMediaItem } from "@/types";
 
 interface LikedMediaGalleryProps {
     likedMedia: LikedMediaItem[];

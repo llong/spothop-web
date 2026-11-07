@@ -1,6 +1,6 @@
 import { memo, useState, useMemo, useCallback, type FC } from 'react';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 import {
     Box,
     Avatar,
@@ -17,11 +17,11 @@ import ShareIcon from '@mui/icons-material/Share';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
-import type { FeedItem as FeedItemType } from 'src/types';
-import { useToggleFollow } from 'src/hooks/useFeedQueries';
+import type { FeedItem as FeedItemType } from '@/types';
+import { useToggleFollow } from '@/hooks/useFeedQueries';
 import { OptimizedImage } from '@/components/OptimizedImage';
-import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
-import { MediaCarousel } from 'src/routes/spots/-components/MediaCarousel';
+import { useSpotFavorites } from '@/hooks/useSpotFavorites';
+import { MediaCarousel } from '@/routes/spots/-components/MediaCarousel';
 import React from 'react';
 
 const getFullUrl = (path: string) => {
@@ -63,7 +63,7 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, onCommentClick 
         url: getFullUrl(item.media_type === 'photo' ? (item.thumbnail_url || item.media_url) : item.media_url),
         type: item.media_type,
         thumbnailUrl: item.thumbnail_url ? getFullUrl(item.thumbnail_url) : undefined,
-    }], [item.media_id, item.media_url, item.media_type, item.thumbnail_url]) as import('src/types').MediaItem[];
+    }], [item.media_id, item.media_url, item.media_type, item.thumbnail_url]) as import('@/types').MediaItem[];
 
     // Minimal spot object for useSpotFavorites
     const spot = useMemo(() => ({

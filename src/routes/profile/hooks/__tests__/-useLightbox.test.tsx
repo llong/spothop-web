@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { useLightbox } from '../-useLightbox';
+import { useLightbox } from '@/routes/profile/hooks/-useLightbox';
 
 describe('useLightbox', () => {
     const mockMediaItems: any[] = [

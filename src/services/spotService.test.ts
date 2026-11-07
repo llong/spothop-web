@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { spotService } from './spotService';
-import supabase from '../supabase';
+import supabase from '@/supabase';
 
 // Mock Supabase
-vi.mock('../supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(),
         auth: {
@@ -13,7 +13,7 @@ vi.mock('../supabase', () => ({
 }));
 
 // Mock geocoding
-vi.mock('../utils/geocoding', () => ({
+vi.mock('@/utils/geocoding', () => ({
     reverseGeocode: vi.fn().mockResolvedValue({ city: 'Mock City', state: 'Mock State', country: 'Mock Country' }),
 }));
 

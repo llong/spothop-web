@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { UserStats } from '../UserStats';
-import { useSocialStatsQuery } from 'src/hooks/useProfileQueries';
+import { UserStats } from '@/routes/profile/-components/UserStats';
+import { useSocialStatsQuery } from '@/hooks/useProfileQueries';
 
-vi.mock('src/hooks/useProfileQueries');
+vi.mock('@/hooks/useProfileQueries');
 
 describe('UserStats', () => {
     it('renders loading state', () => {

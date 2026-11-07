@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { withErrorHandling } from '../asyncHelpers';
+import { withErrorHandling } from '@/utils/asyncHelpers';
 
 describe('asyncHelpers', () => {
     describe('withErrorHandling', () => {

@@ -2,9 +2,9 @@ import { Stack, Button } from '@mui/material';
 import { Link } from '@tanstack/react-router';
 import { Home, AccountCircle, Login, Logout, ChatBubble, Shield, DynamicFeed } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import supabase from 'src/supabase';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { userAtom } from '@/atoms/auth';
+import supabase from '@/supabase';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
 
 export function NavigationItems() {
     const user = useAtomValue(userAtom);

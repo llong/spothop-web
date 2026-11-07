@@ -1,5 +1,5 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
-import { useContestSubmission } from '../-useContestSubmission';
+import { useContestSubmission } from '@/routes/contests/hooks/-useContestSubmission';
 import { contestService } from '@/services/contestService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vi, describe, it, expect, beforeEach } from 'vitest';

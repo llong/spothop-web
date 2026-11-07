@@ -7,7 +7,7 @@ import {
     Tab,
 } from '@mui/material';
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
-import type { Spot, MediaItem } from 'src/types';
+import type { Spot, MediaItem } from '@/types';
 import { MediaListItem } from './MediaListItem';
 import { MediaSectionSkeleton } from './SpotCardSkeleton';
 import { ProPartsTab } from './ProParts/ProPartsTab';

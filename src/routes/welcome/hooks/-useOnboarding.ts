@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { userAtom, profileAtom } from 'src/atoms/auth';
+import { userAtom, profileAtom } from '@/atoms/auth';
 import { useQueryClient } from '@tanstack/react-query';
-import { profileKeys } from 'src/hooks/useProfileQueries';
-import supabase from 'src/supabase';
-import type { RiderType } from 'src/types';
-import { RESERVED_KEYWORDS, OFFENSIVE_WORDS, USERNAME_REGEX } from 'src/constants/validation';
-import { ONBOARDING_STRINGS as s } from 'src/constants/strings';
+import { profileKeys } from '@/hooks/useProfileQueries';
+import supabase from '@/supabase';
+import type { RiderType } from '@/types';
+import { RESERVED_KEYWORDS, OFFENSIVE_WORDS, USERNAME_REGEX } from '@/constants/validation';
+import { ONBOARDING_STRINGS as s } from '@/constants/strings';
 import { debounce } from 'lodash';
 
 export function useOnboarding() {

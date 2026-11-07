@@ -1,21 +1,21 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SpotInfo } from '../SpotInfo/SpotInfo';
+import { SpotInfo } from '@/routes/spots/-components/SpotInfo/SpotInfo';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
-import { useAdminQueries } from 'src/hooks/useAdminQueries';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
+import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock dependencies
-vi.mock('src/hooks/useProfileQueries', () => ({
+vi.mock('@/hooks/useProfileQueries', () => ({
     useProfileQuery: vi.fn()
 }));
 
-vi.mock('src/hooks/useAdminQueries', () => ({
+vi.mock('@/hooks/useAdminQueries', () => ({
     useAdminQueries: vi.fn()
 }));
 
-vi.mock('src/hooks/useSpotAddress', () => ({
+vi.mock('@/hooks/useSpotAddress', () => ({
     useSpotAddress: () => ({ displayAddress: '123 Test St' })
 }));
 

@@ -1,6 +1,6 @@
 import { IconButton, Stack } from '@mui/material';
 import { ThumbUp, ThumbUpOutlined, ThumbDown, ThumbDownOutlined, Reply } from '@mui/icons-material';
-import type { SpotComment } from 'src/types';
+import type { SpotComment } from '@/types';
 
 interface CommentActionsProps {
     comment: SpotComment;

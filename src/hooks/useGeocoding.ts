@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { reverseGeocode } from 'src/utils/geocoding';
+import { reverseGeocode } from '@/utils/geocoding';
 
 export const useGeocoding = () => {
     const [isLoading, setIsLoading] = useState(false);

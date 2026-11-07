@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SpotCharacteristics } from '../SpotCharacteristics';
+import { SpotCharacteristics } from '@/routes/spots/-components/SpotCharacteristics';
 import { vi, describe, it, expect } from 'vitest';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';

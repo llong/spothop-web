@@ -6,8 +6,8 @@ import {
     Avatar, ListItemText, Checkbox, Stack, CircularProgress,
     ListItemButton, Chip
 } from '@mui/material';
-import { chatService } from 'src/services/chatService';
-import supabase from 'src/supabase';
+import { chatService } from '@/services/chatService';
+import supabase from '@/supabase';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 

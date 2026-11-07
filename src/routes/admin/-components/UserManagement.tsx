@@ -19,7 +19,7 @@ import {
     CheckCircleOutline,
     PersonOff,
 } from '@mui/icons-material';
-import type { UserProfile } from '../../../types';
+import type { UserProfile } from '@/types';
 
 interface UserManagementProps {
     userSearch: string;

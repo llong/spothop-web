@@ -25,12 +25,12 @@ import {
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from '@tanstack/react-router';
-import type { SpotComment } from 'src/types';
+import type { SpotComment } from '@/types';
 import { CommentForm } from './CommentForm';
 import { ReportDialog } from './ReportDialog';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { userAtom } from '@/atoms/auth';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
 
 interface CommentItemProps {
     comment: SpotComment;

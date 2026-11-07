@@ -32,7 +32,7 @@ const { mockUseContestDetails } = vi.hoisted(() => ({
     mockUseContestDetails: vi.fn(),
 }));
 
-vi.mock('../hooks/-useContestDetails', () => ({
+vi.mock('@/routes/contests/hooks/-useContestDetails', () => ({
     useContestDetails: (...args: any[]) => mockUseContestDetails(...args),
 }));
 vi.mock('@/hooks/useProfileQueries', () => ({
@@ -48,13 +48,13 @@ vi.mock('jotai', async (importOriginal) => {
 vi.mock('@/components/SEO/SEO', () => ({
     default: () => null,
 }));
-vi.mock('../-components/ContestSubmissionModal', () => ({
+vi.mock('@/routes/contests/-components/ContestSubmissionModal', () => ({
     ContestSubmissionModal: () => <div data-testid="submission-modal" />,
 }));
-vi.mock('../-components/ContestCriteriaInfo', () => ({
+vi.mock('@/routes/contests/-components/ContestCriteriaInfo', () => ({
     ContestCriteriaInfo: () => <div data-testid="criteria-info" />,
 }));
-vi.mock('../-components/ContestEntryCard', () => ({
+vi.mock('@/routes/contests/-components/ContestEntryCard', () => ({
     ContestEntryCard: () => <div data-testid="entry-card" />,
 }));
 
@@ -73,7 +73,7 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 });
 
 // Now import Route
-import { Route } from '../$contestId';
+import { Route } from '@/routes/contests/$contestId';
 
 // Mock Route.useParams
 (Route as any).useParams = vi.fn().mockReturnValue({ contestId: 'test-contest-id' });

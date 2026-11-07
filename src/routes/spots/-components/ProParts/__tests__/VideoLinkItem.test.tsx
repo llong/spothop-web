@@ -1,12 +1,12 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { VideoLinkItem } from '../VideoLinkItem';
+import { VideoLinkItem } from '@/routes/spots/-components/ProParts/VideoLinkItem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
 
-vi.mock('src/hooks/useProfileQueries');
-vi.mock('src/services/spotService');
-vi.mock('../AddVideoLinkDialog', () => ({ AddVideoLinkDialog: () => <div>AddVideoLinkDialog</div> }));
+vi.mock('@/hooks/useProfileQueries');
+vi.mock('@/services/spotService');
+vi.mock('@/routes/spots/-components/ProParts/AddVideoLinkDialog', () => ({ AddVideoLinkDialog: () => <div>AddVideoLinkDialog</div> }));
 
 const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },

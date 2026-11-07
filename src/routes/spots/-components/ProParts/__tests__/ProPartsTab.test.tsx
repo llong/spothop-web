@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { ProPartsTab } from '../ProPartsTab';
+import { ProPartsTab } from '@/routes/spots/-components/ProParts/ProPartsTab';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-vi.mock('src/services/spotService');
+vi.mock('@/services/spotService');
 vi.mock('./VideoLinkItem', () => ({ VideoLinkItem: () => <div>VideoLinkItem</div> }));
 vi.mock('./AddVideoLinkDialog', () => ({ AddVideoLinkDialog: () => <div>AddVideoLinkDialog</div> }));
 

@@ -7,7 +7,7 @@ import {
     Chip,
 } from '@mui/material';
 import { Link as RouterLink } from '@tanstack/react-router';
-import type { FeedFilters } from 'src/atoms/feed';
+import type { FeedFilters } from '@/atoms/feed';
 
 interface FeedHeaderProps {
     hasActiveFilters: boolean;

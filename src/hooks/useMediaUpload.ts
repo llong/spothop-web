@@ -1,7 +1,7 @@
-import supabase from 'src/supabase';
-import { optimizePhoto, generateImageFilename } from 'src/utils/imageOptimization';
-import { checkContent } from 'src/utils/moderation';
-import type { VideoAsset } from 'src/types';
+import supabase from '@/supabase';
+import { optimizePhoto, generateImageFilename } from '@/utils/imageOptimization';
+import { checkContent } from '@/utils/moderation';
+import type { VideoAsset } from '@/types';
 
 interface UseMediaUploadProps {
     user: any;

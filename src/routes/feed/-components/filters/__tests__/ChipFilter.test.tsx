@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { ChipFilter } from '../ChipFilter';
+import { ChipFilter } from '@/routes/feed/-components/filters/ChipFilter';
 
 describe('ChipFilter', () => {
     it('renders all items', () => {

@@ -7,8 +7,8 @@ import {
     Chip, Checkbox, ListItemButton, Divider
 } from '@mui/material';
 import { RemoveCircleOutline, Save } from '@mui/icons-material';
-import type { Conversation } from 'src/services/chatService';
-import supabase from 'src/supabase';
+import type { Conversation } from '@/services/chatService';
+import supabase from '@/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface ChatSettingsDialogProps {

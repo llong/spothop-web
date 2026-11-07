@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BottomNav } from '../BottomNav';
+import { BottomNav } from '@/routes/-components/BottomNav';
 import { useAtomValue } from 'jotai';
 
 vi.mock('jotai', async () => {

@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useGeolocation } from '../useGeolocation';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import type { Map as LeafletMap } from 'leaflet';
 
 describe('useGeolocation', () => {

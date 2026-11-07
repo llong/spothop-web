@@ -13,9 +13,9 @@ vi.mock('jotai/utils', async () => {
     };
 });
 
-import { FeedScreen } from '../index.lazy';
-import { userAtom } from 'src/atoms/auth';
-import { feedFiltersAtom, INITIAL_FEED_FILTERS } from 'src/atoms/feed';
+import { FeedScreen } from '@/routes/feed/index.lazy';
+import { userAtom } from '@/atoms/auth';
+import { feedFiltersAtom, INITIAL_FEED_FILTERS } from '@/atoms/feed';
 
 // Mock dependencies
 vi.mock('@tanstack/react-router', () => ({
@@ -24,11 +24,11 @@ vi.mock('@tanstack/react-router', () => ({
     useNavigate: () => vi.fn()
 }));
 
-vi.mock('src/hooks/useConstructFeedFilters', () => ({
+vi.mock('@/hooks/useConstructFeedFilters', () => ({
     useConstructFeedFilters: vi.fn(() => ({}))
 }));
 
-vi.mock('src/hooks/useFeedQueries', () => ({
+vi.mock('@/hooks/useFeedQueries', () => ({
     useFeedQuery: vi.fn(() => ({
         data: {
             pages: [[
@@ -62,7 +62,7 @@ vi.mock('src/hooks/useFeedQueries', () => ({
     useToggleCommentReaction: vi.fn(() => ({ mutate: vi.fn() }))
 }));
 
-vi.mock('src/hooks/useSpotFavorites', () => ({
+vi.mock('@/hooks/useSpotFavorites', () => ({
     useSpotFavorites: vi.fn(() => ({
         toggleFavorite: vi.fn()
     }))

@@ -1,11 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
-import { useFlagging } from '../useFlagging';
+import { useFlagging } from '@/hooks/useFlagging';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
 
 // Mock dependencies
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => ({
             insert: vi.fn(),

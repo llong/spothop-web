@@ -14,8 +14,8 @@ import {
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
-import { ONBOARDING_STRINGS as s } from 'src/constants/strings';
-import type { RiderType } from 'src/types';
+import { ONBOARDING_STRINGS as s } from '@/constants/strings';
+import type { RiderType } from '@/types';
 
 interface OnboardingStep1Props {
     username: string;

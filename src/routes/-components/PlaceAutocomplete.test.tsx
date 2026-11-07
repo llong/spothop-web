@@ -21,7 +21,7 @@ const loaderMocks = vi.hoisted(() => ({
     isGoogleMapsReady: vi.fn(),
     loadGoogleMaps: vi.fn(),
 }));
-vi.mock('src/lib/googleMaps', () => loaderMocks);
+vi.mock('@/lib/googleMaps', () => loaderMocks);
 
 const theme = createTheme();
 

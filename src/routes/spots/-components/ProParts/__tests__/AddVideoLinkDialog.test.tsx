@@ -1,10 +1,10 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AddVideoLinkDialog } from '../AddVideoLinkDialog';
-import { spotService } from 'src/services/spotService';
+import { AddVideoLinkDialog } from '@/routes/spots/-components/ProParts/AddVideoLinkDialog';
+import { spotService } from '@/services/spotService';
 
-vi.mock('src/services/spotService');
-vi.mock('src/utils/youtube', () => ({
+vi.mock('@/services/spotService');
+vi.mock('@/utils/youtube', () => ({
     parseYoutubeId: (url: string) => url.includes('youtube') ? 'vid123' : null,
     timeToSeconds: (time: string) => time === '1:00' ? 60 : null,
     secondsToTime: (seconds: number) => seconds === 60 ? '1:00' : '0:00'

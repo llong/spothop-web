@@ -1,12 +1,12 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { VideoUpload } from '../VideoUpload';
+import { VideoUpload } from '@/routes/spots/-components/VideoUpload';
 
 vi.mock('uuid', () => ({
     v4: () => 'test-uuid-123'
 }));
 
-vi.mock('../../../utils/videoProcessing', () => ({
+vi.mock('@/routes/utils/videoProcessing', () => ({
     trimVideo: vi.fn()
 }));
 

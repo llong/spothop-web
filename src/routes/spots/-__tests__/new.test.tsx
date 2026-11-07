@@ -1,9 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NewSpotComponent, Route } from '../new'; // Import Route specifically
+import { NewSpotComponent, Route } from '@/routes/spots/new'; // Import Route specifically
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 
 // Mock TanStack Router
 vi.mock('@tanstack/react-router', async (importOriginal) => {
@@ -21,18 +21,18 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
 });
 
 // Mock other components
-vi.mock('../-components/PhotoUpload', () => ({
+vi.mock('@/routes/spots/-components/PhotoUpload', () => ({
     PhotoUpload: ({ onFilesSelect }: any) => (
         <button onClick={() => onFilesSelect([new File([''], 'photo.jpg')])}>Mock Photo Upload</button>
     )
 }));
-vi.mock('../-components/VideoUpload', () => ({
+vi.mock('@/routes/spots/-components/VideoUpload', () => ({
     VideoUpload: () => <div data-testid="video-upload" />
 }));
-vi.mock('../-components/LocationPreview', () => ({
+vi.mock('@/routes/spots/-components/LocationPreview', () => ({
     LocationPreview: () => <div data-testid="location-preview" />
 }));
-vi.mock('../-components/SpotDetailsForm', () => ({
+vi.mock('@/routes/spots/-components/SpotDetailsForm', () => ({
     SpotDetailsForm: ({ setName, setDescription }: any) => (
         <div>
             <input aria-label="name-input" onChange={(e) => setName(e.target.value)} />
@@ -40,7 +40,7 @@ vi.mock('../-components/SpotDetailsForm', () => ({
         </div>
     )
 }));
-vi.mock('../-components/SpotCharacteristics', () => ({
+vi.mock('@/routes/spots/-components/SpotCharacteristics', () => ({
     SpotCharacteristics: () => <div data-testid="spot-characteristics" />
 }));
 
@@ -57,7 +57,7 @@ vi.mock('jotai', async (importOriginal) => {
 });
 
 // Mock Supabase
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => ({
             insert: vi.fn().mockResolvedValue({ error: null })

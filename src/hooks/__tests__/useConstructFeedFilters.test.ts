@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { useConstructFeedFilters } from '../useConstructFeedFilters';
-import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
+import { useConstructFeedFilters } from '@/hooks/useConstructFeedFilters';
+import { INITIAL_FEED_FILTERS } from '@/atoms/feed';
 
 describe('useConstructFeedFilters', () => {
     const mockUserLocation = { latitude: 10, longitude: 20 };

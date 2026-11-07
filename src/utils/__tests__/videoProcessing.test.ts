@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { checkFFmpegCapabilities } from '../videoProcessing';
+import { checkFFmpegCapabilities } from '@/utils/videoProcessing';
 
 describe('videoProcessing utils', () => {
     beforeEach(() => {

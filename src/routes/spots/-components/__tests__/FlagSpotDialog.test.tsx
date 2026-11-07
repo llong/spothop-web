@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { FlagSpotDialog } from '../FlagSpotDialog';
+import { FlagSpotDialog } from '@/routes/spots/-components/FlagSpotDialog';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -22,7 +22,7 @@ const renderWithClient = (ui: React.ReactElement) => {
 // Mock useFlagging hook
 const mockFlagSpot = vi.fn();
 const mockSetError = vi.fn();
-vi.mock('src/hooks/useFlagging', () => ({
+vi.mock('@/hooks/useFlagging', () => ({
     useFlagging: () => ({
         flagSpot: mockFlagSpot,
         loading: false,

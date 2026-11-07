@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useFeedQuery, useFollowingFeedQuery } from 'src/hooks/useFeedQueries';
-import { useConstructFeedFilters } from 'src/hooks/useConstructFeedFilters';
+import { useFeedQuery, useFollowingFeedQuery } from '@/hooks/useFeedQueries';
+import { useConstructFeedFilters } from '@/hooks/useConstructFeedFilters';
 import { useInfiniteScroll } from './-useInfiniteScroll';
 
 export function useGlobalFeed(userId: string | undefined, filters: any, userLocation: any) {

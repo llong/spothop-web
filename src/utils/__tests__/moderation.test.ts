@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { checkContent } from '../moderation';
-import supabase from 'src/supabase';
+import { checkContent } from '@/utils/moderation';
+import supabase from '@/supabase';
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         functions: {
             invoke: vi.fn(),

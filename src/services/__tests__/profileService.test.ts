@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { profileService } from '../profileService';
-import supabase from '../../supabase';
+import { profileService } from '@/services/profileService';
+import supabase from '@/supabase';
 
-vi.mock('../../supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => ({
             select: vi.fn(() => ({

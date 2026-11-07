@@ -1,16 +1,16 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Box, Typography, Grid, CircularProgress, Card, CardContent, Divider, Container } from "@mui/material";
-import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from "../../hooks/useProfileQueries";
+import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from "@/hooks/useProfileQueries";
 import { useAtomValue } from "jotai";
-import { userAtom } from "../../atoms/auth";
-import { useProfileManagement } from "../../hooks/useProfileManagement";
+import { userAtom } from "@/atoms/auth";
+import { useProfileManagement } from "@/hooks/useProfileManagement";
 import { ProfileHeader } from "./-components/ProfileHeader";
 import { ProfileForm } from "./-components/ProfileForm";
 import { FavoriteSpots } from "./-components/FavoriteSpots";
 import { LikedMediaGallery } from "./-components/LikedMediaGallery";
 import { UserContentGallery } from "./-components/UserContentGallery";
-import type { UserProfile } from "../../types";
+import type { UserProfile } from "@/types";
 
 export const Route = createLazyFileRoute("/profile/")({
     component: ProfileComponent,

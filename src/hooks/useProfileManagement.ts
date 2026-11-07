@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { navigationUtils } from 'src/utils/navigation';
+import { userAtom } from '@/atoms/auth';
+import { navigationUtils } from '@/utils/navigation';
 import { useProfileUpdate } from './useProfileUpdate';
-import supabase from 'src/supabase';
-import type { UserProfile } from 'src/types';
+import supabase from '@/supabase';
+import type { UserProfile } from '@/types';
 
 export const useProfileManagement = () => {
     const user = useAtomValue(userAtom);

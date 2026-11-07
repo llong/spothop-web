@@ -2,20 +2,20 @@ import { createLazyFileRoute, getRouteApi } from '@tanstack/react-router';
 import { Box, Typography, useTheme, useMediaQuery, CircularProgress, IconButton, Stack, Badge, styled } from "@mui/material";
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
-import useSpots from 'src/hooks/useSpots';
-import SpotsListCard from '../-components/SpotsListCard';
+import useSpots from '@/hooks/useSpots';
+import SpotsListCard from '@/routes/-components/SpotsListCard';
 import { useEffect, lazy, Suspense, useState, useRef, useMemo } from 'react';
 import { useAtom, useSetAtom } from 'jotai';
-import { getSpotsAtom, viewAtom } from 'src/atoms/map';
+import { getSpotsAtom, viewAtom } from '@/atoms/map';
 import { SpotListSkeleton } from './-components/SpotCardSkeleton';
-import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
-import type { Spot } from 'src/types';
-import { PlaceAutocomplete } from '../-components/PlaceAutocomplete';
-import { FilterBar } from '../-components/FilterBar';
-import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
-import { rightSidebarAtom } from 'src/atoms/ui';
-import { useMapSearch } from 'src/hooks/useMapSearch';
-import SEO from 'src/components/SEO/SEO';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import type { Spot } from '@/types';
+import { PlaceAutocomplete } from '@/routes/-components/PlaceAutocomplete';
+import { FilterBar } from '@/routes/-components/FilterBar';
+import { isFiltersOpenAtom, filtersAtom } from '@/atoms/spots';
+import { rightSidebarAtom } from '@/atoms/ui';
+import { useMapSearch } from '@/hooks/useMapSearch';
+import SEO from '@/components/SEO/SEO';
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -40,7 +40,7 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 }));
 
 // Lazy load the Map component
-const SpotMap = lazy(() => import('../-components/SpotMap').then(m => ({ default: m.SpotMap })));
+const SpotMap = lazy(() => import('@/routes/-components/SpotMap').then(m => ({ default: m.SpotMap })));
 
 export const Route = createLazyFileRoute('/spots/')({
     component: SpotsIndex,

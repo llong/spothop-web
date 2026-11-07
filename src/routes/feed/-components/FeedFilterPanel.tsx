@@ -14,10 +14,10 @@ import {
     Avatar,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
-import type { FeedFilters } from 'src/atoms/feed';
+import { INITIAL_FEED_FILTERS } from '@/atoms/feed';
+import type { FeedFilters } from '@/atoms/feed';
 import { UserSearchInput } from './UserSearchInput';
-import { PlaceAutocomplete } from 'src/routes/-components/PlaceAutocomplete';
+import { PlaceAutocomplete } from '@/routes/-components/PlaceAutocomplete';
 import { useRef } from 'react';
 
 interface FeedFilterPanelProps {

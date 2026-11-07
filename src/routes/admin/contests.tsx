@@ -9,7 +9,7 @@ import {
     Add as AddIcon
 } from '@mui/icons-material';
 import { useState } from 'react';
-import type { Contest } from '../../types';
+import type { Contest } from '@/types';
 import { ContestTable } from './-components/ContestTable';
 import { ContestFormDialog } from './-components/ContestFormDialog';
 import { useAdminContests } from './hooks/-useAdminContests';

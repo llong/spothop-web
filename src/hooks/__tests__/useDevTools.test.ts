@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { useDevtools } from '../useDevTools';
+import { useDevtools } from '@/hooks/useDevTools';
 import { vi, describe, it, expect } from 'vitest';
 import { useAtomDevtools } from 'jotai-devtools';
 

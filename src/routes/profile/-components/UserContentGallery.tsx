@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Box, Tabs, Tab, Typography, Grid, List } from '@mui/material';
-import type { Spot, UserMediaItem } from 'src/types';
+import type { Spot, UserMediaItem } from '@/types';
 import { SpotGalleryItem } from './SpotGalleryItem';
 import { MediaGalleryItem } from './MediaGalleryItem';
 import { LightboxDialog } from './LightboxDialog';
-import { useLightbox } from '../hooks/-useLightbox';
+import { useLightbox } from '@/routes/profile/hooks/-useLightbox';
 
 interface UserContentGalleryProps {
     createdSpots: Spot[];

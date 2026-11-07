@@ -4,9 +4,9 @@ import {
     TextField, Button, Box, Alert, CircularProgress, Typography,
     Autocomplete
 } from '@mui/material';
-import { parseYoutubeId, timeToSeconds, secondsToTime } from 'src/utils/youtube';
-import { spotService } from 'src/services/spotService';
-import type { SpotVideoLink } from 'src/types';
+import { parseYoutubeId, timeToSeconds, secondsToTime } from '@/utils/youtube';
+import { spotService } from '@/services/spotService';
+import type { SpotVideoLink } from '@/types';
 
 interface AddVideoLinkDialogProps {
     open: boolean;

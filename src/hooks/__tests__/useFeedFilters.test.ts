@@ -1,9 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useFeedFilters } from '../useFeedFilters';
-import { INITIAL_FEED_FILTERS } from 'src/atoms/feed';
+import { useFeedFilters } from '@/hooks/useFeedFilters';
+import { INITIAL_FEED_FILTERS } from '@/atoms/feed';
 
-vi.mock('src/hooks/useGeolocation', () => ({
+vi.mock('@/hooks/useGeolocation', () => ({
     useGeolocation: () => ({
         centerMapOnUser: vi.fn().mockResolvedValue({ latitude: 10, longitude: 20 })
     })

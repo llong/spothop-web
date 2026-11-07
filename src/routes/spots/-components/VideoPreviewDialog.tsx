@@ -8,7 +8,7 @@ import {
     IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import type { VideoAsset } from 'src/types';
+import type { VideoAsset } from '@/types';
 
 interface VideoPreviewDialogProps {
     open: boolean;

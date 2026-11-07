@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { SidebarActions } from '../SidebarActions';
+import { SidebarActions } from '@/routes/spots/-components/SpotSidebar/SidebarActions';
 
 describe('SidebarActions', () => {
     const mockProps = {

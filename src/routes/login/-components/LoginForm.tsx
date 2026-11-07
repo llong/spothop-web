@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 
 export function LoginForm() {
     const [email, setEmail] = useState('');

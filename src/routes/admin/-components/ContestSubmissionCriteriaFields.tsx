@@ -10,7 +10,7 @@ import {
     Divider,
 } from '@mui/material';
 import { SearchInput } from '@/components/SearchInput/SearchInput';
-import type { Contest } from '../../../types';
+import type { Contest } from '@/types';
 
 interface ContestSubmissionCriteriaFieldsProps {
     formData: Partial<Contest>;

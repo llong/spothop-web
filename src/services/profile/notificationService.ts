@@ -1,5 +1,5 @@
-import supabase from "../../supabase";
-import type { AppNotification } from "../../types";
+import supabase from "@/supabase";
+import type { AppNotification } from "@/types";
 
 export const notificationService = {
     async fetchNotifications(userId: string): Promise<AppNotification[]> {

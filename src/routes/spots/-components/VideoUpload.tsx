@@ -1,11 +1,11 @@
 import { Button, Box, Typography, Stack, Dialog } from '@mui/material';
 import VideoFileIcon from '@mui/icons-material/VideoFile';
-import type { VideoAsset } from 'src/types';
+import type { VideoAsset } from '@/types';
 import { VideoThumbnailSelector } from './VideoThumbnailSelector';
 import { VideoTrimmer } from './VideoTrimmer';
 import { VideoAssetCard } from './VideoAssetCard';
 import { VideoPreviewDialog } from './VideoPreviewDialog';
-import { useVideoUpload } from '../hooks/-useVideoUpload';
+import { useVideoUpload } from '@/routes/spots/hooks/-useVideoUpload';
 
 interface VideoUploadProps {
     onFilesSelect: (videos: VideoAsset[]) => void;

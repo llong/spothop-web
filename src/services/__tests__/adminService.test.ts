@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { adminService } from '../adminService';
-import supabase from '../../supabase';
+import { adminService } from '@/services/adminService';
+import supabase from '@/supabase';
 
 // Create a robust chain mock
 const mockChain: any = {
@@ -20,7 +20,7 @@ const mockChain: any = {
     }),
 };
 
-vi.mock('../../supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => mockChain),
         storage: {

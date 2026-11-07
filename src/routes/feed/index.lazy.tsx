@@ -8,17 +8,17 @@ import {
     alpha,
 } from '@mui/material';
 import { useAtomValue, useAtom } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { userLocationAtom } from 'src/atoms/map';
+import { userAtom } from '@/atoms/auth';
+import { userLocationAtom } from '@/atoms/map';
 import { useQueryClient } from '@tanstack/react-query';
-import { feedFiltersAtom, INITIAL_FEED_FILTERS } from 'src/atoms/feed';
+import { feedFiltersAtom, INITIAL_FEED_FILTERS } from '@/atoms/feed';
 import { useState, useMemo } from 'react';
 import { FeedFilterPanel } from './-components/FeedFilterPanel';
 import { FeedContent } from './-components/FeedContent';
 import { FeedHeader } from './-components/FeedHeader';
 import { useGlobalFeed, useFollowingFeed } from './hooks/-useFeedData';
-import SEO from 'src/components/SEO/SEO';
-import { analytics } from 'src/lib/posthog';
+import SEO from '@/components/SEO/SEO';
+import { analytics } from '@/lib/posthog';
 
 export const Route = createLazyFileRoute('/feed/')({
     component: FeedScreen,

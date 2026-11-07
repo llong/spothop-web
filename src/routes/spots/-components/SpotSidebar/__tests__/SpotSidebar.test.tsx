@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { SpotSidebar } from '../SpotSidebar';
+import { SpotSidebar } from '@/routes/spots/-components/SpotSidebar/SpotSidebar';
 
-vi.mock('../SidebarActions', () => ({
+vi.mock('@/routes/spots/-components/SpotSidebar/SidebarActions', () => ({
     SidebarActions: ({ onDirectionsClick }: any) => (
         <button onClick={onDirectionsClick}>Actions</button>
     )

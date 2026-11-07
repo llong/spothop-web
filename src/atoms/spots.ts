@@ -1,5 +1,5 @@
 import { atom } from 'jotai'
-import type { Spot, SpotFilters } from 'src/types'
+import type { Spot, SpotFilters } from '@/types'
 
 export const spotsAtom = atom<Spot[]>([])
 spotsAtom.debugLabel = 'spots'

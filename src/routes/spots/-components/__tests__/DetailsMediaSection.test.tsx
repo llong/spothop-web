@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { DetailsMediaSection } from '../DetailsMediaSection';
+import { DetailsMediaSection } from '@/routes/spots/-components/DetailsMediaSection';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 const theme = createTheme();
@@ -35,7 +35,7 @@ const mockSpot = {
 } as any;
 
 // Mock MediaListItem and ProPartsTab to avoid deep rendering issues
-vi.mock('../MediaListItem', () => ({
+vi.mock('@/routes/spots/-components/MediaListItem', () => ({
   MediaListItem: ({ item, onClick }: any) => (
     <div data-testid={`media-item-${item.id}`} onClick={onClick}>
       {item.type}
@@ -43,7 +43,7 @@ vi.mock('../MediaListItem', () => ({
   )
 }));
 
-vi.mock('../ProParts/ProPartsTab', () => ({
+vi.mock('@/routes/spots/-components/ProParts/ProPartsTab', () => ({
   ProPartsTab: () => <div data-testid="pro-parts-tab">Pro Parts</div>
 }));
 

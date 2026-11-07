@@ -4,7 +4,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMediaQuery } from '@mui/material';
-import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAtomValue } from 'jotai';
 
 // Mock dependencies
@@ -27,11 +27,11 @@ vi.mock('jotai', async (importOriginal) => {
     };
 });
 
-vi.mock('src/hooks/useProfile', () => ({
+vi.mock('@/hooks/useProfile', () => ({
     useProfile: () => ({ profile: { displayName: 'Test User' } }),
 }));
 
-vi.mock('src/hooks/useOnlineStatus', () => ({
+vi.mock('@/hooks/useOnlineStatus', () => ({
     useOnlineStatus: vi.fn(() => true),
 }));
 

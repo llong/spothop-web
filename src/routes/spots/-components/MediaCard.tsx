@@ -2,8 +2,8 @@ import { Box, Typography, IconButton, Stack, Avatar } from '@mui/material';
 import { Favorite, FavoriteBorder, PlayCircleOutline } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { Link } from '@tanstack/react-router';
-import type { MediaItem } from 'src/types';
-import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
+import type { MediaItem } from '@/types';
+import { getOptimizedImageUrl } from '@/utils/imageOptimization';
 import { memo } from 'react';
 
 interface MediaCardProps {

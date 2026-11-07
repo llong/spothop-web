@@ -8,9 +8,9 @@ import {
     DeleteOutline,
     Done
 } from '@mui/icons-material';
-import { useNotifications } from 'src/hooks/useNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 
 export const NotificationsComponent = () => {
     const { notifications = [], loading, markAsRead, deleteNotification, markAllAsRead } = useNotifications();

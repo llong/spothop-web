@@ -21,12 +21,12 @@ import {
     usePostMediaComment,
     useToggleFollow,
     useToggleCommentReaction
-} from '../useFeedQueries';
-import { feedService } from '../../services/feedService';
+} from '@/hooks/useFeedQueries';
+import { feedService } from '@/services/feedService';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'jotai';
 
-vi.mock('../../services/feedService', () => ({
+vi.mock('@/services/feedService', () => ({
     feedService: {
         fetchGlobalFeed: vi.fn(),
         toggleMediaLike: vi.fn(),

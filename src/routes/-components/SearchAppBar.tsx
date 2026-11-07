@@ -5,9 +5,9 @@ import Typography from '@mui/material/Typography';
 import { Map, List, Search as SearchIcon, FilterList as FilterListIcon } from '@mui/icons-material';
 import { NavigationItems } from './NavigationItems';
 import { NotificationBell } from './NotificationBell';
-import { userAtom } from 'src/atoms/auth';
-import { useProfile } from 'src/hooks/useProfile';
-import { viewAtom } from 'src/atoms/map';
+import { userAtom } from '@/atoms/auth';
+import { useProfile } from '@/hooks/useProfile';
+import { viewAtom } from '@/atoms/map';
 import { useMediaQuery, Box, Badge, Stack } from '@mui/material';
 import { useNavigate, useLocation } from '@tanstack/react-router';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -15,12 +15,12 @@ import { MobileDrawer } from './MobileDrawer';
 import { useAtom, useAtomValue } from 'jotai';
 import { CloudOff } from '@mui/icons-material';
 import { Tooltip, Chip } from '@mui/material';
-import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { PlaceAutocomplete } from './PlaceAutocomplete';
 import { FilterBar } from './FilterBar';
-import { isFiltersOpenAtom, filtersAtom } from 'src/atoms/spots';
+import { isFiltersOpenAtom, filtersAtom } from '@/atoms/spots';
 import { useRef, useState } from 'react';
-import { useMapSearch } from 'src/hooks/useMapSearch'; // Import new hook
+import { useMapSearch } from '@/hooks/useMapSearch'; // Import new hook
 
 const Search = styled('div')(({ theme }) => ({
     position: 'relative',

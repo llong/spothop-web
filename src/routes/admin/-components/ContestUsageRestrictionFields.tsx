@@ -9,7 +9,7 @@ import {
     MenuItem,
     Divider,
 } from '@mui/material';
-import type { Contest } from '../../../types';
+import type { Contest } from '@/types';
 
 interface ContestUsageRestrictionFieldsProps {
     formData: Partial<Contest>;

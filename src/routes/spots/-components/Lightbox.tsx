@@ -2,10 +2,10 @@ import { Box, IconButton, Stack, Avatar, Typography, Dialog, styled, Button } fr
 import { Favorite, FavoriteBorder, Close, DeleteForever } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { EmblaCarousel } from './EmblaCarousel';
-import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
-import type { MediaItem } from 'src/types';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
-import { useAdminQueries } from 'src/hooks/useAdminQueries';
+import { getOptimizedImageUrl } from '@/utils/imageOptimization';
+import type { MediaItem } from '@/types';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
+import { useAdminQueries } from '@/hooks/useAdminQueries';
 
 const LightboxVideo = styled('video')({
     maxWidth: '100%',
@@ -24,7 +24,7 @@ interface LightboxProps {
 }
 
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 
 export const Lightbox = ({
     open,

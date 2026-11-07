@@ -1,10 +1,10 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useProfileQuery, useSocialStatsQuery } from '../useProfileQueries';
+import { useProfileQuery, useSocialStatsQuery } from '@/hooks/useProfileQueries';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { profileService } from 'src/services/profileService';
+import { profileService } from '@/services/profileService';
 
-vi.mock('src/services/profileService', () => ({
+vi.mock('@/services/profileService', () => ({
     profileService: {
         fetchIdentity: vi.fn(),
         fetchFollowStats: vi.fn(),

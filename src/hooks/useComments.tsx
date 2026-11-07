@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import type { SpotComment } from 'src/types';
-import { analytics } from 'src/lib/posthog';
+import { userAtom } from '@/atoms/auth';
+import type { SpotComment } from '@/types';
+import { analytics } from '@/lib/posthog';
 
 export function useComments(spotId: string) {
     const user = useAtomValue(userAtom);

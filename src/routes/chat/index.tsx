@@ -1,13 +1,13 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { Container, Typography, Box, List, ListItem, ListItemAvatar, Avatar, ListItemText, Paper, Badge, Chip, Stack, Button, Tabs, Tab } from '@mui/material';
-import { useConversationsQuery } from 'src/hooks/useChatQueries';
+import { useConversationsQuery } from '@/hooks/useChatQueries';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 import { formatDistanceToNow } from 'date-fns';
 import { ChatBubbleOutline, GroupsOutlined, PersonOutline } from '@mui/icons-material';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { useState } from 'react';
-import { chatService } from 'src/services/chatService';
+import { chatService } from '@/services/chatService';
 import { useQueryClient } from '@tanstack/react-query';
 import { CreateGroupDialog } from './-components/CreateGroupDialog';
 import { Add } from '@mui/icons-material';

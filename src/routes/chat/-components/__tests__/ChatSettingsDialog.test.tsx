@@ -1,11 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ChatSettingsDialog } from '../ChatSettingsDialog';
-import supabase from 'src/supabase';
+import { ChatSettingsDialog } from '@/routes/chat/-components/ChatSettingsDialog';
+import supabase from '@/supabase';
 import { useQueryClient } from '@tanstack/react-query';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(),
     },

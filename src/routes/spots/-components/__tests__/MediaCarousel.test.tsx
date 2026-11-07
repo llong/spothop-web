@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { MediaCarousel } from '../MediaCarousel';
+import { MediaCarousel } from '@/routes/spots/-components/MediaCarousel';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 const theme = createTheme();

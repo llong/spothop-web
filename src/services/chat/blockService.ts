@@ -1,4 +1,4 @@
-import supabase from "../../supabase";
+import supabase from "@/supabase";
 
 export const blockService = {
     async blockUser(blockerId: string, blockedId: string) {

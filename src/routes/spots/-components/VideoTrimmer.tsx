@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
-import { trimVideo } from '../../../utils/videoProcessing';
+import { trimVideo } from '@/utils/videoProcessing';
 
 interface VideoTrimmerProps {
     file: File;

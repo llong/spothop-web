@@ -1,13 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { FeedContent } from '../FeedContent';
+import { FeedContent } from '@/routes/feed/-components/FeedContent';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('@tanstack/react-router', () => ({
     Link: ({ children }: any) => <div>{children}</div>
 }));
 
-vi.mock('../FeedItem', () => ({
+vi.mock('@/routes/feed/-components/FeedItem', () => ({
     FeedItemCard: () => <div data-testid="feed-item-card" />
 }));
 

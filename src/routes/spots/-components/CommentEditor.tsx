@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TextField, Button, Box } from '@mui/material';
-import type { SpotComment } from 'src/types';
+import type { SpotComment } from '@/types';
 
 interface CommentEditorProps {
     comment: SpotComment;

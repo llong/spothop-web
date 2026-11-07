@@ -1,7 +1,7 @@
 import { useAtomValue } from "jotai";
-import { userAtom } from "../atoms/auth";
-import supabase from "../supabase";
-import type { UserProfile } from "../types";
+import { userAtom } from "@/atoms/auth";
+import supabase from "@/supabase";
+import type { UserProfile } from "@/types";
 import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from "./useProfileQueries";
 import { useQueryClient } from "@tanstack/react-query";
 

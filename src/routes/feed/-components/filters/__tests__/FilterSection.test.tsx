@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { FilterSection } from '../FilterSection';
+import { FilterSection } from '@/routes/feed/-components/filters/FilterSection';
 
 describe('FilterSection', () => {
     it('renders the title and children correctly', () => {

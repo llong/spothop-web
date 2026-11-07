@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { SpotCreatorInfo } from '../SpotCreatorInfo';
+import { SpotCreatorInfo } from '@/routes/spots/-components/SpotCreatorInfo';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { useAtomValue } from 'jotai';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -20,7 +20,7 @@ vi.mock('jotai', async (importOriginal) => {
     };
 });
 
-vi.mock('src/services/chatService', () => ({
+vi.mock('@/services/chatService', () => ({
     chatService: {
         getOrCreate1on1: vi.fn().mockResolvedValue('chat123'),
     }

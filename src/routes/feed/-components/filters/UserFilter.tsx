@@ -1,6 +1,6 @@
 import { Chip, Avatar } from '@mui/material';
-import { UserSearchInput } from '../UserSearchInput';
-import { type FeedFilters } from 'src/atoms/feed';
+import { UserSearchInput } from '@/routes/feed/-components/UserSearchInput';
+import { type FeedFilters } from '@/atoms/feed';
 
 interface UserFilterProps {
     author: FeedFilters['author'];

@@ -1,11 +1,11 @@
 import { renderHook, act } from '@testing-library/react';
-import useSpots from '../useSpots';
+import useSpots from '@/hooks/useSpots';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { useAtom, useAtomValue } from 'jotai';
 
 
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => ({
             select: vi.fn().mockImplementation(() => ({

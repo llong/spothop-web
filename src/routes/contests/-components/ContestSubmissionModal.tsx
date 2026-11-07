@@ -18,7 +18,7 @@ import {
     Close as CloseIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
-import { useContestSubmission } from '../hooks/-useContestSubmission';
+import { useContestSubmission } from '@/routes/contests/hooks/-useContestSubmission';
 import { SpotSelectionCard } from './SpotSelectionCard';
 import { MediaSelectionCard } from './MediaSelectionCard';
 import { SubmissionConfirmStep } from './SubmissionConfirmStep';

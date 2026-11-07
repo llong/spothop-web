@@ -13,7 +13,7 @@ import {
     Snackbar,
     Link as MuiLink,
 } from '@mui/material';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { useState } from 'react';
 import { FormControlLabel, Checkbox } from '@mui/material';
 

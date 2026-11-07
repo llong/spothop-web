@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getSpotThumbnail, formatMediaItem, enrichLocation } from '../media-utils';
+import { getSpotThumbnail, formatMediaItem, enrichLocation } from '@/utils/media-utils';
 
-vi.mock('../geocoding', () => ({
+vi.mock('@/utils/geocoding', () => ({
     reverseGeocode: vi.fn(() => Promise.resolve({
         city: 'Enriched City',
         state: 'ES',

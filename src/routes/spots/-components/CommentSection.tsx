@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { Box, Typography, Divider, CircularProgress, Stack, Paper } from '@mui/material';
-import { useComments } from 'src/hooks/useComments';
+import { useComments } from '@/hooks/useComments';
 import { CommentItem } from './CommentItem';
 import { CommentForm } from './CommentForm';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 
 interface CommentSectionProps {
     spotId: string;

@@ -17,8 +17,8 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from '@tanstack/react-router';
-import { useUserFollowersQuery, useUserFollowingQuery } from '../../../hooks/useProfileQueries';
-import { getOptimizedImageUrl } from '../../../utils/imageOptimization';
+import { useUserFollowersQuery, useUserFollowingQuery } from '@/hooks/useProfileQueries';
+import { getOptimizedImageUrl } from '@/utils/imageOptimization';
 
 interface UserListDialogProps {
     open: boolean;

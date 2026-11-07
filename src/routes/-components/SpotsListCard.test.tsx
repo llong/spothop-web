@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import SpotsListCard from './SpotsListCard';
-import type { Spot } from 'src/types';
+import type { Spot } from '@/types';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
@@ -15,7 +15,7 @@ vi.mock('@tanstack/react-router', () => ({
 }));
 
 // Mock Geocoding hook
-vi.mock('src/hooks/useGeocoding', () => ({
+vi.mock('@/hooks/useGeocoding', () => ({
     useGeocoding: vi.fn(() => ({
         buildLocationString: vi.fn().mockResolvedValue('123 Skate St, Skate City, Skate Country')
     }))

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SpotDetailsForm } from '../SpotDetailsForm';
+import { SpotDetailsForm } from '@/routes/spots/-components/SpotDetailsForm';
 import { vi, describe, it, expect } from 'vitest';
 
 describe('SpotDetailsForm', () => {

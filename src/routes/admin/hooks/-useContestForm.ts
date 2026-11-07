@@ -2,9 +2,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { debounce } from '@mui/material';
-import { adminContestService } from '../../../services/adminContestService';
+import { adminContestService } from '@/services/adminContestService';
 import { profileService } from '@/services/profileService';
-import type { Contest, ContestCriteria } from '../../../types';
+import type { Contest, ContestCriteria } from '@/types';
 
 // Define the return type for useContestForm hook
 interface UseContestFormReturn {

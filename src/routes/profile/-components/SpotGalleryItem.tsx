@@ -15,7 +15,7 @@ import {
 } from '@mui/icons-material';
 import { Link } from '@tanstack/react-router';
 import { format } from 'date-fns';
-import type { Spot } from 'src/types';
+import type { Spot } from '@/types';
 
 interface SpotGalleryItemProps {
     spot: Spot;

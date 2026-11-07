@@ -1,5 +1,5 @@
 import { Box, Stack, Typography, CircularProgress } from '@mui/material';
-import { useSocialStatsQuery } from 'src/hooks/useProfileQueries';
+import { useSocialStatsQuery } from '@/hooks/useProfileQueries';
 
 interface UserStatsProps {
     userId: string;

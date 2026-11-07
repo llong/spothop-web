@@ -13,7 +13,7 @@ import {
     Edit as EditIcon,
     Delete as DeleteIcon,
 } from '@mui/icons-material';
-import type { Contest } from '../../../types';
+import type { Contest } from '@/types';
 
 interface ContestTableProps {
     contests: Contest[];

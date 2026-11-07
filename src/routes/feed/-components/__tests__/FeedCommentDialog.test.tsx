@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { FeedCommentDialog } from '../FeedCommentDialog';
-import { useMediaComments, usePostMediaComment, useToggleCommentReaction } from 'src/hooks/useFeedQueries';
+import { FeedCommentDialog } from '@/routes/feed/-components/FeedCommentDialog';
+import { useMediaComments, usePostMediaComment, useToggleCommentReaction } from '@/hooks/useFeedQueries';
 
-vi.mock('src/hooks/useFeedQueries');
+vi.mock('@/hooks/useFeedQueries');
 
 describe('FeedCommentDialog', () => {
     const mockItem = { media_id: 'm1', media_type: 'photo' } as any;

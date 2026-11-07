@@ -1,5 +1,5 @@
 import { useAtomDevtools } from 'jotai-devtools';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 
 
 export function useDevtools() {

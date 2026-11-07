@@ -9,7 +9,7 @@ import {
 import DirectionsIcon from '@mui/icons-material/Directions';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Link } from '@tanstack/react-router';
-import type { Spot } from 'src/types';
+import type { Spot } from '@/types';
 
 interface DetailsSidebarProps {
     spot: Spot;

@@ -1,10 +1,10 @@
 import { Box, useMediaQuery, useTheme, Button } from '@mui/material';
 import { ArrowBack } from '@mui/icons-material';
 import { useState, useCallback } from 'react';
-import { useMediaLikes } from 'src/hooks/useMediaLikes';
-import type { MediaItem } from 'src/types';
+import { useMediaLikes } from '@/hooks/useMediaLikes';
+import type { MediaItem } from '@/types';
 import { useRouter, useBlocker } from '@tanstack/react-router';
-import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
+import { getOptimizedImageUrl } from '@/utils/imageOptimization';
 import { EmblaCarousel } from './EmblaCarousel';
 import { MediaGrid } from './MediaGrid';
 import { Lightbox } from './Lightbox';

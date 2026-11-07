@@ -1,13 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { LocationFilter } from '../LocationFilter';
-import { useGeolocation } from 'src/hooks/useGeolocation';
+import { LocationFilter } from '@/routes/feed/-components/filters/LocationFilter';
+import { useGeolocation } from '@/hooks/useGeolocation';
 
-vi.mock('src/hooks/useGeolocation', () => ({
+vi.mock('@/hooks/useGeolocation', () => ({
     useGeolocation: vi.fn()
 }));
 
-vi.mock('src/routes/-components/PlaceAutocomplete', () => ({
+vi.mock('@/routes/-components/PlaceAutocomplete', () => ({
     PlaceAutocomplete: vi.fn(({ onPlaceSelect }) => (
         <input 
             data-testid="mock-place-autocomplete" 

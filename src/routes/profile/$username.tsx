@@ -1,17 +1,17 @@
 import { createFileRoute, useNavigate, redirect } from '@tanstack/react-router';
-import supabase from '../../supabase';
+import supabase from '@/supabase';
 import { Container, Box, Typography, Avatar, Card, CardContent, Grid, Divider, Button, Stack } from '@mui/material';
 import { useAtomValue } from 'jotai';
-import { userAtom } from '../../atoms/auth';
+import { userAtom } from '@/atoms/auth';
 import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { UserContentGallery } from './-components/UserContentGallery';
-import { profileKeys, useProfileQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
+import { profileKeys, useProfileQuery, useUserContentQuery } from '@/hooks/useProfileQueries';
 import { UserStats } from './-components/UserStats';
-import { profileService } from 'src/services/profileService';
-import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
-import { chatService, blockService } from 'src/services/chatService';
-import { analytics } from 'src/lib/posthog';
+import { profileService } from '@/services/profileService';
+import { getOptimizedImageUrl } from '@/utils/imageOptimization';
+import { chatService, blockService } from '@/services/chatService';
+import { analytics } from '@/lib/posthog';
 import SEO from '@/components/SEO/SEO';
 
 // Loader function to fetch profile data

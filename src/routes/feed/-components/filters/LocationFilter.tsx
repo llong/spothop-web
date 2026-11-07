@@ -6,9 +6,9 @@ import {
     Switch,
     FormControlLabel,
 } from '@mui/material';
-import { PlaceAutocomplete } from 'src/routes/-components/PlaceAutocomplete';
-import { useGeolocation } from 'src/hooks/useGeolocation';
-import { type FeedFilters } from 'src/atoms/feed';
+import { PlaceAutocomplete } from '@/routes/-components/PlaceAutocomplete';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { type FeedFilters } from '@/atoms/feed';
 import { type MutableRefObject } from 'react';
 
 interface LocationFilterProps {

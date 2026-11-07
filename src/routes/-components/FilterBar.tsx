@@ -15,8 +15,8 @@ import {
     Popover
 } from '@mui/material';
 import { useAtom } from 'jotai';
-import type { SpotFilters } from 'src/types';
-import { isFiltersOpenAtom } from 'src/atoms/spots';
+import type { SpotFilters } from '@/types';
+import { isFiltersOpenAtom } from '@/atoms/spots';
 import { memo } from 'react';
 
 interface FilterBarProps {

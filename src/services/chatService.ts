@@ -1,5 +1,5 @@
-import supabase from "../supabase";
-import type { UserProfile } from "../types";
+import supabase from "@/supabase";
+import type { UserProfile } from "@/types";
 
 export interface ChatMessage {
     id: string;

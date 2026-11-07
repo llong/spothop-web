@@ -1,7 +1,7 @@
 
 import { Box } from '@mui/material';
 import { CommentForm } from './CommentForm';
-import type { SpotComment } from 'src/types';
+import type { SpotComment } from '@/types';
 
 interface CommentRepliesProps {
     comment: SpotComment;

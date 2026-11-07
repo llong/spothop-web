@@ -1,9 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useMapSearch } from '../useMapSearch';
+import { useMapSearch } from '@/hooks/useMapSearch';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useNavigate } from '@tanstack/react-router';
-import { analytics } from 'src/lib/posthog';
+import { analytics } from '@/lib/posthog';
 
 vi.mock('jotai', async (importOriginal) => {
     const actual = await importOriginal<typeof import('jotai')>();
@@ -20,7 +20,7 @@ vi.mock('@tanstack/react-router', () => ({
 
 }));
 
-vi.mock('src/lib/posthog', () => ({
+vi.mock('@/lib/posthog', () => ({
     analytics: {
         capture: vi.fn()
     }

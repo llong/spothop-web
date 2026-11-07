@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { LoginForm } from '../LoginForm';
+import { LoginForm } from '@/routes/login/-components/LoginForm';
 import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
 

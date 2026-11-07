@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { Link } from '@tanstack/react-router';
 import { format } from 'date-fns';
-import type { UserMediaItem } from 'src/types';
+import type { UserMediaItem } from '@/types';
 
 interface LightboxDialogProps {
     open: boolean;

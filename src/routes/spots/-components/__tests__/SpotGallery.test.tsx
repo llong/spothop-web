@@ -1,10 +1,10 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SpotGallery } from '../SpotGallery';
+import { SpotGallery } from '@/routes/spots/-components/SpotGallery';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock dependencies
-vi.mock('src/hooks/useMediaLikes', () => ({
+vi.mock('@/hooks/useMediaLikes', () => ({
     useMediaLikes: () => ({
         toggleLike: vi.fn().mockResolvedValue({ success: true }),
         loading: {},

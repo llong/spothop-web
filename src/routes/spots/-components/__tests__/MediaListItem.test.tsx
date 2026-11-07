@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { MediaListItem } from '../MediaListItem';
+import { MediaListItem } from '@/routes/spots/-components/MediaListItem';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 const theme = createTheme();
@@ -17,15 +17,15 @@ const mockItem = {
 };
 
 // Mock hooks
-vi.mock('src/hooks/useFeedQueries', () => ({
+vi.mock('@/hooks/useFeedQueries', () => ({
   useToggleFollow: vi.fn(() => ({ mutate: vi.fn(), isPending: false }))
 }));
 
-vi.mock('src/hooks/useProfileQueries', () => ({
+vi.mock('@/hooks/useProfileQueries', () => ({
   useProfileQuery: vi.fn(() => ({ data: { role: 'user' } }))
 }));
 
-vi.mock('src/hooks/useAdminQueries', () => ({
+vi.mock('@/hooks/useAdminQueries', () => ({
   useAdminQueries: vi.fn(() => ({ deleteContent: vi.fn(), isActioning: false }))
 }));
 

@@ -13,9 +13,9 @@ import {
     Gavel,
 } from '@mui/icons-material'
 import { useState, useCallback } from 'react'
-import { useAdminQueries } from '../../hooks/useAdminQueries'
-import type { UserProfile } from '../../types'
-import { adminService } from '../../services/adminService'
+import { useAdminQueries } from '@/hooks/useAdminQueries'
+import type { UserProfile } from '@/types'
+import { adminService } from '@/services/adminService'
 import { debounce } from 'lodash'
 import { ModerationQueue } from './-components/ModerationQueue'
 import { UserManagement } from './-components/UserManagement'

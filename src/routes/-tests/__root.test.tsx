@@ -1,26 +1,26 @@
 import { render, screen, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { RootComponent, Route } from "../__root";
+import { RootComponent, Route } from "@/routes/__root";
 import { createRouter, RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import "@testing-library/jest-dom";
 import { Provider, createStore } from "jotai";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { userAtom } from "src/atoms/auth";
+import { userAtom } from "@/atoms/auth";
 
 // Mock dependencies
-vi.mock("src/hooks/useDevTools", () => ({
+vi.mock("@/hooks/useDevTools", () => ({
   useDevtools: vi.fn(),
 }));
 
-vi.mock("src/hooks/useProfileQueries", () => ({
+vi.mock("@/hooks/useProfileQueries", () => ({
   useProfileQuery: vi.fn(() => ({ data: null, isLoading: false })),
 }));
 
 let authStateChangeCallback: any;
 const unsubscribeMock = vi.fn();
 
-vi.mock("src/supabase", () => ({
+vi.mock("@/supabase", () => ({
   default: {
     auth: {
       onAuthStateChange: vi.fn((callback) => {
@@ -34,11 +34,11 @@ vi.mock("src/supabase", () => ({
 }));
 
 // Mock using full path to ensure it hits
-vi.mock("src/routes/-components/SearchAppBar", () => ({
+vi.mock("@/routes/-components/SearchAppBar", () => ({
   default: () => <div data-testid="search-app-bar">SearchAppBar</div>,
 }));
 
-vi.mock("src/routes/-components/BottomNav", () => ({
+vi.mock("@/routes/-components/BottomNav", () => ({
   BottomNav: () => <div data-testid="bottom-nav">BottomNav</div>,
 }));
 

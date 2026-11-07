@@ -20,9 +20,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import SendIcon from '@mui/icons-material/Send';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { useMediaComments, usePostMediaComment, useToggleCommentReaction } from 'src/hooks/useFeedQueries';
+import { useMediaComments, usePostMediaComment, useToggleCommentReaction } from '@/hooks/useFeedQueries';
 import { formatDistanceToNow } from 'date-fns';
-import type { FeedItem } from 'src/types';
+import type { FeedItem } from '@/types';
 
 interface FeedCommentDialogProps {
     open: boolean;

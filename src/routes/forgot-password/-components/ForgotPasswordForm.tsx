@@ -10,7 +10,7 @@ import {
     Alert
 } from '@mui/material';
 import LockResetIcon from '@mui/icons-material/LockReset';
-import supabase from '../../../supabase';
+import supabase from '@/supabase';
 
 export function ForgotPasswordForm() {
     const [email, setEmail] = useState('');

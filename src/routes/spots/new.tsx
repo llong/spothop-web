@@ -13,7 +13,7 @@ import {
     Snackbar,
     Divider
 } from '@mui/material';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { VideoUpload } from './-components/VideoUpload';
 import { PhotoUpload } from './-components/PhotoUpload';
 import { LocationPreview } from './-components/LocationPreview';

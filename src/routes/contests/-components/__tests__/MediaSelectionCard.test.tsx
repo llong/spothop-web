@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MediaSelectionCard } from '../MediaSelectionCard';
+import { MediaSelectionCard } from '@/routes/contests/-components/MediaSelectionCard';
 import { vi, describe, it, expect } from 'vitest';
 
 describe('MediaSelectionCard', () => {

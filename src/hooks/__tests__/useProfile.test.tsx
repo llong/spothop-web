@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { useProfile } from '../useProfile';
+import { useProfile } from '@/hooks/useProfile';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAtomValue } from 'jotai';
@@ -26,7 +26,7 @@ mockFrom.mockImplementation(() => ({
     },
 }));
 
-vi.mock('../supabase', () => ({
+vi.mock('@/hooks/supabase', () => ({
     default: {
         from: mockFrom,
     }

@@ -1,5 +1,5 @@
 import { Paper, Typography, Divider } from '@mui/material';
-import type { Spot } from 'src/types';
+import type { Spot } from '@/types';
 import { SidebarActions } from './SidebarActions';
 
 interface SpotSidebarProps {

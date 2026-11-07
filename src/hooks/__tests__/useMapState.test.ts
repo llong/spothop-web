@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useMapState } from '../useMapState';
+import { useMapState } from '@/hooks/useMapState';
 import type { Map as LeafletMap } from 'leaflet';
 import L from 'leaflet';
 import { useSetAtom } from 'jotai';

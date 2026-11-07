@@ -2,15 +2,15 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
-import { useSpotQuery, useDeleteSpotMutation } from 'src/hooks/useSpotQueries';
-import { useSpotFavorites } from 'src/hooks/useSpotFavorites';
-import { useMediaLikes } from 'src/hooks/useMediaLikes';
-import { useFlagging } from 'src/hooks/useFlagging';
-import { rightSidebarAtom } from 'src/atoms/ui';
-import { analytics } from 'src/lib/posthog';
-import type { MediaItem } from 'src/types';
+import { userAtom } from '@/atoms/auth';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
+import { useSpotQuery, useDeleteSpotMutation } from '@/hooks/useSpotQueries';
+import { useSpotFavorites } from '@/hooks/useSpotFavorites';
+import { useMediaLikes } from '@/hooks/useMediaLikes';
+import { useFlagging } from '@/hooks/useFlagging';
+import { rightSidebarAtom } from '@/atoms/ui';
+import { analytics } from '@/lib/posthog';
+import type { MediaItem } from '@/types';
 
 export function useSpotDetailsState(spotId: string) {
     const auth = useAtomValue(userAtom);

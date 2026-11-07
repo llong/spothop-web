@@ -14,8 +14,8 @@ import {
 } from '@mui/material';
 import { PhotoUpload } from './PhotoUpload';
 import { VideoUpload } from './VideoUpload';
-import { useMediaUploadMutation } from 'src/hooks/useMediaUploadMutation';
-import type { VideoAsset } from 'src/types';
+import { useMediaUploadMutation } from '@/hooks/useMediaUploadMutation';
+import type { VideoAsset } from '@/types';
 
 interface AddMediaDialogProps {
     spotId: string;

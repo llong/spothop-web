@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseYoutubeId, timeToSeconds, secondsToTime } from '../youtube';
+import { parseYoutubeId, timeToSeconds, secondsToTime } from '@/utils/youtube';
 
 describe('youtube utils', () => {
     describe('parseYoutubeId', () => {

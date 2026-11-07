@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { confirmAction } from '../confirmations';
+import { confirmAction } from '@/utils/confirmations';
 
 describe('confirmAction', () => {
     it('returns true when window.confirm is true', async () => {

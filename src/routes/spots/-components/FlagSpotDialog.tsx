@@ -15,10 +15,10 @@ import {
     Box,
     Typography
 } from '@mui/material';
-import { useFlagging } from 'src/hooks/useFlagging';
-import { SPOT_FLAG_REASONS, type SpotFlagReason } from 'src/types';
+import { useFlagging } from '@/hooks/useFlagging';
+import { SPOT_FLAG_REASONS, type SpotFlagReason } from '@/types';
 import { useQueryClient } from '@tanstack/react-query';
-import { spotKeys } from 'src/hooks/useSpotQueries';
+import { spotKeys } from '@/hooks/useSpotQueries';
 
 interface FlagSpotDialogProps {
     spotId: string;

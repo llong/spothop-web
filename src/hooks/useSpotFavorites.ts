@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Spot } from 'src/types';
+import type { Spot } from '@/types';
 import { useToggleFavoriteMutation } from './useSpotQueries';
 
 // ... (imports remain the same)

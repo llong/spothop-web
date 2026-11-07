@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import type { VideoAsset } from 'src/types';
+import type { VideoAsset } from '@/types';
 
 export function useVideoUpload(onFilesSelect: (videos: VideoAsset[]) => void) {
     const [selectedVideos, setSelectedVideos] = useState<VideoAsset[]>([]);

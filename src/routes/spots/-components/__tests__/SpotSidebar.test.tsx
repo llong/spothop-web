@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SpotSidebar } from '../SpotSidebar/SpotSidebar';
+import { SpotSidebar } from '@/routes/spots/-components/SpotSidebar/SpotSidebar';
 import { vi, describe, it, expect } from 'vitest';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import type { Spot } from 'src/types';
+import type { Spot } from '@/types';
 
 const theme = createTheme();
 

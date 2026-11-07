@@ -8,7 +8,7 @@ import {
     Done,
     DeleteOutline
 } from '@mui/icons-material';
-import { useNotifications } from 'src/hooks/useNotifications';
+import { useNotifications } from '@/hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { Link, useNavigate } from '@tanstack/react-router';
 

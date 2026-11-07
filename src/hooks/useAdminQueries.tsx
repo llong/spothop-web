@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminService } from "../services/adminService";
+import { adminService } from "@/services/adminService";
 
 export const useAdminQueries = () => {
     const queryClient = useQueryClient();

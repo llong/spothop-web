@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Route } from '../index';
+import { Route } from '@/routes/feed/index';
 
 describe('Feed Route', () => {
     it('is defined', () => {

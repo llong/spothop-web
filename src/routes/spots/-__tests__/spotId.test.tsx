@@ -1,10 +1,10 @@
 import { render, screen, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { SpotDetails } from '../$spotId';
+import { SpotDetails } from '@/routes/spots/$spotId';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { HelmetProvider } from 'react-helmet-async';
-import { useSpotQuery } from 'src/hooks/useSpotQueries';
+import { useSpotQuery } from '@/hooks/useSpotQueries';
 import { useParams } from '@tanstack/react-router';
 import { useAtomValue, useSetAtom } from 'jotai';
 
@@ -22,8 +22,8 @@ vi.mock('@tanstack/react-router', async (importOriginal) => {
   };
 });
 
-// Mock hooks from 'src/hooks/useSpotQueries'
-vi.mock('src/hooks/useSpotQueries', () => ({
+// Mock hooks from '@/hooks/useSpotQueries'
+vi.mock('@/hooks/useSpotQueries', () => ({
   useSpotQuery: vi.fn(),
   useDeleteSpotMutation: vi.fn(() => ({
     mutateAsync: vi.fn(),
@@ -34,15 +34,15 @@ vi.mock('src/hooks/useSpotQueries', () => ({
 }));
 
 // Mock other hooks
-vi.mock('src/hooks/useSpotFavorites', () => ({
+vi.mock('@/hooks/useSpotFavorites', () => ({
   useSpotFavorites: vi.fn(() => ({ isFavorited: false, toggleFavorite: vi.fn() })),
 }));
 
-vi.mock('src/hooks/useMediaLikes', () => ({
+vi.mock('@/hooks/useMediaLikes', () => ({
   useMediaLikes: vi.fn(() => ({ toggleLike: vi.fn(), loading: {} })),
 }));
 
-vi.mock('src/hooks/useFlagging', () => ({
+vi.mock('@/hooks/useFlagging', () => ({
   useFlagging: vi.fn(() => ({ flagSpot: vi.fn() })),
 }));
 
@@ -57,31 +57,31 @@ vi.mock('jotai', async (importOriginal) => {
 });
 
 // Mock sub-components used in SpotDetails
-vi.mock('../-components/MediaCarousel', () => ({
+vi.mock('@/routes/spots/-components/MediaCarousel', () => ({
   MediaCarousel: () => <div data-testid="media-carousel" />,
 }));
 
-vi.mock('../-components/Lightbox', () => ({
+vi.mock('@/routes/spots/-components/Lightbox', () => ({
   Lightbox: () => null,
 }));
 
-vi.mock('../-components/DetailsSidebar', () => ({
+vi.mock('@/routes/spots/-components/DetailsSidebar', () => ({
   DetailsSidebar: () => <div data-testid="sidebar" />,
 }));
 
-vi.mock('../-components/DetailsInfo', () => ({
+vi.mock('@/routes/spots/-components/DetailsInfo', () => ({
   DetailsInfo: () => <div data-testid="info" />,
 }));
 
-vi.mock('../-components/DetailsActions', () => ({
+vi.mock('@/routes/spots/-components/DetailsActions', () => ({
   DetailsActions: () => <div data-testid="actions" />,
 }));
 
-vi.mock('../-components/DetailsMediaSection', () => ({
+vi.mock('@/routes/spots/-components/DetailsMediaSection', () => ({
   DetailsMediaSection: () => <div data-testid="media-section" />,
 }));
 
-vi.mock('src/routes/feed/-components/FeedCommentDialog', () => ({
+vi.mock('@/routes/feed/-components/FeedCommentDialog', () => ({
   FeedCommentDialog: () => null,
 }));
 

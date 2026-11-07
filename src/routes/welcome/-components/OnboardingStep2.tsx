@@ -5,7 +5,7 @@ import {
     Button,
     CircularProgress,
 } from '@mui/material';
-import { ONBOARDING_STRINGS as s } from 'src/constants/strings';
+import { ONBOARDING_STRINGS as s } from '@/constants/strings';
 
 interface OnboardingStep2Props {
     onBack: () => void;

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { FilterActions } from '../FilterActions';
+import { FilterActions } from '@/routes/feed/-components/filters/FilterActions';
 
 describe('FilterActions', () => {
     it('renders the reset and apply buttons', () => {

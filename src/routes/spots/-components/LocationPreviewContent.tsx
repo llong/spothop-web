@@ -1,7 +1,7 @@
 import { Box, Paper, Stack, Typography } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useTheme } from '@mui/material/styles';
-import { TILE_URLS } from '../../../utils/mapTiles';
+import { TILE_URLS } from '@/utils/mapTiles';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { useEffect } from 'react';
 

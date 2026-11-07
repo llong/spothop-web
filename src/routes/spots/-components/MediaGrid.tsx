@@ -1,7 +1,7 @@
 import { Dialog, DialogTitle, DialogContent, IconButton, Grid } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { MediaCard } from './MediaCard';
-import type { MediaItem } from 'src/types';
+import type { MediaItem } from '@/types';
 
 interface MediaGridProps {
     open: boolean;

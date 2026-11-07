@@ -2,7 +2,7 @@ import {
     Grid,
     TextField,
 } from '@mui/material';
-import type { Contest } from '../../../types';
+import type { Contest } from '@/types';
 
 interface ContestBasicInfoFieldsProps {
     formData: Partial<Contest>;

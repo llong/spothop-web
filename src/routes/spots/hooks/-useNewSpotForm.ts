@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { v4 as uuidv4 } from 'uuid';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { useMediaUpload } from 'src/hooks/useMediaUpload';
-import { useOnlineStatus } from 'src/hooks/useOnlineStatus';
-import { reverseGeocode } from 'src/utils/geocoding';
-import { analytics } from 'src/lib/posthog';
-import type { VideoAsset } from 'src/types';
-import supabase from 'src/supabase';
+import { userAtom } from '@/atoms/auth';
+import { useMediaUpload } from '@/hooks/useMediaUpload';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { reverseGeocode } from '@/utils/geocoding';
+import { analytics } from '@/lib/posthog';
+import type { VideoAsset } from '@/types';
+import supabase from '@/supabase';
 
 export function useNewSpotForm(lat: number, lng: number) {
     const isOnline = useOnlineStatus();

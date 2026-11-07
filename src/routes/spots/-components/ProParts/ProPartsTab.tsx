@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Box, Button, Typography, Stack } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import type { Spot, SpotVideoLink } from 'src/types';
+import type { Spot, SpotVideoLink } from '@/types';
 import { VideoLinkItem } from './VideoLinkItem';
 import { AddVideoLinkDialog } from './AddVideoLinkDialog';
-import { spotService } from 'src/services/spotService';
+import { spotService } from '@/services/spotService';
 import { useQueryClient } from '@tanstack/react-query';
-import { spotKeys } from 'src/hooks/useSpotQueries';
+import { spotKeys } from '@/hooks/useSpotQueries';
 
 interface ProPartsTabProps {
     spot: Spot;

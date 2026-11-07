@@ -1,5 +1,5 @@
-import supabase from "../supabase";
-import type { UserProfile } from "../types";
+import supabase from "@/supabase";
+import type { UserProfile } from "@/types";
 import { followService } from './profile/followService';
 import { contentService } from './profile/contentService';
 import { notificationService } from './profile/notificationService';

@@ -8,7 +8,7 @@ import {
     Typography,
     Chip,
 } from '@mui/material';
-import type { Contest } from '../../../types';
+import type { Contest } from '@/types';
 
 interface ContestStatusVotingFieldsProps {
     formData: Partial<Contest>;

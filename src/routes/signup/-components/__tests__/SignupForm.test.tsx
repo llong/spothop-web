@@ -1,9 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { SignupForm } from '../SignupForm';
-import supabase from 'src/supabase';
+import { SignupForm } from '@/routes/signup/-components/SignupForm';
+import supabase from '@/supabase';
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         auth: {
             signUp: vi.fn(),

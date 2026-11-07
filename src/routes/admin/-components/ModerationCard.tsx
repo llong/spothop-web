@@ -4,7 +4,7 @@ import {
     CardContent,
     Typography,
 } from '@mui/material';
-import type { ContentReport } from '../../../types';
+import type { ContentReport } from '@/types';
 
 export function ModerationCard({ report }: { report: ContentReport }) {
     return (

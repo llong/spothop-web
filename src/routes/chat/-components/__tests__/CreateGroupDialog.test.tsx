@@ -1,18 +1,18 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { CreateGroupDialog } from '../CreateGroupDialog';
-import supabase from 'src/supabase';
-import { chatService } from 'src/services/chatService';
+import { CreateGroupDialog } from '@/routes/chat/-components/CreateGroupDialog';
+import supabase from '@/supabase';
+import { chatService } from '@/services/chatService';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(),
     },
 }));
-vi.mock('src/services/chatService');
+vi.mock('@/services/chatService');
 vi.mock('@tanstack/react-query', async () => {
     const actual = await vi.importActual('@tanstack/react-query');
     return {

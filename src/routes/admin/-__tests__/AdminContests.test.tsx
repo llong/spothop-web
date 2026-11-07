@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { adminContestService } from '@/services/adminContestService';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AdminContestsPage } from '../contests';
+import { AdminContestsPage } from '@/routes/admin/contests';
 
 vi.mock('@/services/adminContestService', () => ({
     adminContestService: {

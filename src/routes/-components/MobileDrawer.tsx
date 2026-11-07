@@ -2,9 +2,9 @@ import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box
 import { Link } from '@tanstack/react-router';
 import { Notifications, Login, Logout, DarkMode, LightMode, SettingsBrightness } from '@mui/icons-material';
 import { useAtom, useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import supabase from 'src/supabase';
-import { themeModeAtom } from 'src/atoms/ui';
+import { userAtom } from '@/atoms/auth';
+import supabase from '@/supabase';
+import { themeModeAtom } from '@/atoms/ui';
 
 interface MobileDrawerProps {
     open: boolean;

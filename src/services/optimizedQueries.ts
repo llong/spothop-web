@@ -1,5 +1,5 @@
-import supabase from "../supabase";
-import type { LikedMediaItem, UserMediaItem } from "../types";
+import supabase from "@/supabase";
+import type { LikedMediaItem, UserMediaItem } from "@/types";
 
 export const optimizedQueries = {
     /**

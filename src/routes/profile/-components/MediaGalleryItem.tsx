@@ -12,7 +12,7 @@ import {
     CalendarToday,
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import type { UserMediaItem } from 'src/types';
+import type { UserMediaItem } from '@/types';
 
 interface MediaGalleryItemProps {
     item: UserMediaItem;

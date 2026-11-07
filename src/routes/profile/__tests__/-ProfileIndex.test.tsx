@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ProfileComponent } from '../index.lazy';
+import { ProfileComponent } from '@/routes/profile/index.lazy';
 import { useAtomValue } from 'jotai';
-import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from 'src/hooks/useProfileQueries';
-import { useProfileManagement } from 'src/hooks/useProfileManagement';
+import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from '@/hooks/useProfileQueries';
+import { useProfileManagement } from '@/hooks/useProfileManagement';
 
 vi.mock('jotai', async () => {
     const actual = await vi.importActual('jotai');
@@ -15,14 +15,14 @@ vi.mock('jotai', async () => {
     };
 });
 
-vi.mock('src/hooks/useProfileQueries');
-vi.mock('src/hooks/useProfileManagement');
+vi.mock('@/hooks/useProfileQueries');
+vi.mock('@/hooks/useProfileManagement');
 
-vi.mock('../-components/ProfileHeader', () => ({ ProfileHeader: () => <div>ProfileHeader</div> }));
-vi.mock('../-components/ProfileForm', () => ({ ProfileForm: () => <div>ProfileForm</div> }));
-vi.mock('../-components/FavoriteSpots', () => ({ FavoriteSpots: () => <div>FavoriteSpots</div> }));
-vi.mock('../-components/LikedMediaGallery', () => ({ LikedMediaGallery: () => <div>LikedMediaGallery</div> }));
-vi.mock('../-components/UserContentGallery', () => ({ UserContentGallery: () => <div>UserContentGallery</div> }));
+vi.mock('@/routes/profile/-components/ProfileHeader', () => ({ ProfileHeader: () => <div>ProfileHeader</div> }));
+vi.mock('@/routes/profile/-components/ProfileForm', () => ({ ProfileForm: () => <div>ProfileForm</div> }));
+vi.mock('@/routes/profile/-components/FavoriteSpots', () => ({ FavoriteSpots: () => <div>FavoriteSpots</div> }));
+vi.mock('@/routes/profile/-components/LikedMediaGallery', () => ({ LikedMediaGallery: () => <div>LikedMediaGallery</div> }));
+vi.mock('@/routes/profile/-components/UserContentGallery', () => ({ UserContentGallery: () => <div>UserContentGallery</div> }));
 
 describe('ProfileComponent', () => {
     beforeEach(() => {

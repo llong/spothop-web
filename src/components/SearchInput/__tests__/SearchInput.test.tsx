@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { SearchInput } from '../SearchInput';
+import { SearchInput } from '@/components/SearchInput/SearchInput';
 
 describe('SearchInput', () => {
     it('calls onSearch with parsed coordinates when Enter is pressed', () => {

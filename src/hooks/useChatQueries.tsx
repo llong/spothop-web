@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { chatService } from '../services/chatService';
+import { chatService } from '@/services/chatService';
 import { useEffect } from 'react';
-import supabase from '../supabase';
+import supabase from '@/supabase';
 
 export const chatKeys = {
     all: ['chat'] as const,

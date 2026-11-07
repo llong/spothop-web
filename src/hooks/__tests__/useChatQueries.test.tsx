@@ -2,12 +2,12 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider, useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import type { UseQueryResult, UseMutationResult } from '@tanstack/react-query';
-import { useConversationsQuery, useMessagesQuery, useConversationQuery, useSendMessageMutation, chatKeys } from '../useChatQueries';
-import { chatService } from '../../services/chatService';
-import type { Conversation } from '../../services/chatService';
+import { useConversationsQuery, useMessagesQuery, useConversationQuery, useSendMessageMutation, chatKeys } from '@/hooks/useChatQueries';
+import { chatService } from '@/services/chatService';
+import type { Conversation } from '@/services/chatService';
 
-vi.mock('../../services/chatService');
-vi.mock('../../supabase');
+vi.mock('@/services/chatService');
+vi.mock('@/supabase');
 
 // Mock @tanstack/react-query hooks
 vi.mock('@tanstack/react-query', async (importOriginal) => {

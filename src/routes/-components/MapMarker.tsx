@@ -1,13 +1,13 @@
 import { memo, Suspense, useState, useEffect } from "react";
 import { Marker, Popup } from "react-leaflet";
 import { Box, Typography, Stack } from "@mui/material";
-import type { Spot } from "src/types";
-import { getOptimizedImageUrl } from "src/utils/imageOptimization";
+import type { Spot } from "@/types";
+import { getOptimizedImageUrl } from "@/utils/imageOptimization";
 import { useNavigate } from "@tanstack/react-router";
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { useGeocoding } from "src/hooks/useGeocoding";
+import { useGeocoding } from "@/hooks/useGeocoding";
 
 interface MapMarkerProps {
     spot: Spot;

@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { UpdatePasswordForm } from '../UpdatePasswordForm';
+import { UpdatePasswordForm } from '@/routes/update-password/-components/UpdatePasswordForm';
 import supabase from '@/supabase';
 
 vi.mock('@/supabase', () => ({

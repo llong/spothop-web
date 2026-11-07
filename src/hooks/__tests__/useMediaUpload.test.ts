@@ -1,16 +1,16 @@
 import { renderHook } from '@testing-library/react';
-import { useMediaUpload } from '../useMediaUpload';
+import { useMediaUpload } from '@/hooks/useMediaUpload';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import supabase from 'src/supabase';
-import { optimizePhoto } from 'src/utils/imageOptimization';
-import { checkContent } from 'src/utils/moderation';
+import supabase from '@/supabase';
+import { optimizePhoto } from '@/utils/imageOptimization';
+import { checkContent } from '@/utils/moderation';
 
 // Mock dependencies
-vi.mock('src/utils/moderation', () => ({
+vi.mock('@/utils/moderation', () => ({
     checkContent: vi.fn().mockResolvedValue({ safe: true }),
 }));
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         storage: {
             from: vi.fn(() => ({
@@ -24,7 +24,7 @@ vi.mock('src/supabase', () => ({
     },
 }));
 
-vi.mock('src/utils/imageOptimization', () => ({
+vi.mock('@/utils/imageOptimization', () => ({
     optimizePhoto: vi.fn().mockResolvedValue({
         original: { blob: new Blob() },
         thumbnailSmall: { blob: new Blob() },

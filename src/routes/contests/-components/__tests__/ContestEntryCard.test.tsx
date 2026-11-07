@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ContestEntryCard } from '../ContestEntryCard';
+import { ContestEntryCard } from '@/routes/contests/-components/ContestEntryCard';
 import { vi, describe, it, expect } from 'vitest';
 
 describe('ContestEntryCard', () => {

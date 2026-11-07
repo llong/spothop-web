@@ -15,7 +15,7 @@ import {
 import { Link } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { ModerationCard } from './ModerationCard';
-import type { ContentReport } from '../../../types';
+import type { ContentReport } from '@/types';
 
 interface ModerationQueueProps {
     reports: ContentReport[];

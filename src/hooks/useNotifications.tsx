@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { useAtomValue, useSetAtom, atom } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 import { useNotificationsQuery, profileKeys } from './useProfileQueries';
 import { useQueryClient } from '@tanstack/react-query';
 

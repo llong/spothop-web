@@ -1,8 +1,8 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { FeedItemCard } from '../FeedItem';
+import { FeedItemCard } from '@/routes/feed/-components/FeedItem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { FeedItem } from 'src/types';
+import type { FeedItem } from '@/types';
 import React from 'react';
 
 // Mock dependencies
@@ -11,7 +11,7 @@ vi.mock('@tanstack/react-router', () => ({
     useNavigate: () => vi.fn()
 }));
 
-vi.mock('src/hooks/useFeedQueries', () => ({
+vi.mock('@/hooks/useFeedQueries', () => ({
     useToggleMediaLike: vi.fn(() => ({
         mutate: vi.fn(),
         isPending: false
@@ -25,7 +25,7 @@ vi.mock('src/hooks/useFeedQueries', () => ({
     useToggleCommentReaction: vi.fn(() => ({ mutate: vi.fn(), isPending: false })),
 }));
 
-vi.mock('src/hooks/useSpotFavorites', () => ({
+vi.mock('@/hooks/useSpotFavorites', () => ({
     useSpotFavorites: vi.fn(() => ({
         isFavorited: false, // Default to not favorited
         toggleFavorite: vi.fn(),

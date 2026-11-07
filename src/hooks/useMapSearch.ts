@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { mapAtom, getSpotsAtom, searchedLocationAtom } from 'src/atoms/map';
+import { mapAtom, getSpotsAtom, searchedLocationAtom } from '@/atoms/map';
 import { useNavigate } from '@tanstack/react-router';
-import { analytics } from 'src/lib/posthog';
+import { analytics } from '@/lib/posthog';
 
 export const useMapSearch = () => {
     const map = useAtomValue(mapAtom);

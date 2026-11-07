@@ -1,12 +1,12 @@
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router';
 import { Container, Box, Typography, Paper, TextField, IconButton, Stack, Avatar, AppBar, Toolbar, CircularProgress, Button } from '@mui/material';
 import { Send, ArrowBack, InfoOutlined } from '@mui/icons-material';
-import { useMessagesQuery, useSendMessageMutation, useConversationQuery } from 'src/hooks/useChatQueries';
+import { useMessagesQuery, useSendMessageMutation, useConversationQuery } from '@/hooks/useChatQueries';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { ChatSettingsDialog } from './-components/ChatSettingsDialog';
 
 export const ChatRoomComponent = () => {

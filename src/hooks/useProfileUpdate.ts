@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import supabase from '../supabase';
+import supabase from '@/supabase';
 import { profileKeys } from './useProfileQueries';
-import { withErrorHandling } from '../utils/asyncHelpers';
-import type { UserProfile } from '../types';
+import { withErrorHandling } from '@/utils/asyncHelpers';
+import type { UserProfile } from '@/types';
 
 export const useProfileUpdate = () => {
     const queryClient = useQueryClient();

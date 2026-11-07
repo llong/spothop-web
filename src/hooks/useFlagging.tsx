@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import type { SpotFlagReason } from 'src/types';
+import { userAtom } from '@/atoms/auth';
+import type { SpotFlagReason } from '@/types';
 
 export function useFlagging() {
     const user = useAtomValue(userAtom);

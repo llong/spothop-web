@@ -1,7 +1,7 @@
-import supabase from "../supabase";
-import type { MediaItem, SpotVideoLink } from "../types";
-import { reverseGeocode } from "../utils/geocoding";
-import { extractStoragePath } from "../utils/media-utils";
+import supabase from "@/supabase";
+import type { MediaItem, SpotVideoLink } from "@/types";
+import { reverseGeocode } from "@/utils/geocoding";
+import { extractStoragePath } from "@/utils/media-utils";
 import { favoriteService } from './spot/favoriteService';
 import { videoLinkService } from './spot/videoLinkService';
 

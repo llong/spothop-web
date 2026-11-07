@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useMediaLikes } from '../useMediaLikes';
-import supabase from 'src/supabase';
+import { useMediaLikes } from '@/hooks/useMediaLikes';
+import supabase from '@/supabase';
 
 // Mock dependencies with actual atom export
 vi.mock('jotai', async (importOriginal) => {
@@ -15,7 +15,7 @@ vi.mock('jotai', async (importOriginal) => {
     };
 });
 
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => ({
             delete: vi.fn(() => ({

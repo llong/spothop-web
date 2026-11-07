@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import supabase from "../../supabase";
-import { profileKeys } from "../../hooks/useProfileQueries";
-import { profileService } from "src/services/profileService";
-import type { UserProfile } from "../../types";
+import supabase from "@/supabase";
+import { profileKeys } from "@/hooks/useProfileQueries";
+import { profileService } from "@/services/profileService";
+import type { UserProfile } from "@/types";
 
 export const Route = createFileRoute("/profile/")({
     beforeLoad: async () => {

@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ThemeToggle } from '../ThemeToggle';
+import { ThemeToggle } from '@/routes/-components/ThemeToggle';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 const mockSetMode = vi.fn();

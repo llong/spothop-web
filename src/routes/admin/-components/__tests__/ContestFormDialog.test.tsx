@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ContestFormDialog } from '../ContestFormDialog';
+import { ContestFormDialog } from '@/routes/admin/-components/ContestFormDialog';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useContestForm } from '../../hooks/-useContestForm';
+import { useContestForm } from '@/routes/admin/hooks/-useContestForm';
 
-vi.mock('../../hooks/-useContestForm', () => ({
+vi.mock('@/routes/admin/hooks/-useContestForm', () => ({
     useContestForm: vi.fn(),
 }));
 

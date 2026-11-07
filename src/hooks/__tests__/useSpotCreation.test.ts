@@ -1,10 +1,10 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useSpotCreation } from '../useSpotCreation';
+import { useSpotCreation } from '@/hooks/useSpotCreation';
 import L from 'leaflet';
-import { reverseGeocode } from 'src/utils/geocoding';
+import { reverseGeocode } from '@/utils/geocoding';
 
-vi.mock('src/utils/geocoding', () => ({
+vi.mock('@/utils/geocoding', () => ({
     reverseGeocode: vi.fn()
 }));
 

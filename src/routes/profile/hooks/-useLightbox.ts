@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { UserMediaItem } from 'src/types';
+import type { UserMediaItem } from '@/types';
 
 export function useLightbox(mediaItems: UserMediaItem[]) {
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);

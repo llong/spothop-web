@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { FeedFilters } from '../atoms/feed';
+import type { FeedFilters } from '@/atoms/feed';
 
 /**
  * Hook to construct feed filters from UI state.

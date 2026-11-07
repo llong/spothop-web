@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { ContestCriteriaInfo } from '../ContestCriteriaInfo';
+import { ContestCriteriaInfo } from '@/routes/contests/-components/ContestCriteriaInfo';
 import { describe, it, expect } from 'vitest';
 
 describe('ContestCriteriaInfo', () => {

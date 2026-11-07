@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { LikedMediaGallery } from '../LikedMediaGallery';
+import { LikedMediaGallery } from '@/routes/profile/-components/LikedMediaGallery';
 
 // Mock tanstack router Link
 vi.mock('@tanstack/react-router', () => ({

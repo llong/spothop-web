@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LightboxDialog } from '../LightboxDialog';
+import { LightboxDialog } from '@/routes/profile/-components/LightboxDialog';
 
 // Mock tanstack router Link
 vi.mock('@tanstack/react-router', () => ({

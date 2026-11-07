@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { reverseGeocode } from 'src/utils/geocoding';
-import type { Spot } from 'src/types';
+import { reverseGeocode } from '@/utils/geocoding';
+import type { Spot } from '@/types';
 
 type AddressFields = Pick<Spot, 'address' | 'city' | 'state' | 'country'>;
 

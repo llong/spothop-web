@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useProfileUpdate } from '../useProfileUpdate';
+import { useProfileUpdate } from '@/hooks/useProfileUpdate';
 import { useQueryClient } from '@tanstack/react-query';
-import supabase from '../../supabase';
+import supabase from '@/supabase';
 
 vi.mock('@tanstack/react-query', () => ({
     useQueryClient: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock('@tanstack/react-query', () => ({
     })
 }));
 
-vi.mock('../../supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn().mockReturnValue({
             upsert: vi.fn()

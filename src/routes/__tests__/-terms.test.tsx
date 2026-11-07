@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Route } from '../terms';
+import { Route } from '@/routes/terms';
 
 // Mock SEO component
 vi.mock('@/components/SEO/SEO', () => ({

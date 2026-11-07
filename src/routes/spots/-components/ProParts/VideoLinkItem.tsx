@@ -6,13 +6,13 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import type { SpotVideoLink } from 'src/types';
-import { secondsToTime } from 'src/utils/youtube';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
-import { spotService } from 'src/services/spotService';
+import type { SpotVideoLink } from '@/types';
+import { secondsToTime } from '@/utils/youtube';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
+import { spotService } from '@/services/spotService';
 import { AddVideoLinkDialog } from './AddVideoLinkDialog';
 import { VideoPlayerModal } from './VideoPlayerModal';
-import { useYoutubePlayer } from '../../hooks/-useYoutubePlayer';
+import { useYoutubePlayer } from '@/routes/spots/hooks/-useYoutubePlayer';
 
 interface VideoLinkItemProps {
     link: SpotVideoLink;

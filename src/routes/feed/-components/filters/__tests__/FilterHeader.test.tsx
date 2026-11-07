@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { FilterHeader } from '../FilterHeader';
+import { FilterHeader } from '@/routes/feed/-components/filters/FilterHeader';
 
 describe('FilterHeader', () => {
     it('renders the header correctly', () => {

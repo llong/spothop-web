@@ -1,12 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { ProfileHeader } from '../ProfileHeader';
+import { ProfileHeader } from '@/routes/profile/-components/ProfileHeader';
 
 vi.mock('@tanstack/react-router', () => ({
     Link: ({ children }: any) => <div>{children}</div>
 }));
 
-vi.mock('../AvatarUpload', () => ({
+vi.mock('@/routes/profile/-components/AvatarUpload', () => ({
     AvatarUpload: () => <div data-testid="avatar-upload" />
 }));
 

@@ -1,5 +1,5 @@
 import { reverseGeocode } from "./geocoding";
-import type { UserMediaItem } from "../types";
+import type { UserMediaItem } from "@/types";
 
 /**
  * Ensures city, state, and country are present. 

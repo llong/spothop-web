@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import L from 'leaflet';
-import { reverseGeocode } from 'src/utils/geocoding';
+import { reverseGeocode } from '@/utils/geocoding';
 
 export const useSpotCreation = (isLoggedIn: boolean) => {
     const [newSpot, setNewSpot] = useState<{ latlng: L.LatLng; address: string } | null>(null);

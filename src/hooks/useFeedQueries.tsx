@@ -1,5 +1,5 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { feedService } from '../services/feedService';
+import { feedService } from '@/services/feedService';
 import { useSetAtom } from 'jotai';
 import { globalToastAtom } from './useNotifications';
 import { spotKeys } from './useSpotQueries'; // Moved import to top

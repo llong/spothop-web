@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ContestTable } from '../ContestTable';
+import { ContestTable } from '@/routes/admin/-components/ContestTable';
 
 describe('ContestTable', () => {
     const mockOnEdit = vi.fn();

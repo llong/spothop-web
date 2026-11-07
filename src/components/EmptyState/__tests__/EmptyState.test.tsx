@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { EmptyState } from '../EmptyState';
+import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Add as AddIcon } from '@mui/icons-material';
 
 describe('EmptyState', () => {

@@ -1,6 +1,6 @@
 import { atom } from 'jotai'
 import type { Session, User, WeakPassword } from '@supabase/supabase-js'
-import type { UserProfile, Spot, LikedMediaItem, UserMediaItem, AppNotification } from '../types'
+import type { UserProfile, Spot, LikedMediaItem, UserMediaItem, AppNotification } from '@/types'
 
 export type Auth = {
     user: User;

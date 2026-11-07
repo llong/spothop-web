@@ -2,7 +2,7 @@ import { Box, Typography, Stack, Button } from "@mui/material";
 import { ChatBubble, Person as PersonIcon } from "@mui/icons-material";
 import { Link } from "@tanstack/react-router";
 import { AvatarUpload } from "./AvatarUpload";
-import type { UserProfile } from "src/types";
+import type { UserProfile } from "@/types";
 
 interface ProfileHeaderProps {
     profile: UserProfile;

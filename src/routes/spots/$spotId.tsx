@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router';
-import supabase from 'src/supabase';
-import { spotKeys } from 'src/hooks/useSpotQueries';
-import { spotService } from 'src/services/spotService';
+import supabase from '@/supabase';
+import { spotKeys } from '@/hooks/useSpotQueries';
+import { spotService } from '@/services/spotService';
 import {
     Box,
     Container,
@@ -16,14 +16,14 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DirectionsIcon from '@mui/icons-material/Directions';
 import { MediaCarousel } from './-components/MediaCarousel';
 import { useEffect, useMemo } from 'react';
-import { FeedCommentDialog } from 'src/routes/feed/-components/FeedCommentDialog';
+import { FeedCommentDialog } from '@/routes/feed/-components/FeedCommentDialog';
 import { Lightbox } from './-components/Lightbox';
 import { DetailsSidebar } from './-components/DetailsSidebar';
 import { DetailsInfo } from './-components/DetailsInfo';
 import { DetailsActions } from './-components/DetailsActions';
 import { DetailsMediaSection } from './-components/DetailsMediaSection';
-import SEO from 'src/components/SEO/SEO';
-import type { FeedItem } from 'src/types';
+import SEO from '@/components/SEO/SEO';
+import type { FeedItem } from '@/types';
 import { useSpotDetailsState } from './hooks/-useSpotDetailsState';
 
 const loader = async ({ params, context }: { params: { spotId: string }, context: any }) => {

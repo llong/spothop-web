@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { SubmissionConfirmStep } from '../SubmissionConfirmStep';
+import { SubmissionConfirmStep } from '@/routes/contests/-components/SubmissionConfirmStep';
 import { describe, it, expect } from 'vitest';
 
 describe('SubmissionConfirmStep', () => {

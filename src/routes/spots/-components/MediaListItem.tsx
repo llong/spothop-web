@@ -2,17 +2,17 @@ import { memo } from 'react';
 import { Box, Avatar, Typography, Stack, IconButton, Button, Divider } from '@mui/material';
 import { Link } from '@tanstack/react-router';
 import { formatDistanceToNow } from 'date-fns';
-import type { MediaItem } from 'src/types';
-import { getOptimizedImageUrl } from 'src/utils/imageOptimization';
+import type { MediaItem } from '@/types';
+import { getOptimizedImageUrl } from '@/utils/imageOptimization';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import ShareIcon from '@mui/icons-material/Share';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import React from 'react';
-import { useToggleFollow } from 'src/hooks/useFeedQueries';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
-import { useAdminQueries } from 'src/hooks/useAdminQueries';
+import { useToggleFollow } from '@/hooks/useFeedQueries';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
+import { useAdminQueries } from '@/hooks/useAdminQueries';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 
 interface MediaListItemProps {

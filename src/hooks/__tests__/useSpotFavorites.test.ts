@@ -1,12 +1,12 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
-import { useSpotFavorites } from '../useSpotFavorites';
+import { useSpotFavorites } from '@/hooks/useSpotFavorites';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import { useToggleFavoriteMutation } from '../useSpotQueries'; // Import the real hook
+import { useToggleFavoriteMutation } from '@/hooks/useSpotQueries'; // Import the real hook
 
 // Mock useToggleFavoriteMutation from useSpotQueries
-vi.mock('../useSpotQueries', () => ({
+vi.mock('@/hooks/useSpotQueries', () => ({
     spotKeys: {
         all: ['spots'],
         details: vi.fn(() => ['spots', 'detail', 'mock-spot-id']),

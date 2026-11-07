@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { profileService } from '../services/profileService';
+import { profileService } from '@/services/profileService';
 import { useEffect } from 'react';
 
 export const profileKeys = {

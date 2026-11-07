@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ProfileForm } from '../ProfileForm';
+import { ProfileForm } from '@/routes/profile/-components/ProfileForm';
 
 describe('ProfileForm', () => {
     const mockOnSubmit = vi.fn((e) => e.preventDefault());

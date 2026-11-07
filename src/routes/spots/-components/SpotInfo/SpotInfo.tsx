@@ -5,16 +5,16 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { Link as RouterLink, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import type { Spot } from 'src/types';
-import { useSpotAddress } from 'src/hooks/useSpotAddress';
-import { FlagSpotDialog } from '../FlagSpotDialog';
+import type { Spot } from '@/types';
+import { useSpotAddress } from '@/hooks/useSpotAddress';
+import { FlagSpotDialog } from '@/routes/spots/-components/FlagSpotDialog';
 import { SpotSocialActions } from './SpotSocialActions';
 import { SpotStats } from './SpotStats';
 import { SpotAddress } from './SpotAddress';
-import { useProfileQuery } from 'src/hooks/useProfileQueries';
-import { useAdminQueries } from 'src/hooks/useAdminQueries';
+import { useProfileQuery } from '@/hooks/useProfileQueries';
+import { useAdminQueries } from '@/hooks/useAdminQueries';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
+import { userAtom } from '@/atoms/auth';
 
 interface SpotInfoProps {
     spot: Spot;

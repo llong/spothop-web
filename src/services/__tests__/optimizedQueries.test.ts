@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { optimizedQueries } from '../optimizedQueries';
-import supabase from '../../supabase';
+import { optimizedQueries } from '@/services/optimizedQueries';
+import supabase from '@/supabase';
 
-vi.mock('../../supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(() => ({
             select: vi.fn(() => ({

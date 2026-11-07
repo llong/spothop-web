@@ -12,7 +12,7 @@ import {
     Image as ImageIcon,
     PlayArrow as PlayArrowIcon,
 } from '@mui/icons-material';
-import type { VideoAsset } from 'src/types';
+import type { VideoAsset } from '@/types';
 
 interface VideoAssetCardProps {
     asset: VideoAsset;

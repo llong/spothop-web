@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WelcomeComponent } from '../index';
+import { WelcomeComponent } from '@/routes/welcome/index';
 import { useAtomValue, useSetAtom } from 'jotai';
-import supabase from 'src/supabase';
+import supabase from '@/supabase';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 vi.mock('jotai', async () => {
@@ -14,7 +14,7 @@ vi.mock('jotai', async () => {
         useSetAtom: vi.fn(),
     };
 });
-vi.mock('src/supabase', () => ({
+vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(),
         auth: {

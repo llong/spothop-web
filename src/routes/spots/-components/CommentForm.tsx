@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Box, TextField, Button, CircularProgress, Stack, Avatar } from '@mui/material';
 import { useAtomValue } from 'jotai';
-import { userAtom } from 'src/atoms/auth';
-import { useProfile } from 'src/hooks/useProfile';
+import { userAtom } from '@/atoms/auth';
+import { useProfile } from '@/hooks/useProfile';
 
 interface CommentFormProps {
     onSubmit: (content: string) => Promise<{ success: boolean; error?: string }>;

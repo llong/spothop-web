@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SpotSelectionCard } from '../SpotSelectionCard';
+import { SpotSelectionCard } from '@/routes/contests/-components/SpotSelectionCard';
 import { vi, describe, it, expect } from 'vitest';
 
 describe('SpotSelectionCard', () => {

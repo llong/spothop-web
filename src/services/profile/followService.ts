@@ -1,4 +1,4 @@
-import supabase from "../../supabase";
+import supabase from "@/supabase";
 
 export const followService = {
     async fetchFollowStats(userId: string): Promise<{ followerCount: number, followingCount: number }> {

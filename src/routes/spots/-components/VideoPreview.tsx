@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Box, Card, CardContent, Typography, IconButton, Stack, Button, Slider, CircularProgress } from '@mui/material';
 import { PlayArrow, Pause, Delete, Image, VideoFile } from '@mui/icons-material';
 import { VideoThumbnailSelector } from './VideoThumbnailSelector';
-import type { VideoAsset } from 'src/types';
+import type { VideoAsset } from '@/types';
 
 interface VideoPreviewProps {
     asset: VideoAsset;
