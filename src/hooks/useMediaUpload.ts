@@ -39,11 +39,17 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
                 const thumbnailLargePath = `spots/${spotId}/photos/thumbnails/large/${webpFilename}`;
 
                 // Parallel uploads for this photo
-                await Promise.all([
+                const uploadResults = await Promise.all([
                     supabase.storage.from('spot-media').upload(originalPath, original.blob, { contentType: 'image/webp', cacheControl: '31536000', upsert: false }),
                     supabase.storage.from('spot-media').upload(thumbnailSmallPath, thumbnailSmall.blob, { contentType: 'image/webp', cacheControl: '31536000', upsert: false }),
                     supabase.storage.from('spot-media').upload(thumbnailLargePath, thumbnailLarge.blob, { contentType: 'image/webp', cacheControl: '31536000', upsert: false }),
                 ]);
+
+                // uploads return { error } rather than throwing; do not insert a row for a failed upload
+                const failedUpload = uploadResults.find((result) => result.error);
+                if (failedUpload?.error) {
+                    throw new Error('Error uploading photo: ' + failedUpload.error.message);
+                }
 
                 // Get Public URLs
                 const { data: { publicUrl: originalUrl } } = supabase.storage.from('spot-media').getPublicUrl(originalPath);

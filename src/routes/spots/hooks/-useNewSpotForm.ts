@@ -10,6 +10,7 @@ import { analytics } from '@/lib/posthog';
 import type { VideoAsset } from '@/types';
 import type { Enums } from '@/types/database.types';
 import supabase from '@/supabase';
+import { spotService } from '@/services/spotService';
 
 export function useNewSpotForm(lat: number, lng: number) {
     const isOnline = useOnlineStatus();
@@ -74,6 +75,10 @@ export function useNewSpotForm(lat: number, lng: number) {
         if (!user) { setError('You must be logged in to create a spot.'); return; }
         if (!spotId) return;
 
+        // Set once the spot row exists, so a failed upload can roll it back instead of leaving a
+        // half-created spot and orphaned files behind
+        let spotRowCreated = false;
+
         try {
             setIsSubmitting(true);
             setStatusMessage('Creating spot...');
@@ -99,6 +104,7 @@ export function useNewSpotForm(lat: number, lng: number) {
                 }]);
 
             if (spotError) throw spotError;
+            spotRowCreated = true;
 
             await uploadMedia(spotId, selectedPhotos, selectedVideos);
 
@@ -121,6 +127,14 @@ export function useNewSpotForm(lat: number, lng: number) {
 
         } catch (err: any) {
             console.error('Error creating spot:', err);
+            if (spotRowCreated) {
+                // Best effort: removes the spot row and every file uploaded so far
+                try {
+                    await spotService.deleteSpot(spotId);
+                } catch (cleanupError) {
+                    console.warn('Could not roll back the partially created spot:', cleanupError);
+                }
+            }
             setError(err.message || 'An unexpected error occurred.');
             setIsSubmitting(false);
         }

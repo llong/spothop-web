@@ -74,6 +74,20 @@ describe('useMediaUpload hook', () => {
         expect(mockSetStatusMessage).toHaveBeenCalledWith(expect.stringContaining('Uploading 1 videos'));
     });
 
+    it('does not insert a photo row when one of its uploads fails', async () => {
+        // supabase-js returns { error } instead of throwing; the old code ignored it and still inserted a row
+        vi.mocked(supabase.storage.from).mockImplementationOnce(() => ({
+            upload: vi.fn().mockResolvedValue({ error: { message: 'bucket full' } }),
+            getPublicUrl: vi.fn(),
+        }) as any);
+        const { result } = renderHook(() => useMediaUpload({ user: mockUser, setStatusMessage: mockSetStatusMessage }));
+
+        await expect(result.current.uploadMedia('spot123', [new File([], 'test.jpg')], []))
+            .rejects.toThrow('Error uploading photo: bucket full');
+
+        expect(supabase.from).not.toHaveBeenCalledWith('spot_photos');
+    });
+
     it('throws error if user is not authenticated', async () => {
         const { result } = renderHook(() => useMediaUpload({
             user: null,
