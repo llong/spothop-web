@@ -16,6 +16,7 @@ import { rightSidebarAtom, themeModeAtom } from '@/atoms/ui'
 import { Snackbar, Alert } from '@mui/material'
 import { useMemo } from 'react'
 import { analytics } from '@/lib/posthog'
+import { clearQueryCache } from '@/lib/queryClient'
 
 export function RootComponent() {
     const themeMode = useAtomValue(themeModeAtom);
@@ -43,7 +44,9 @@ export function RootComponent() {
 
     // 1. STABLE AUTH LISTENER
     useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            // Session ended (sign-out here or in another tab, or expiry): drop cached private data
+            if (event === 'SIGNED_OUT') void clearQueryCache();
             setUser(prev => {
                 if (session?.access_token === prev?.session?.access_token) return prev;
                 if (session) {

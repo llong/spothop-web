@@ -3,8 +3,8 @@ import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/auth';
 import { navigationUtils } from '@/utils/navigation';
 import { useProfileUpdate } from './useProfileUpdate';
-import supabase from '@/supabase';
 import type { UserProfile } from '@/types';
+import { signOut } from '@/lib/auth';
 
 export const useProfileManagement = () => {
     const user = useAtomValue(userAtom);
@@ -25,7 +25,7 @@ export const useProfileManagement = () => {
 
     const handleSignOut = useCallback(async () => {
         try {
-            await supabase.auth.signOut();
+            await signOut();
             navigationUtils.redirectTo('/');
         } catch (error) {
             console.error('Sign out error:', error);

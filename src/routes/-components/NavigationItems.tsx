@@ -3,8 +3,8 @@ import { Link } from '@tanstack/react-router';
 import { Home, AccountCircle, Login, Logout, ChatBubble, Shield, DynamicFeed } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/auth';
-import supabase from '@/supabase';
 import { useProfileQuery } from '@/hooks/useProfileQueries';
+import { signOut } from '@/lib/auth';
 
 export function NavigationItems() {
     const user = useAtomValue(userAtom);
@@ -44,7 +44,7 @@ export function NavigationItems() {
                     color="inherit"
                     onClick={async () => {
                         try {
-                            await supabase.auth.signOut();
+                            await signOut();
                         } finally {
                             window.location.href = '/login?message=logged_out';
                         }

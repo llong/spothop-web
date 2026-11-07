@@ -3,10 +3,10 @@ import { Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { AccountCircle, ChatBubble, Notifications, DynamicFeed, Shield, Logout, Explore, Login, EmojiEvents } from '@mui/icons-material';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/auth';
-import supabase from '@/supabase';
 import { useProfileQuery } from '@/hooks/useProfileQueries';
 import { useMediaQuery, useTheme } from '@mui/material';
 import { ThemeToggle } from './ThemeToggle';
+import { signOut } from '@/lib/auth';
 
 export function Sidebar() {
     const muiTheme = useTheme();
@@ -31,7 +31,7 @@ export function Sidebar() {
 
     const handleSignOut = async () => {
         try {
-            await supabase.auth.signOut();
+            await signOut();
             window.location.href = '/login?message=logged_out';
         } catch (error) {
             console.error('Error signing out:', error);

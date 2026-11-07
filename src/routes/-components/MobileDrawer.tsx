@@ -3,8 +3,8 @@ import { Link } from '@tanstack/react-router';
 import { Notifications, Login, Logout, DarkMode, LightMode, SettingsBrightness } from '@mui/icons-material';
 import { useAtom, useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/auth';
-import supabase from '@/supabase';
 import { themeModeAtom } from '@/atoms/ui';
+import { signOut } from '@/lib/auth';
 
 interface MobileDrawerProps {
     open: boolean;
@@ -17,7 +17,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
 
     const handleSignOut = async () => {
         try {
-            await supabase.auth.signOut();
+            await signOut();
             window.location.href = '/login?message=logged_out';
         } catch (error) {
             console.error('Error signing out:', error);

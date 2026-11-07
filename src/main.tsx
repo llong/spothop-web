@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { createStore, Provider } from 'jotai'
 import '@fontsource/roboto/300.css';
@@ -18,20 +18,11 @@ import { get, set, del } from 'idb-keyval'
 import { PostHogProvider } from 'posthog-js/react'
 import { HelmetProvider } from 'react-helmet-async'
 import { initPostHog, analytics } from './lib/posthog'
+import { queryClient, PERSIST_KEY } from '@/lib/queryClient'
 
 // PostHog initialized in renderApp
 
 // Create a new router instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-})
 
 const router = createRouter({
   routeTree,
@@ -51,6 +42,7 @@ const customStore = createStore();
 
 // Configure IndexedDB persister for TanStack Query
 const persister = createAsyncStoragePersister({
+  key: PERSIST_KEY,
   storage: {
     getItem: (key) => get(key),
     setItem: (key, value) => set(key, value),
