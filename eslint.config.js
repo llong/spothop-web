@@ -26,6 +26,14 @@ export default defineConfig([
         varsIgnorePattern: '^_',
         caughtErrorsIgnorePattern: '^_',
       }],
+      // Import convention (see .clinerules): use the "@/" alias, never parent-relative or "src/..." paths.
+      // Same-directory "./" imports are fine.
+      'no-restricted-imports': ['error', {
+        patterns: [
+          { group: ['../*'], message: 'Use the "@/" alias instead of parent-relative imports.' },
+          { group: ['src/*'], message: 'Use the "@/" alias instead of "src/..." imports.' },
+        ],
+      }],
       // `any` in app code is tracked as debt: it warns (and CI caps the warning count) so it can only go down.
       '@typescript-eslint/no-explicit-any': 'warn',
     },
