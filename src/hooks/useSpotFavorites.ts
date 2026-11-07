@@ -29,11 +29,7 @@ export const useSpotFavorites = (spot: Spot | undefined, userId: string | undefi
         setFavoriteCount(prev => previousState ? Math.max(0, prev - 1) : prev + 1);
 
         try {
-            await toggleMutation.mutateAsync({
-                spotId: spot.id,
-                userId,
-                isFavorited: previousState
-            });
+            await toggleMutation.mutateAsync({ spotId: spot.id });
             return { success: true, message: previousState ? 'Removed from favorites' : 'Added to favorites' };
         } catch (error) {
             // Revert on error

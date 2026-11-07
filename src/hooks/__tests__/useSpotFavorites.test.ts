@@ -66,11 +66,7 @@ describe('useSpotFavorites', () => {
             toggleResult = await result.current.toggleFavorite();
         });
 
-        expect(mockMutateAsync).toHaveBeenCalledWith({
-            spotId: mockSpot.id,
-            userId: userId,
-            isFavorited: false, // previous state was false
-        });
+        expect(mockMutateAsync).toHaveBeenCalledWith({ spotId: mockSpot.id });
         expect(result.current.isFavorited).toBe(true); // Optimistic update
         expect(toggleResult?.message).toBe('Added to favorites');
     });
@@ -86,11 +82,7 @@ describe('useSpotFavorites', () => {
             toggleResult = await result.current.toggleFavorite();
         });
 
-        expect(mockMutateAsync).toHaveBeenCalledWith({
-            spotId: mockSpot.id,
-            userId: userId,
-            isFavorited: true, // previous state was true
-        });
+        expect(mockMutateAsync).toHaveBeenCalledWith({ spotId: mockSpot.id });
         expect(result.current.isFavorited).toBe(false); // Optimistic update
         expect(toggleResult?.message).toBe('Removed from favorites');
     });

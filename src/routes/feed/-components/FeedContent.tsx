@@ -124,7 +124,6 @@ export function FeedContent({
                 itemContent={(_, item) => (
                     <FeedItemCard
                         item={item}
-                        currentUserId={currentUserId}
                         onCommentClick={handleCommentClick}
                     />
                 )}
@@ -156,4 +155,4 @@ export function FeedContent({
             )}
         </>
     );
-}
+}

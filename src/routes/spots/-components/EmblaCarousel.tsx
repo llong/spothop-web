@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import useEmblaCarousel from 'embla-carousel-react';
 import { useCallback, useEffect, useState } from 'react';
 
-import type { EmblaOptionsType } from 'embla-carousel';
+type EmblaOptionsType = NonNullable<Parameters<typeof useEmblaCarousel>[0]>;
 
 const CarouselRoot = styled(Box)(() => ({
     position: 'relative',
