@@ -59,7 +59,8 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, onCommentClick 
     // Dependencies are strict primitives to prevent object literal traps triggering heavy carousel redraws
     const media = useMemo(() => [{
         id: item.media_id,
-        url: getFullUrl(item.media_url),
+        // Photos: render the 800px thumbnail in the feed (falls back to the original if missing)
+        url: getFullUrl(item.media_type === 'photo' ? (item.thumbnail_url || item.media_url) : item.media_url),
         type: item.media_type,
         thumbnailUrl: item.thumbnail_url ? getFullUrl(item.thumbnail_url) : undefined,
     }], [item.media_id, item.media_url, item.media_type, item.thumbnail_url]) as import('src/types').MediaItem[];
