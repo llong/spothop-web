@@ -32,21 +32,33 @@ interface FeedCommentDialogProps {
     spotId?: string; // Add spotId prop
 }
 
-export const FeedCommentDialog = memo(({
-    open,
-    onClose,
-    item,
-    userId,
-    spotId // Destructure spotId
-}: FeedCommentDialogProps) => {
-    // Ensure mediaId and mediaType are always defined to prevent destructuring errors
+export const FeedCommentDialog = memo((props: FeedCommentDialogProps) => {
+    const { item } = props;
     const mediaId = item?.media_id;
     const mediaType = item?.media_type;
-    
+
+    // Validate before rendering the inner component so its hooks are never called conditionally
     if (!mediaId || !mediaType) {
         console.error('FeedCommentDialog: mediaId or mediaType is missing from item', item);
-        return null; // Or render a fallback UI
+        return null;
     }
+
+    return <FeedCommentDialogContent {...props} mediaId={mediaId} mediaType={mediaType} />;
+});
+
+interface FeedCommentDialogContentProps extends FeedCommentDialogProps {
+    mediaId: string;
+    mediaType: FeedItem['media_type'];
+}
+
+const FeedCommentDialogContent = ({
+    open,
+    onClose,
+    userId,
+    spotId,
+    mediaId,
+    mediaType
+}: FeedCommentDialogContentProps) => {
     const { data: comments, isLoading } = useMediaComments(mediaId, mediaType, userId);
     const postCommentMutation = usePostMediaComment();
     const toggleReactionMutation = useToggleCommentReaction();
@@ -192,4 +204,4 @@ export const FeedCommentDialog = memo(({
             </Box>
         </Dialog>
     );
-});
+};
