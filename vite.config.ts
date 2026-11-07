@@ -28,7 +28,9 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /maps\.googleapis\.com/, /fonts\.googleapis\.com/],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/wbkpofmvjcmdqbivocqc\.supabase\.co\/storage\/v1\/object\/public\/.*/,
+            // Public storage objects (photos, thumbnails, avatars) from any Supabase project, so this never
+            // goes stale if the project changes. Authenticated/API requests are not matched.
+            urlPattern: /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\/.*/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'supabase-media-cache',
