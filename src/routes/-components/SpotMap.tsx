@@ -1,4 +1,5 @@
-import { Box, Typography, Button } from "@mui/material";
+import { Box, Typography, Button, GlobalStyles } from "@mui/material";
+import { TILE_URLS } from "../../utils/mapTiles";
 import { MapContainer, TileLayer, useMapEvents, Marker as LeafletMarker, Popup } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { Map as LeafletMap } from 'leaflet';
@@ -37,10 +38,7 @@ Icon.Default.mergeOptions({
 
 const DEFAULT_CENTER = [43.088947, -76.154480] as [number, number];
 
-const THEMES = {
-    light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-};
+const THEMES = TILE_URLS;
 
 function MapEvents({ onMove, onRightClick }: { onMove: () => void, onRightClick: (latlng: L.LatLng) => void }) {
     const setBoundsAtom = useSetAtom(boundsAtom);
@@ -125,6 +123,21 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
 
     return (
         <Box sx={{ height: '100%', p: 0, position: 'relative' }}>
+            <GlobalStyles styles={(t) => ({
+                '.leaflet-container .leaflet-bar': { border: `1px solid ${t.palette.divider}`, boxShadow: t.shadows[3] },
+                '.leaflet-container .leaflet-bar a': {
+                    backgroundColor: t.palette.background.paper,
+                    color: t.palette.text.primary,
+                    borderBottomColor: t.palette.divider,
+                },
+                '.leaflet-container .leaflet-bar a:hover, .leaflet-container .leaflet-bar a:focus': {
+                    backgroundColor: t.palette.action.hover,
+                },
+                '.leaflet-container .leaflet-bar a.leaflet-disabled': {
+                    backgroundColor: t.palette.background.paper,
+                    color: t.palette.text.disabled,
+                },
+            })} />
             <MapSearchAreaButton visible={moved} onClick={handleSearchArea} />
 
             <MapContainer

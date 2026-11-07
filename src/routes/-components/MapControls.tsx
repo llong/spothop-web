@@ -42,9 +42,9 @@ export const MapControls = memo(({ locating, isFollowingUser, onCenterOnUser }: 
                     bottom: { xs: "calc(16px + 56px + env(safe-area-inset-bottom, 0px))", lg: 24 },
                     right: 16,
                     zIndex: 1000,
-                    bgcolor: isFollowingUser ? "primary.main" : "white",
+                    bgcolor: isFollowingUser ? "primary.main" : "background.paper",
                     color: isFollowingUser ? "white" : "text.primary",
-                    "&:hover": { bgcolor: isFollowingUser ? "primary.dark" : "grey.100" },
+                    "&:hover": { bgcolor: isFollowingUser ? "primary.dark" : "action.hover" },
                     boxShadow: 3,
                 }}
             >

@@ -1,6 +1,7 @@
 import { Box, Paper, Stack, Typography } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { useTheme } from '@mui/material/styles';
+import { TILE_URLS } from '../../../utils/mapTiles';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { useEffect } from 'react';
 
@@ -13,9 +14,7 @@ interface LocationPreviewContentProps {
 const LocationPreviewContent = ({ lat, lng, address }: LocationPreviewContentProps) => {
     const theme = useTheme();
     const isDark = theme.palette.mode === 'dark';
-    const tileUrl = isDark 
-        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+    const tileUrl = isDark ? TILE_URLS.dark : TILE_URLS.light;
 
     // Lazy load the CSS only when the map component mounts
     useEffect(() => {
