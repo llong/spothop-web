@@ -9,15 +9,24 @@ type AddressFields = Pick<Spot, 'address' | 'city' | 'state' | 'country'>;
  * Spots created in the app store Google's full formatted address, which already contains the
  * city/state/country, so those parts are only appended when they are not already present.
  */
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * True when `needle` appears in `haystack` as a whole word (case-insensitive, Unicode-aware).
+ * Plain substring matching is wrong here: the state "IN" would match the "in" in "Main Street".
+ */
+const containsWholeWord = (haystack: string, needle: string): boolean =>
+    new RegExp(`(^|[^\\p{L}\\p{N}])${escapeRegExp(needle)}($|[^\\p{L}\\p{N}])`, 'iu').test(haystack);
+
 export const buildBasicAddress = (spot: AddressFields | undefined | null): string | null => {
     if (!spot) return null;
 
     const parts: string[] = [];
     if (spot.address) parts.push(spot.address);
 
-    const existing = (spot.address ?? '').toLowerCase();
+    const existing = spot.address ?? '';
     for (const value of [spot.city, spot.state, spot.country]) {
-        if (value && !existing.includes(value.toLowerCase())) parts.push(value);
+        if (value && !containsWholeWord(existing, value)) parts.push(value);
     }
 
     return parts.join(', ') || 'Unknown Location';

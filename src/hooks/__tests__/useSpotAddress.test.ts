@@ -24,6 +24,28 @@ describe('buildBasicAddress', () => {
         })).toBe('4JX8+HF Petaling Jaya, Selangor, Malaysia');
     });
 
+    it('does not mistake a short state code for a substring of a street word', () => {
+        // "IN" is inside "Main", "DE" inside "Garden", "OR" inside "Corner"
+        expect(buildBasicAddress({ address: '42 Main Street', city: 'Fort Wayne', state: 'IN', country: 'USA' }))
+            .toBe('42 Main Street, Fort Wayne, IN, USA');
+        expect(buildBasicAddress({ address: '9 Garden Court', city: 'Dover', state: 'DE', country: 'USA' }))
+            .toBe('9 Garden Court, Dover, DE, USA');
+        expect(buildBasicAddress({ address: '1 Corner Place', city: 'Portland', state: 'OR', country: 'USA' }))
+            .toBe('1 Corner Place, Portland, OR, USA');
+    });
+
+    it('still treats a state code that is a whole word in the address as present', () => {
+        expect(buildBasicAddress({ address: '306 Caleb Avenue, Syracuse, NY 13215, USA', city: 'Syracuse', state: 'NY', country: 'USA' }))
+            .toBe('306 Caleb Avenue, Syracuse, NY 13215, USA');
+    });
+
+    it('matches accented place names and escapes regex characters', () => {
+        expect(buildBasicAddress({ address: 'Rua Augusta, São Paulo, Brazil', city: 'São Paulo', state: undefined, country: 'Brazil' }))
+            .toBe('Rua Augusta, São Paulo, Brazil');
+        expect(buildBasicAddress({ address: '5 Elm St', city: 'St. John (East)', state: undefined, country: undefined }))
+            .toBe('5 Elm St, St. John (East)');
+    });
+
     it('works without a street address', () => {
         expect(buildBasicAddress({ city: 'Syracuse', state: 'NY', country: 'USA' })).toBe('Syracuse, NY, USA');
     });
