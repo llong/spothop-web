@@ -1,64 +1,72 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { reverseGeocode } from 'src/utils/geocoding';
 import type { Spot } from 'src/types';
 
-const buildBasicAddress = (spot: Spot | undefined) => {
+type AddressFields = Pick<Spot, 'address' | 'city' | 'state' | 'country'>;
+
+/**
+ * Builds a display address from the fields stored on the spot, without any network call.
+ * Spots created in the app store Google's full formatted address, which already contains the
+ * city/state/country, so those parts are only appended when they are not already present.
+ */
+export const buildBasicAddress = (spot: AddressFields | undefined | null): string | null => {
     if (!spot) return null;
-    if (spot.address) {
-        return [
-            spot.address,
-            [spot.city, spot.state].filter(Boolean).join(', '),
-            spot.country
-        ].filter(Boolean).join(', ');
+
+    const parts: string[] = [];
+    if (spot.address) parts.push(spot.address);
+
+    const existing = (spot.address ?? '').toLowerCase();
+    for (const value of [spot.city, spot.state, spot.country]) {
+        if (value && !existing.includes(value.toLowerCase())) parts.push(value);
     }
-    const locationParts = [spot.city, spot.state].filter(Boolean).join(', ');
-    return [
-        locationParts,
-        spot.country
-    ].filter(Boolean).join(', ') || 'Unknown Location';
+
+    return parts.join(', ') || 'Unknown Location';
 };
 
+/**
+ * Display address for a spot. Uses the stored address fields; only falls back to reverse
+ * geocoding (a billable Google API call) when the spot has no stored street address.
+ */
 export const useSpotAddress = (spot: Spot | undefined) => {
-    const [displayAddress, setDisplayAddress] = useState<string | null>(() => buildBasicAddress(spot));
+    const basicAddress = useMemo(
+        () => buildBasicAddress(spot),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [spot?.address, spot?.city, spot?.state, spot?.country, !!spot]
+    );
+    const [geocodedAddress, setGeocodedAddress] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
+    const needsGeocode = !!spot && !spot.address && !!spot.latitude && !!spot.longitude;
+
     useEffect(() => {
-        if (!spot) {
-            setDisplayAddress(null);
+        if (!needsGeocode || !spot) {
+            setGeocodedAddress(null);
             return;
         }
 
-        const buildAddress = async () => {
-            // Priority 1: Use reverse geocoding if lat/lng available to get the most accurate address
-            if (spot.latitude && spot.longitude) {
-                setIsLoading(true);
-                try {
-                    const info = await reverseGeocode(spot.latitude, spot.longitude);
-                    if (!info) return;
+        let cancelled = false;
+        setIsLoading(true);
 
-                    // Build a clean address: "123 Street Name, City, State"
-                    const streetInfo = [info.streetNumber, info.street].filter(Boolean).join(' ');
-                    const city = info.city;
-                    const state = info.state;
-                    const country = info.country;
+        reverseGeocode(spot.latitude, spot.longitude)
+            .then((info) => {
+                if (cancelled || !info) return;
 
-                    const locationParts = [city, state].filter(Boolean).join(', ');
-                    const enrichedAddress = [streetInfo, locationParts, country].filter(Boolean).join(', ');
+                // "123 Street Name, City, State, Country"
+                const streetInfo = [info.streetNumber, info.street].filter(Boolean).join(' ');
+                const locationParts = [info.city, info.state].filter(Boolean).join(', ');
+                const enriched = [streetInfo, locationParts, info.country].filter(Boolean).join(', ');
 
-                    // If enriched address is available and has some content, use it. 
-                    if (enrichedAddress && enrichedAddress.length > 5) {
-                        setDisplayAddress(enrichedAddress);
-                    }
-                } catch (error) {
-                    console.error('Error building address:', error);
-                } finally {
-                    setIsLoading(false);
-                }
-            }
+                if (enriched.length > 5) setGeocodedAddress(enriched);
+            })
+            .catch((error) => console.error('Error building address:', error))
+            .finally(() => {
+                if (!cancelled) setIsLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
         };
+    }, [needsGeocode, spot?.id, spot?.latitude, spot?.longitude]);
 
-        buildAddress();
-    }, [spot?.id, spot?.latitude, spot?.longitude]);
-
-    return { displayAddress, isLoading };
+    return { displayAddress: geocodedAddress ?? basicAddress, isLoading };
 };
