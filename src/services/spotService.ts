@@ -5,6 +5,49 @@ import { extractStoragePath } from "@/utils/media-utils";
 import { favoriteService } from './spot/favoriteService';
 import { videoLinkService } from './spot/videoLinkService';
 
+/** Extracts the HTTP status and message from a supabase-js Functions error. */
+async function readFunctionError(error: unknown): Promise<{ status?: number; message: string }> {
+    const response = (error as { context?: Response }).context;
+    const fallback = (error as { message?: string }).message ?? '';
+    if (!response || typeof response.json !== 'function') return { message: fallback };
+    try {
+        const body = await response.clone().json();
+        return { status: response.status, message: body?.error ?? body?.message ?? fallback };
+    } catch {
+        return { status: response.status, message: fallback };
+    }
+}
+
+/** Supabase answers 404 "Requested function was not found" when an Edge Function is not deployed. */
+function isFunctionNotDeployed(status: number | undefined, message: string): boolean {
+    return status === 404 && /function was not found/i.test(message);
+}
+
+/**
+ * Fallback used only when the delete-spot Edge Function is unavailable. Limited by RLS: it can only
+ * remove storage objects the current user uploaded, so media from other users is left behind.
+ */
+async function deleteSpotFromBrowser(spotId: string) {
+    const [{ data: photos }, { data: videos }] = await Promise.all([
+        supabase.from('spot_photos').select('url, thumbnail_small_url, thumbnail_large_url, thumbnailurl').eq('spot_id', spotId),
+        supabase.from('spot_videos').select('url, thumbnail_url').eq('spot_id', spotId),
+    ]);
+
+    const urls = [
+        ...(photos || []).flatMap((p) => [p.url, p.thumbnail_small_url, p.thumbnail_large_url, p.thumbnailurl]),
+        ...(videos || []).flatMap((v) => [v.url, v.thumbnail_url]),
+    ];
+    const paths = [...new Set(urls.map((u) => extractStoragePath(u ?? '')).filter(Boolean))];
+
+    const { error } = await supabase.from('spots').delete().eq('id', spotId).select();
+    if (error) throw error;
+
+    if (paths.length > 0) {
+        const { error: storageError } = await supabase.storage.from('spot-media').remove(paths);
+        if (storageError) console.warn('Spot deleted, but some media files could not be removed:', storageError.message);
+    }
+}
+
 export const spotService = {
     async fetchSpotDetails(spotId: string, userId?: string) {
         const spotPromise = supabase
@@ -207,30 +250,23 @@ export const spotService = {
         };
     },
 
+    /**
+     * Deletes a spot and every file stored for it.
+     *
+     * Goes through the `delete-spot` Edge Function, which runs with the service role and removes ALL of
+     * the spot's files (including media uploaded by other users, which RLS stops the browser from
+     * deleting) before removing the row. If the function is not deployed yet we fall back to deleting
+     * from the browser, which can only remove files the current user owns.
+     */
     async deleteSpot(spotId: string) {
-        const { data: photos } = await supabase.from('spot_photos').select('url').eq('spot_id', spotId);
-        const { data: videos } = await supabase.from('spot_videos').select('url, thumbnail_url').eq('spot_id', spotId);
-        
-        const pathsToDelete: string[] = [];
-        [...(photos || []), ...(videos || [])].forEach((item: any) => {
-            if (item.url) pathsToDelete.push(extractStoragePath(item.url));
-            if (item.thumbnail_url) pathsToDelete.push(extractStoragePath(item.thumbnail_url));
-            if (item.url && !item.thumbnail_url) {
-                const base = item.url.split('/').pop();
-                if (base) {
-                    pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base}`);
-                    pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base.replace(/\.[^/.]+$/, "")}_240.jpg`);
-                    pathsToDelete.push(`spots/${spotId}/photos/thumbnails/${base.replace(/\.[^/.]+$/, "")}_720.jpg`);
-                }
-            }
-        });
+        const { error } = await supabase.functions.invoke('delete-spot', { body: { spotId } });
+        if (!error) return;
 
-        const { error } = await supabase.from('spots').delete().eq('id', spotId).select();
-        if (error) throw error;
-
-        if (pathsToDelete.length > 0) {
-            await supabase.storage.from('spot-media').remove(pathsToDelete);
+        const { status, message } = await readFunctionError(error);
+        if (isFunctionNotDeployed(status, message)) {
+            return deleteSpotFromBrowser(spotId);
         }
+        throw new Error(message || 'Could not delete the spot.');
     },
 
     ...favoriteService,

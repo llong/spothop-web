@@ -7,6 +7,7 @@ vi.mock('@/supabase', () => ({
     default: {
         from: vi.fn(),
         rpc: vi.fn(),
+        functions: { invoke: vi.fn() },
     }
 }));
 
@@ -52,54 +53,110 @@ describe('spotService', () => {
         expect(mockFrom).toHaveBeenCalledWith('content_reports');
     });
 
-    it('deletes a spot and its media', async () => {
-        const mockSpotId = 'spot-123';
-        const mockPhotos = [{ url: 'http://example.com/photo.jpg' }];
-        const mockVideos = [{ url: 'http://example.com/video.mp4', thumbnail_url: 'http://example.com/thumb.jpg' }];
+    describe('deleteSpot', () => {
+        const spotId = 'spot-123';
+        const invoke = () => vi.mocked((supabase as any).functions.invoke);
 
-        const mockFrom = vi.mocked(supabase.from);
-        const mockStorage = {
-            from: vi.fn().mockReturnThis(),
-            remove: vi.fn().mockResolvedValue({ error: null })
-        };
-        (supabase as any).storage = mockStorage;
-
-        mockFrom.mockImplementation((table: string) => {
-            if (table === 'spot_photos') {
-                return {
-                    select: vi.fn().mockReturnThis(),
-                    eq: vi.fn().mockReturnThis(),
-                    mockResolvedValue: vi.fn().mockResolvedValue({ data: mockPhotos, error: null }),
-                    then: (cb: any) => Promise.resolve(cb({ data: mockPhotos, error: null }))
-                } as any;
-            }
-            if (table === 'spot_videos') {
-                return {
-                    select: vi.fn().mockReturnThis(),
-                    eq: vi.fn().mockReturnThis(),
-                    then: (cb: any) => Promise.resolve(cb({ data: mockVideos, error: null }))
-                } as any;
-            }
-            if (table === 'spots') {
-                return {
-                    delete: vi.fn().mockReturnThis(),
-                    eq: vi.fn().mockReturnThis(),
-                    select: vi.fn().mockReturnThis(),
-                    then: (cb: any) => Promise.resolve(cb({ data: [{ id: mockSpotId }], error: null }))
-                } as any;
-            }
-            return {
-                select: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockReturnThis(),
-                then: (cb: any) => Promise.resolve(cb({ data: [], error: null }))
-            } as any;
+        /** A supabase-js FunctionsHttpError: the failed Response lives on error.context. */
+        const httpError = (status: number, body: unknown) => ({
+            message: 'Edge Function returned a non-2xx status code',
+            context: new Response(JSON.stringify(body), { status }),
         });
 
-        await spotService.deleteSpot(mockSpotId);
+        it('delegates to the delete-spot edge function and touches nothing else on success', async () => {
+            invoke().mockResolvedValue({ data: { ok: true }, error: null });
 
-        expect(mockFrom).toHaveBeenCalledWith('spots');
-        expect(mockStorage.from).toHaveBeenCalledWith('spot-media');
-        expect(mockStorage.remove).toHaveBeenCalled();
+            await spotService.deleteSpot(spotId);
+
+            expect(invoke()).toHaveBeenCalledWith('delete-spot', { body: { spotId } });
+            expect(supabase.from).not.toHaveBeenCalled();
+        });
+
+        it('surfaces the server message when the function refuses (e.g. not the creator)', async () => {
+            invoke().mockResolvedValue({ data: null, error: httpError(403, { error: 'Not allowed to delete this spot' }) });
+
+            await expect(spotService.deleteSpot(spotId)).rejects.toThrow('Not allowed to delete this spot');
+            expect(supabase.from).not.toHaveBeenCalled();
+        });
+
+        it('does NOT fall back when the 404 is "spot not found" (only when the function is missing)', async () => {
+            invoke().mockResolvedValue({ data: null, error: httpError(404, { error: 'Spot not found' }) });
+
+            await expect(spotService.deleteSpot(spotId)).rejects.toThrow('Spot not found');
+            expect(supabase.from).not.toHaveBeenCalled();
+        });
+
+        describe('fallback when the edge function is not deployed', () => {
+            const notDeployed = () => ({
+                data: null,
+                error: httpError(404, { code: 'NOT_FOUND', message: 'Requested function was not found' }),
+            });
+
+            const setup = (storageError: { message: string } | null = null) => {
+                const remove = vi.fn().mockResolvedValue({ error: storageError });
+                (supabase as any).storage = { from: vi.fn().mockReturnValue({ remove }) };
+                const photoSelect = vi.fn().mockReturnThis();
+                vi.mocked(supabase.from).mockImplementation((table: string) => {
+                    if (table === 'spot_photos') {
+                        return {
+                            select: photoSelect,
+                            eq: vi.fn().mockReturnThis(),
+                            then: (cb: any) => Promise.resolve(cb({ data: [{
+                                url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/photos/originals/a.webp',
+                                thumbnail_small_url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/photos/thumbnails/small/a.webp',
+                                thumbnail_large_url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/photos/thumbnails/large/a.webp',
+                                thumbnailurl: null,
+                            }], error: null })),
+                        } as any;
+                    }
+                    if (table === 'spot_videos') {
+                        return {
+                            select: vi.fn().mockReturnThis(),
+                            eq: vi.fn().mockReturnThis(),
+                            then: (cb: any) => Promise.resolve(cb({ data: [{
+                                url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/videos/originals/v.mp4',
+                                thumbnail_url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/videos/thumbnails/v.webp',
+                            }], error: null })),
+                        } as any;
+                    }
+                    return {
+                        delete: vi.fn().mockReturnThis(),
+                        eq: vi.fn().mockReturnThis(),
+                        select: vi.fn().mockReturnThis(),
+                        then: (cb: any) => Promise.resolve(cb({ data: [{ id: spotId }], error: null })),
+                    } as any;
+                });
+                return { remove, photoSelect };
+            };
+
+            it('removes every thumbnail layout, not just the original', async () => {
+                invoke().mockResolvedValue(notDeployed());
+                const { remove, photoSelect } = setup();
+
+                await spotService.deleteSpot(spotId);
+
+                // Regression: the old code selected only `url`, leaking both current-layout thumbnails
+                expect(photoSelect).toHaveBeenCalledWith('url, thumbnail_small_url, thumbnail_large_url, thumbnailurl');
+                expect(remove).toHaveBeenCalledWith([
+                    'spots/s/photos/originals/a.webp',
+                    'spots/s/photos/thumbnails/small/a.webp',
+                    'spots/s/photos/thumbnails/large/a.webp',
+                    'spots/s/videos/originals/v.mp4',
+                    'spots/s/videos/thumbnails/v.webp',
+                ]);
+            });
+
+            it('still deletes the spot if storage removal fails, but warns instead of failing silently', async () => {
+                invoke().mockResolvedValue(notDeployed());
+                setup({ message: 'not allowed' });
+                const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+                await expect(spotService.deleteSpot(spotId)).resolves.toBeUndefined();
+
+                expect(warn).toHaveBeenCalledWith(expect.stringContaining('could not be removed'), 'not allowed');
+                warn.mockRestore();
+            });
+        });
     });
 
     it('toggles favorite status (delete)', async () => {
