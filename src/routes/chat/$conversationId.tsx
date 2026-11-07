@@ -175,7 +175,9 @@ export const ChatRoomComponent = () => {
                             placeholder="Type a message..."
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
-                            disabled={sendMessageMutation.isPending}
+                            // Not disabled while sending: a disabled input blurs and loses focus,
+                            // and the content is already cleared/restored optimistically in handleSend.
+                            autoComplete="off"
                             sx={{
                                 '& .MuiOutlinedInput-root': {
                                     borderRadius: 4,
