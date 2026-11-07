@@ -103,7 +103,7 @@ export const spotService = {
                 spotData.city = spotData.city || info.city;
                 spotData.state = spotData.state || info.state;
                 spotData.country = spotData.country || info.country;
-            } catch (e) {
+            } catch {
                 console.warn("Geocoding failed for spot:", spotId);
             }
         }

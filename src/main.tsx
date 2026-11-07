@@ -12,7 +12,6 @@ import { pwaUpdateAtom } from '@/atoms/pwa'
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
 import { persistQueryClient } from '@tanstack/react-query-persist-client'
-// @ts-ignore
 import { registerSW } from 'virtual:pwa-register'
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { get, set, del } from 'idb-keyval'

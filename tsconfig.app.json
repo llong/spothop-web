@@ -36,6 +36,7 @@
     "module": "ESNext",
     "types": [
       "vite/client",
+      "vite-plugin-pwa/client",
       "google.maps"
     ],
     "skipLibCheck": true,

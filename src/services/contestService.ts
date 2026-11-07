@@ -41,7 +41,7 @@ export const contestService = {
      * Fetches entries for a specific contest.
      */
     async fetchContestEntries(contestId: string): Promise<ContestEntry[]> {
-        let query = supabase
+        const query = supabase
             .from('contest_entries')
             .select(`
                 *,

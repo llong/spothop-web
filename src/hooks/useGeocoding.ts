@@ -17,7 +17,7 @@ export const useGeocoding = () => {
         
         let streetPart = '';
         let statePart = '';
-        let countryCode = country === 'United States' ? 'US' : (country || 'US');
+        const countryCode = country === 'United States' ? 'US' : (country || 'US');
 
         if (address) {
             const addressParts = address.split(',').map(p => p.trim());

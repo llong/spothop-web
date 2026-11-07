@@ -42,8 +42,8 @@ export function VideoPlayerModal({
                         style={{ border: 0 }}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
-                        // @ts-ignore
-                        credentialless="true"
+                        // `credentialless` is not in React's iframe typings yet
+                        {...({ credentialless: 'true' } as Record<string, string>)}
                     ></iframe>
                 </Box>
                 <Box sx={{ p: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

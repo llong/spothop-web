@@ -11,7 +11,7 @@ export const useProfileUpdate = () => {
         mutationFn: async (updates: UserProfile) => {
             return withErrorHandling(async () => {
                 // Remove derived/virtual fields that aren't in the DB
-                const { followerCount, followingCount, ...dbUpdates } = updates as UserProfile & { 
+                const { followerCount: _followerCount, followingCount: _followingCount, ...dbUpdates } = updates as UserProfile & { 
                     followerCount?: number; 
                     followingCount?: number; 
                 };

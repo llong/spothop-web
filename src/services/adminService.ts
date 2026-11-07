@@ -50,17 +50,19 @@ export const adminService = {
                     targetContent = spotMap.get(report.target_id);
                     contextId = report.target_id;
                     break;
-                case 'comment':
+                case 'comment': {
                     const comment = commentMap.get(report.target_id);
                     targetContent = comment;
                     contextId = comment?.spot_id;
                     break;
-                case 'media':
+                }
+                case 'media': {
                     const photo = photoMap.get(report.target_id);
                     const video = videoMap.get(report.target_id);
                     targetContent = photo || video;
                     contextId = (photo || video)?.spot_id;
                     break;
+                }
             }
 
             return {
@@ -91,17 +93,19 @@ export const adminService = {
         console.log(`[adminService] Deleting report target: ${targetType} (${targetId})`);
         
         switch (targetType) {
-            case 'spot':
+            case 'spot': {
                 const { spotService } = await import('./spotService');
                 await spotService.deleteSpot(targetId);
                 break;
+            }
 
-            case 'comment':
+            case 'comment': {
                 const { error: commentError } = await supabase.from('spot_comments').delete().eq('id', targetId);
                 if (commentError) throw commentError;
                 break;
+            }
 
-            case 'media':
+            case 'media': {
                 // We try both tables. We don't throw immediately if one fails to find.
                 // 1. Try spot_photos
                 const { data: photo } = await supabase
@@ -156,6 +160,7 @@ export const adminService = {
                 if (delVideoData && delVideoData.length > 0) return;
 
                 throw new Error("Media content not found or already deleted");
+            }
         }
     },
 

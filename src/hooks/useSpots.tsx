@@ -4,7 +4,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { spotsAtom, filtersAtom } from "src/atoms/spots";
 import type { LatLngBounds } from "leaflet";
 
-export default function () {
+export default function useSpots() {
     const [spots, setSpots] = useAtom(spotsAtom);
     const filters = useAtomValue(filtersAtom);
     const [error, setError] = useState<string | null>(null)

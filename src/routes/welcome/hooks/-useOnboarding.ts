@@ -91,7 +91,7 @@ export function useOnboarding() {
                 setUsernameError(null);
                 setIsUsernameValid(true);
             }
-        } catch (err) {
+        } catch {
             setUsernameError('Network error.');
             setIsUsernameValid(false);
         } finally {

@@ -24,7 +24,7 @@ interface SpotInfoProps {
     onReportSuccess: () => void;
 }
 
-export const getDifficultyColor = (difficulty?: string) => {
+const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty) {
         case 'beginner': return 'success';
         case 'intermediate': return 'warning';
@@ -33,7 +33,7 @@ export const getDifficultyColor = (difficulty?: string) => {
     }
 };
 
-export const getKickoutRiskLabel = (risk?: number) => {
+const getKickoutRiskLabel = (risk?: number) => {
     if (!risk) return null;
     if (risk <= 3) return { label: 'Low Risk', color: 'success' as const };
     if (risk <= 7) return { label: 'Medium Risk', color: 'warning' as const };

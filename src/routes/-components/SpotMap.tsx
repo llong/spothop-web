@@ -27,8 +27,8 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-// @ts-ignore
-delete Icon.Default.prototype._getIconUrl;
+// Leaflet's default icon URL resolver breaks with bundlers; remove it so mergeOptions below wins.
+delete (Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 
 Icon.Default.mergeOptions({
     iconUrl: markerIcon,

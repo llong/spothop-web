@@ -155,7 +155,7 @@ export const trimVideo = async (
         try {
             await instance.deleteFile(inputName);
             await instance.deleteFile(outputName);
-        } catch (e) {
+        } catch {
             // Ignore cleanup errors
         }
     }

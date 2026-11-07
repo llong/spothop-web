@@ -236,7 +236,7 @@ async function enrichLocations(items: FeedItem[]): Promise<FeedItem[]> {
                     state: item.state || info.state,
                     country: item.country || info.country
                 };
-            } catch (e) {
+            } catch {
                 console.warn("[FeedService] Geocoding failed for media:", item.media_id);
             }
         }
@@ -244,4 +244,4 @@ async function enrichLocations(items: FeedItem[]): Promise<FeedItem[]> {
     });
 
     return Promise.all(enrichmentPromises);
-}
+}

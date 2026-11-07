@@ -1,9 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 
+interface YouTubePlayerEvent {
+    data: number;
+    target: { seekTo: (seconds: number) => void; playVideo: () => void };
+}
+
+interface YouTubeApiWindow extends Window {
+    YT?: {
+        Player: new (
+            elementId: string,
+            options: { events: { onStateChange: (event: YouTubePlayerEvent) => void } }
+        ) => unknown;
+    };
+    onYouTubeIframeAPIReady?: () => void;
+}
+
 export function useYoutubePlayer(linkId: string, startTime: number = 0) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [playerKey, setPlayerKey] = useState(0);
-    const playerRef = useRef<any>(null);
+    const playerRef = useRef<unknown>(null);
 
     const handlePlay = () => setIsPlaying(true);
     const handleClose = () => {
@@ -19,12 +34,11 @@ export function useYoutubePlayer(linkId: string, startTime: number = 0) {
         if (!isPlaying) return;
 
         const initPlayer = () => {
-            // @ts-ignore
-            if (window.YT && window.YT.Player) {
-                // @ts-ignore
-                playerRef.current = new window.YT.Player(`youtube-player-${linkId}`, {
+            const yt = (window as YouTubeApiWindow).YT;
+            if (yt && yt.Player) {
+                playerRef.current = new yt.Player(`youtube-player-${linkId}`, {
                     events: {
-                        'onStateChange': (event: any) => {
+                        'onStateChange': (event: YouTubePlayerEvent) => {
                             if (event.data === 0) { // ENDED
                                 event.target.seekTo(startTime);
                                 event.target.playVideo();
@@ -35,8 +49,7 @@ export function useYoutubePlayer(linkId: string, startTime: number = 0) {
             }
         };
 
-        // @ts-ignore
-        if (!window.YT) {
+        if (!(window as YouTubeApiWindow).YT) {
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
             const firstScriptTag = document.getElementsByTagName('script')[0];
@@ -45,8 +58,7 @@ export function useYoutubePlayer(linkId: string, startTime: number = 0) {
             } else {
                 document.head.appendChild(tag);
             }
-            // @ts-ignore
-            window.onYouTubeIframeAPIReady = initPlayer;
+            (window as YouTubeApiWindow).onYouTubeIframeAPIReady = initPlayer;
         } else {
             initPlayer();
         }
