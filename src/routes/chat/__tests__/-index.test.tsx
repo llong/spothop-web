@@ -153,4 +153,43 @@ describe('ChatInboxComponent', () => {
             expect(chatHeader || messagesTab || invitesTab).toBeInTheDocument();
         });
     });
+
+    describe('last message label', () => {
+        const accepted = (overrides: Record<string, unknown>) => ({
+            id: 'c-accepted',
+            participants: [
+                { user_id: 'test-user-id', status: 'accepted', profile: { id: 'test-user-id', displayName: 'Me', username: 'me' } },
+                { user_id: 'other-user-id', status: 'accepted', profile: { id: 'other-user-id', displayName: 'OtherUser', username: 'otheruser' } }
+            ],
+            is_group: false,
+            unreadCount: 0,
+            created_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString(),
+            ...overrides,
+        });
+
+        const renderWith = async (conversation: unknown) => {
+            mockUseConversationsQuery.mockReturnValue({
+                data: [conversation], isLoading: false, isSuccess: true, refetch: vi.fn(), hasNextPage: false, fetchNextPage: vi.fn()
+            });
+            const component = (Route as any).options.component;
+            const ActualComponent = component.component || component;
+            await renderComponent(<ActualComponent />);
+        };
+
+        it('does not claim a "last message" time for a conversation with no messages', async () => {
+            await renderWith(accepted({ lastMessage: undefined }));
+
+            expect(await screen.findByText('No messages yet')).toBeInTheDocument();
+            expect(screen.getByText(/^Created /)).toBeInTheDocument();
+            expect(screen.queryByText(/Last message/)).not.toBeInTheDocument();
+        });
+
+        it('shows the last message time when the conversation has messages', async () => {
+            await renderWith(accepted({ lastMessage: { content: 'Hello', author: { username: 'OtherUser' } } }));
+
+            expect(await screen.findByText(/^Last message /)).toBeInTheDocument();
+            expect(screen.queryByText(/^Created /)).not.toBeInTheDocument();
+        });
+    });
 });

@@ -118,6 +118,8 @@ export function useSendMessageMutation(conversationId: string) {
             chatService.sendMessage(conversationId, senderId, content),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: chatKeys.thread(conversationId) });
+            // The inbox has a stale window; refresh its last-message preview right away
+            queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'inbox'] });
         }
     });
 }

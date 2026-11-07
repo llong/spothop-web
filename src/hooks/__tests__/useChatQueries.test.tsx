@@ -217,6 +217,8 @@ describe('useChatQueries', () => {
 
             expect(chatService.sendMessage).toHaveBeenCalledWith('conv1', 'u1', 'test message');
             expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: chatKeys.thread('conv1') });
+            // The inbox preview must refresh too, otherwise it is stale for up to a minute
+            expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['chat', 'inbox'] });
         });
     });
 });

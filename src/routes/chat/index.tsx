@@ -152,7 +152,9 @@ export const ChatInboxComponent = () => {
                                                                 ) : 'No messages yet'}
                                                             </Typography>
                                                             <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap', mt: 0.2 }}>
-                                                                Last message {formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: true })}
+                                                                {chat.lastMessage
+                                                                    ? `Last message ${formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: true })}`
+                                                                    : `Created ${formatDistanceToNow(new Date(chat.created_at), { addSuffix: true })}`}
                                                             </Typography>
                                                         </Box>
                                                     }
