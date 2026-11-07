@@ -1,6 +1,9 @@
 import supabase from "@/supabase";
+import type { Enums } from "@/types/database.types";
 import type { FeedItem, MediaComment } from "@/types";
 import { reverseGeocode } from "@/utils/geocoding";
+
+type SpotTypeEnum = Enums<'spot_type_enum'>;
 
 export const feedService = {
     /**
@@ -27,23 +30,23 @@ export const feedService = {
         
         const { data, error } = await supabase.rpc('get_global_feed_content', {
             p_limit: limit,
-            p_cursor_timestamp: cursor,
-            p_user_id: userId || null,
-            p_lat: filters?.lat || null,
-            p_lng: filters?.lng || null,
-            p_max_dist_km: filters?.maxDistKm || null,
+            p_cursor_timestamp: cursor ?? undefined,
+            p_user_id: userId || undefined,
+            p_lat: filters?.lat || undefined,
+            p_lng: filters?.lng || undefined,
+            p_max_dist_km: filters?.maxDistKm || undefined,
             p_following_only: false,
-            p_spot_types: filters?.spotTypes || null,
-            p_difficulties: filters?.difficulties || null,
-            p_min_risk: filters?.minRisk || null,
-            p_max_risk: filters?.maxRisk || null,
-            p_rider_types: filters?.riderTypes || null,
-            p_author_id: filters?.authorId || null
+            p_spot_types: filters?.spotTypes as SpotTypeEnum[] | undefined,
+            p_difficulties: filters?.difficulties || undefined,
+            p_min_risk: filters?.minRisk || undefined,
+            p_max_risk: filters?.maxRisk || undefined,
+            p_rider_types: filters?.riderTypes || undefined,
+            p_author_id: filters?.authorId || undefined
         });
 
         if (error) throw error;
 
-        let feedItems = (data as FeedItem[]) || [];
+        let feedItems = (data as unknown as FeedItem[] | null) || [];
 
         // Note: is_liked_by_user and is_favorited_by_user are now returned by the RPC!
         // No manual enrichment needed here anymore.
@@ -66,7 +69,7 @@ export const feedService = {
 
         if (error) throw error;
 
-        let feedItems = (data as FeedItem[]) || [];
+        let feedItems = (data as unknown as FeedItem[] | null) || [];
         
         // Enrichment for following feed (similar to global)
         if (userId && feedItems.length > 0) {
@@ -197,7 +200,7 @@ export const feedService = {
             p_media_id: mediaId,
             p_media_type: mediaType,
             p_content: content,
-            p_parent_id: parentId || null
+            p_parent_id: parentId || undefined
         });
 
         if (rpcError) throw rpcError;

@@ -28,18 +28,18 @@ describe('feedService', () => {
 
         expect(supabase.rpc).toHaveBeenCalledWith('get_global_feed_content', {
             p_limit: 10,
-            p_cursor_timestamp: null,
-            p_user_id: null,
-            p_lat: null,
-            p_lng: null,
-            p_max_dist_km: null,
+            p_cursor_timestamp: undefined,
+            p_user_id: undefined,
+            p_lat: undefined,
+            p_lng: undefined,
+            p_max_dist_km: undefined,
             p_following_only: false,
-            p_spot_types: null,
-            p_difficulties: null,
-            p_min_risk: null,
-            p_max_risk: null,
-            p_rider_types: null,
-            p_author_id: null
+            p_spot_types: undefined,
+            p_difficulties: undefined,
+            p_min_risk: undefined,
+            p_max_risk: undefined,
+            p_rider_types: undefined,
+            p_author_id: undefined
         });
         expect(result).toEqual(mockData);
     });
@@ -142,7 +142,7 @@ describe('feedService', () => {
                 p_media_id: 'm1',
                 p_media_type: 'photo',
                 p_content: 'test',
-                p_parent_id: null
+                p_parent_id: undefined
             });
             expect(result).toEqual(mockComment);
         });

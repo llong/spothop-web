@@ -14,20 +14,22 @@ export interface ChatMessage {
     };
 }
 
+export type ParticipantProfile = Pick<UserProfile, 'id' | 'username' | 'displayName' | 'avatarUrl'>;
+
 export interface ConversationParticipant {
     id: string;
     user_id: string;
     role: 'admin' | 'member';
     status: 'pending' | 'accepted' | 'rejected';
     joined_at: string;
-    profile?: UserProfile;
+    profile?: ParticipantProfile;
 }
 
 export interface Conversation {
     id: string;
     name: string | null;
     is_group: boolean;
-    created_by: string;
+    created_by: string | null;
     created_at: string;
     last_message_at: string;
     participants: ConversationParticipant[];
@@ -67,21 +69,21 @@ export const chatService = {
         if (convError) throw convError;
 
         const allParticipantIds = [...new Set((convData || []).flatMap(c =>
-            c.conversation_participants.map((p: any) => p.user_id)
+            c.conversation_participants.map((p) => p.user_id)
         ))];
 
         const { data: profiles } = await supabase
             .from('profiles')
-            .select('id, username, "avatarUrl"')
+            .select('id, username, "displayName", "avatarUrl"')
             .in('id', allParticipantIds);
 
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
 
         return (convData || []).map(c => {
-            const participants = c.conversation_participants.map((p: any) => ({
+            const participants = c.conversation_participants.map((p) => ({
                 ...p,
                 profile: profileMap.get(p.user_id)
-            }));
+            })) as ConversationParticipant[];
 
             const summary = summaryMap.get(c.id);
             const lastMsg = summary?.last_message ?? undefined;
@@ -245,17 +247,17 @@ export const chatService = {
 
         if (error) throw error;
 
-        const participantIds = data.conversation_participants.map((p: any) => p.user_id);
+        const participantIds = data.conversation_participants.map((p) => p.user_id);
         const { data: profiles } = await supabase
             .from('profiles')
-            .select('id, username, "avatarUrl"')
+            .select('id, username, "displayName", "avatarUrl"')
             .in('id', participantIds);
 
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
-        const participants = data.conversation_participants.map((p: any) => ({
+        const participants = data.conversation_participants.map((p) => ({
             ...p,
             profile: profileMap.get(p.user_id)
-        }));
+        })) as ConversationParticipant[];
 
         return {
             ...data,

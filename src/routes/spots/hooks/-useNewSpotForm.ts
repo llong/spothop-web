@@ -8,6 +8,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { reverseGeocode } from '@/utils/geocoding';
 import { analytics } from '@/lib/posthog';
 import type { VideoAsset } from '@/types';
+import type { Enums } from '@/types/database.types';
 import supabase from '@/supabase';
 
 export function useNewSpotForm(lat: number, lng: number) {
@@ -91,7 +92,7 @@ export function useNewSpotForm(lat: number, lng: number) {
                     latitude: lat,
                     longitude: lng,
                     created_by: user.user.id,
-                    spot_type: spotType,
+                    spot_type: spotType as Enums<'spot_type_enum'>[],
                     difficulty,
                     kickout_risk: kickoutRisk,
                     is_lit: isLit,

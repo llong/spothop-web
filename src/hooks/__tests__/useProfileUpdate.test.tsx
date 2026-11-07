@@ -54,7 +54,7 @@ describe('useProfileUpdate', () => {
         expect(mockUpsert).toHaveBeenCalledWith({
             id: 'user-1',
             name: 'Test User',
-            updatedAt: expect.any(Date)
+            updatedAt: expect.any(String) // ISO timestamp
         });
         
         // Follower counts should not be in the update

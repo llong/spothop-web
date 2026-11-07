@@ -1,5 +1,6 @@
 import supabase from "@/supabase";
 import type { Contest, ContestEntryStatus } from "@/types";
+import type { TablesInsert, TablesUpdate } from "@/types/database.types";
 
 export const adminContestService = {
     /**
@@ -26,12 +27,13 @@ export const adminContestService = {
 
         const { data, error } = await supabase
             .from('contests')
-            .insert({ ...contest, flyer_url: flyerUrl })
+            // `criteria` is a typed interface in the app but a Json column in the DB
+            .insert({ ...contest, flyer_url: flyerUrl } as unknown as TablesInsert<'contests'>)
             .select()
             .single();
 
         if (error) throw error;
-        return data as Contest;
+        return data as unknown as Contest;
     },
 
     /**
@@ -45,13 +47,13 @@ export const adminContestService = {
 
         const { data, error } = await supabase
             .from('contests')
-            .update({ ...updates, flyer_url: flyerUrl })
+            .update({ ...updates, flyer_url: flyerUrl } as unknown as TablesUpdate<'contests'>)
             .eq('id', id)
             .select()
             .single();
 
         if (error) throw error;
-        return data as Contest;
+        return data as unknown as Contest;
     },
 
     /**

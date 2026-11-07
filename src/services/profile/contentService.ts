@@ -32,31 +32,34 @@ export const contentService = {
         if (likesError) throw likesError;
         if (!likes?.length) return [];
 
-        const photoIds = likes.filter(l => l.media_type === 'photo').map(l => l.photo_id);
-        const videoIds = likes.filter(l => l.media_type === 'video').map(l => l.video_id);
+        const photoIds = likes.filter(l => l.media_type === 'photo').map(l => l.photo_id).filter((id): id is string => !!id);
+        const videoIds = likes.filter(l => l.media_type === 'video').map(l => l.video_id).filter((id): id is string => !!id);
 
         const [photosResult, videosResult] = await Promise.all([
             photoIds.length ? supabase.from('spot_photos').select('*, spot:spots(id, name, city, country, latitude, longitude)').in('id', photoIds) : { data: [] },
             videoIds.length ? supabase.from('spot_videos').select('*, spot:spots(id, name, city, country, latitude, longitude)').in('id', videoIds) : { data: [] }
         ]);
 
-        const authorIds = [...new Set([...(photosResult.data || []), ...(videosResult.data || [])].map((m: any) => m.user_id))];
+        const authorIds = [...new Set([...(photosResult.data || []), ...(videosResult.data || [])].map((m) => m.user_id).filter((id): id is string => !!id))];
         const { data: profiles } = await supabase.from('profiles').select('id, username, "avatarUrl"').in('id', authorIds);
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
 
         const formattedMedia = likes.map((like) => {
             const mediaData = like.media_type === 'photo'
-                ? photosResult.data?.find((p: any) => p.id === like.photo_id)
-                : videosResult.data?.find((v: any) => v.id === like.video_id);
+                ? photosResult.data?.find((p) => p.id === like.photo_id)
+                : videosResult.data?.find((v) => v.id === like.video_id);
 
             if (!mediaData) return null;
-            const authorProfile = profileMap.get(mediaData.user_id);
+            const authorProfile = mediaData.user_id ? profileMap.get(mediaData.user_id) : undefined;
 
             return {
                 id: like.id,
                 mediaId: mediaData.id,
                 url: mediaData.url,
-                thumbnailUrl: mediaData.thumbnail_url,
+                // Videos have thumbnail_url; photos store thumbnails in the thumbnail_*_url columns
+                thumbnailUrl: 'thumbnail_url' in mediaData
+                    ? mediaData.thumbnail_url
+                    : (mediaData.thumbnail_small_url ?? mediaData.thumbnail_large_url ?? mediaData.thumbnailurl),
                 type: like.media_type,
                 spot: mediaData.spot,
                 author: {

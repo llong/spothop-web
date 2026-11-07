@@ -49,7 +49,7 @@ describe('useChatQueries', () => {
         vi.mocked(chatService.fetchConversations).mockResolvedValue([]);
         vi.mocked(chatService.fetchMessages).mockResolvedValue([]);
         vi.mocked(chatService.fetchConversationDetails).mockResolvedValue({ id: 'mock' } as unknown as Conversation);
-        vi.mocked(chatService.sendMessage).mockResolvedValue({});
+        vi.mocked(chatService.sendMessage).mockResolvedValue({ id: 'mock' } as unknown as Awaited<ReturnType<typeof chatService.sendMessage>>);
         
         // Default implementation that tries to run queryFn if possible
         vi.mocked(useQuery).mockImplementation((options: any) => ({

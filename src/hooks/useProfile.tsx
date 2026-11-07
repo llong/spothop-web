@@ -4,6 +4,7 @@ import supabase from "@/supabase";
 import type { UserProfile } from "@/types";
 import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from "./useProfileQueries";
 import { useQueryClient } from "@tanstack/react-query";
+import type { TablesInsert } from '@/types/database.types';
 
 /**
  * Re-architected useProfile hook.
@@ -36,11 +37,13 @@ export const useProfile = (userId?: string, includeExtendedData = true) => {
     const updateProfile = async (updates: Partial<UserProfile>) => {
         if (!user?.user.id) return;
         try {
+            // UserProfile allows a null username but the DB requires one for inserts; this updates
+            // the signed-in user's existing row, which always has a username.
             const { error } = await supabase.from("profiles").upsert({
                 ...updates,
                 id: user.user.id,
-                updatedAt: new Date()
-            });
+                updatedAt: new Date().toISOString()
+            } as TablesInsert<'profiles'>);
             if (error) throw error;
 
             // Invalidate all related queries to force a refresh

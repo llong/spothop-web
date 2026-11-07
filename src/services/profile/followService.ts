@@ -29,7 +29,7 @@ export const followService = {
     }> {
         const { data, error } = await supabase.rpc('get_user_followers_batch', {
             p_user_id: userId,
-            p_cursor: cursor || null,
+            p_cursor: cursor || undefined,
             p_limit: limit
         });
 
@@ -62,7 +62,7 @@ export const followService = {
     }> {
         const { data, error } = await supabase.rpc('get_user_following_batch', {
             p_user_id: userId,
-            p_cursor: cursor || null,
+            p_cursor: cursor || undefined,
             p_limit: limit
         });
 

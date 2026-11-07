@@ -3,6 +3,7 @@ import supabase from '@/supabase';
 import { profileKeys } from './useProfileQueries';
 import { withErrorHandling } from '@/utils/asyncHelpers';
 import type { UserProfile } from '@/types';
+import type { TablesInsert } from '@/types/database.types';
 
 export const useProfileUpdate = () => {
     const queryClient = useQueryClient();
@@ -16,10 +17,12 @@ export const useProfileUpdate = () => {
                     followingCount?: number; 
                 };
 
+                // UserProfile allows a null username but the DB requires one for inserts; this updates
+                // an existing row, which always has a username.
                 const { error } = await supabase.from("profiles").upsert({
                     ...dbUpdates,
-                    updatedAt: new Date()
-                });
+                    updatedAt: new Date().toISOString()
+                } as TablesInsert<'profiles'>);
 
                 if (error) throw error;
                 return updates;

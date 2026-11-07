@@ -1,5 +1,5 @@
 import supabase from "@/supabase";
-import type { MediaItem, SpotVideoLink } from "@/types";
+import type { MediaItem, Spot, SpotVideoLink } from "@/types";
 import { reverseGeocode } from "@/utils/geocoding";
 import { extractStoragePath } from "@/utils/media-utils";
 import { favoriteService } from './spot/favoriteService';
@@ -100,62 +100,62 @@ export const spotService = {
         if (!spotData.city || !spotData.country || !spotData.state) {
             try {
                 const info = await reverseGeocode(spotData.latitude, spotData.longitude);
-                spotData.city = spotData.city || info.city;
-                spotData.state = spotData.state || info.state;
-                spotData.country = spotData.country || info.country;
+                spotData.city = spotData.city || info.city || null;
+                spotData.state = spotData.state || info.state || null;
+                spotData.country = spotData.country || info.country || null;
             } catch {
                 console.warn("Geocoding failed for spot:", spotId);
             }
         }
 
         const authorIds = [
-            ...(spotData.spot_photos || []).map((p: any) => p.user_id),
-            ...(spotData.spot_videos || []).map((v: any) => v.user_id),
-            ...(spotData.spot_video_links || []).map((l: any) => l.user_id),
+            ...(spotData.spot_photos || []).map((p) => p.user_id),
+            ...(spotData.spot_videos || []).map((v) => v.user_id),
+            ...(spotData.spot_video_links || []).map((l) => l.user_id),
             spotData.created_by
-        ].filter((v, i, a) => v && a.indexOf(v) === i);
+        ].filter((v, i, a): v is string => !!v && a.indexOf(v) === i);
 
         const { data: profiles } = authorIds.length > 0
             ? await supabase.from('profiles').select('id, username, "avatarUrl", "displayName"').in('id', authorIds)
             : { data: [] };
 
         const profileMap = new Map(profiles?.map(p => [p.id, p]));
-        const creatorProfile = profileMap.get(spotData.created_by);
+        const creatorProfile = spotData.created_by ? profileMap.get(spotData.created_by) : undefined;
 
         const photos = (spotData.spot_photos || []).map((p): MediaItem => {
-            const author = profileMap.get(p.user_id);
+            const author = p.user_id ? profileMap.get(p.user_id) : undefined;
             return {
                 id: p.id,
                 url: p.url,
                 type: 'photo' as const,
-                createdAt: p.created_at,
+                createdAt: p.created_at ?? '',
                 author: {
-                    id: p.user_id,
+                    id: p.user_id ?? '',
                     username: author?.username || 'unknown',
                     avatarUrl: author?.avatarUrl || null
                 },
                 likeCount: p.like_count || 0,
                 commentCount: p.comment_count || 0,
-                isLiked: userId ? p.media_likes?.some((l: any) => l.user_id === userId) : false
+                isLiked: userId ? p.media_likes?.some((l) => l.user_id === userId) : false
             };
         });
 
         const videos = (spotData.spot_videos || []).map((v): MediaItem => {
-            const author = profileMap.get(v.user_id);
+            const author = v.user_id ? profileMap.get(v.user_id) : undefined;
             return {
                 id: v.id,
                 url: v.url,
-                thumbnailUrl: v.thumbnail_url,
+                thumbnailUrl: v.thumbnail_url ?? undefined,
                 type: 'video' as const,
-                createdAt: v.created_at,
+                createdAt: v.created_at ?? '',
                 author: {
-                    id: v.user_id,
+                    id: v.user_id ?? '',
                     username: author?.username || 'unknown',
                     avatarUrl: author?.avatarUrl || null
                 },
                 likeCount: v.like_count || 0,
                 commentCount: v.comment_count || 0,
-                isLiked: userId ? v.media_likes?.some((l: any) => l.user_id === userId) : false
+                isLiked: userId ? v.media_likes?.some((l) => l.user_id === userId) : false
             };
         });
 
@@ -175,6 +175,18 @@ export const spotService = {
 
         return {
             ...spotData,
+            // Normalize nullable DB columns to the app's Spot shape (optional, not null)
+            description: spotData.description ?? '',
+            address: spotData.address ?? undefined,
+            city: spotData.city ?? undefined,
+            state: spotData.state ?? undefined,
+            country: spotData.country ?? undefined,
+            created_at: spotData.created_at ?? undefined,
+            created_by: spotData.created_by ?? undefined,
+            difficulty: (spotData.difficulty ?? undefined) as Spot['difficulty'],
+            kickout_risk: spotData.kickout_risk ?? undefined,
+            is_lit: spotData.is_lit ?? undefined,
+            spot_type: spotData.spot_type ?? undefined,
             media: [...photos, ...videos],
             videoLinks,
             creator: {
