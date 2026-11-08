@@ -36,7 +36,7 @@ const Search = styled('div')(({ theme }) => ({
 }));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
-    padding: theme.spacing(0, 2),
+    padding: theme.spacing(0, 1.25),
     height: '100%',
     position: 'absolute',
     pointerEvents: 'none',
@@ -72,14 +72,14 @@ export default function SearchAppBar() {
     ].filter(Boolean).length;
 
     return (
-        <Toolbar sx={{ gap: 1 }}>
+        <Toolbar sx={{ gap: 0.75, px: { xs: 1, sm: 2 } }}>
             {isMobile && (
                 <IconButton
                     edge="start"
                     color="inherit"
                     aria-label="menu"
                     onClick={() => setDrawerOpen(true)}
-                    sx={{ mr: 1, display: { md: 'none' } }}
+                    sx={{ display: { md: 'none' } }}
                 >
                     <MenuIcon />
                 </IconButton>
@@ -93,7 +93,6 @@ export default function SearchAppBar() {
                     width: 'auto', 
                     cursor: 'pointer', 
                     flexShrink: 0,
-                    mr: 1
                 }}
                 onClick={() => navigate({ to: '/feed' })}
             />

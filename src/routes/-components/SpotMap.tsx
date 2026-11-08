@@ -1,4 +1,4 @@
-import { Box, Typography, Button, GlobalStyles } from "@mui/material";
+import { Box, Typography, Button, IconButton, Stack } from "@mui/material";
 import { TILE_URLS } from "@/utils/mapTiles";
 import { MapContainer, TileLayer, useMapEvents, Marker as LeafletMarker, Popup } from "react-leaflet";
 import MarkerClusterGroup from 'react-leaflet-cluster';
@@ -13,6 +13,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { useMediaQuery } from '@mui/material';
 import { themeModeAtom } from '@/atoms/ui';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CloseIcon from '@mui/icons-material/Close';
 import L, { Icon } from 'leaflet';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { MapSearchAreaButton } from './MapSearchAreaButton';
@@ -123,21 +124,6 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
 
     return (
         <Box sx={{ height: '100%', p: 0, position: 'relative' }}>
-            <GlobalStyles styles={(t) => ({
-                '.leaflet-container .leaflet-bar': { border: `1px solid ${t.palette.divider}`, boxShadow: t.shadows[3] },
-                '.leaflet-container .leaflet-bar a': {
-                    backgroundColor: t.palette.background.paper,
-                    color: t.palette.text.primary,
-                    borderBottomColor: t.palette.divider,
-                },
-                '.leaflet-container .leaflet-bar a:hover, .leaflet-container .leaflet-bar a:focus': {
-                    backgroundColor: t.palette.action.hover,
-                },
-                '.leaflet-container .leaflet-bar a.leaflet-disabled': {
-                    backgroundColor: t.palette.background.paper,
-                    color: t.palette.text.disabled,
-                },
-            })} />
             <MapSearchAreaButton visible={moved} onClick={handleSearchArea} />
 
             <MapContainer
@@ -181,9 +167,59 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
                         zIndexOffset={1000}
                         icon={searchIcon}
                     >
-                        <Popup autoPan={false}>
-                            <Box sx={{ p: 0.5 }}>
-                                <Typography variant="subtitle2" fontWeight={700} gutterBottom>
+                        <Popup autoPan={false} closeButton={false}>
+                            <Box
+                                sx={{
+                                    bgcolor: 'background.paper',
+                                    color: 'text.primary',
+                                    p: 2,
+                                    borderRadius: 2,
+                                    minWidth: 220,
+                                    maxWidth: 280,
+                                    boxShadow: 6,
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                }}
+                            >
+                                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                                    <Stack direction="row" alignItems="center" spacing={0.75}>
+                                        <LocationOnIcon color="primary" sx={{ fontSize: 18 }} />
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{
+                                                fontWeight: 700,
+                                                textTransform: 'uppercase',
+                                                fontSize: '0.65rem',
+                                                letterSpacing: '0.05em'
+                                            }}
+                                        >
+                                            Searched Location
+                                        </Typography>
+                                    </Stack>
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => setSearchedLocation(null)}
+                                        aria-label="Close"
+                                        sx={{
+                                            p: 0.25,
+                                            color: 'text.secondary',
+                                            '&:hover': { color: 'text.primary' }
+                                        }}
+                                    >
+                                        <CloseIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Stack>
+                                <Typography
+                                    variant="subtitle2"
+                                    fontWeight={700}
+                                    sx={{
+                                        color: 'text.primary',
+                                        mb: 1.5,
+                                        lineHeight: 1.3,
+                                        wordBreak: 'break-word'
+                                    }}
+                                >
                                     {searchedLocation.name}
                                 </Typography>
                                 <Button
@@ -194,7 +230,7 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
                                         onRightClick(L.latLng(searchedLocation.lat, searchedLocation.lng));
                                         setSearchedLocation(null);
                                     }}
-                                    sx={{ borderRadius: 1.5, fontSize: '0.7rem', textTransform: 'none' }}
+                                    sx={{ borderRadius: 1.5, fontSize: '0.8rem', fontWeight: 700, textTransform: 'none', py: 0.75 }}
                                 >
                                     Add New Spot Here
                                 </Button>

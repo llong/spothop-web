@@ -88,20 +88,6 @@ export function RootComponent() {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <style>
-                {`
-                    .pac-container {
-                        z-index: 1300 !important;
-                    }
-                    .pac-logo:after {
-                        display: none;
-                    }
-                    @keyframes fade-in {
-                        0% { opacity: 0; transform: translateY(5px); }
-                        100% { opacity: 1; transform: translateY(0); }
-                    }
-                `}
-            </style>
 
             <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', justifyContent: 'center' }}>
                 {/* Sidebar (Tablet and Desktop) */}

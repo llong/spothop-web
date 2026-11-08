@@ -3,9 +3,21 @@ import { PlaceAutocomplete } from './PlaceAutocomplete';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
+const mockGeocoder = vi.fn().mockImplementation(function () {
+    return {
+        geocode: vi.fn().mockImplementation((_req, callback) => {
+            callback([{ geometry: { location: { lat: () => 3, lng: () => 4 } }, name: 'Geocoded Place' }], 'OK');
+        }),
+    };
+});
+
+let placeChangedListener: (() => void) | null = null;
 const mockAutocomplete = vi.fn().mockImplementation(function () {
     return {
-        addListener: vi.fn(),
+        addListener: vi.fn().mockImplementation((event, callback) => {
+            if (event === 'place_changed') placeChangedListener = callback;
+            return { remove: vi.fn() };
+        }),
         getPlace: vi.fn().mockReturnValue({ geometry: { location: { lat: () => 1, lng: () => 2 } } }),
     };
 });
@@ -13,7 +25,8 @@ const mockAutocomplete = vi.fn().mockImplementation(function () {
 const mockGoogle = {
     maps: {
         places: { Autocomplete: mockAutocomplete },
-        event: { clearInstanceListeners: vi.fn() },
+        event: { clearInstanceListeners: vi.fn(), removeListener: vi.fn() },
+        Geocoder: mockGeocoder,
     },
 };
 
@@ -89,5 +102,99 @@ describe('PlaceAutocomplete', () => {
     it('renders input with correct placeholder', () => {
         renderComponent({ current: null });
         expect(screen.getByPlaceholderText('Search…')).toBeInTheDocument();
+    });
+
+    it('simulates ArrowDown when Enter is pressed and suggestions exist without active selection', () => {
+        (window as any).google = mockGoogle;
+        loaderMocks.isGoogleMapsReady.mockReturnValue(true);
+        const inputRef = { current: null as HTMLInputElement | null };
+        renderComponent(inputRef);
+
+        const pacContainer = document.createElement('div');
+        pacContainer.className = 'pac-container';
+        pacContainer.style.display = 'block';
+        const pacItem = document.createElement('div');
+        pacItem.className = 'pac-item';
+        pacContainer.appendChild(pacItem);
+        document.body.appendChild(pacContainer);
+
+        const dispatchedEvents: KeyboardEvent[] = [];
+        const originalDispatchEvent = inputRef.current!.dispatchEvent.bind(inputRef.current!);
+        vi.spyOn(inputRef.current!, 'dispatchEvent').mockImplementation((event: Event) => {
+            if (event instanceof KeyboardEvent && event.key === 'ArrowDown') {
+                dispatchedEvents.push(event);
+            }
+            return originalDispatchEvent(event);
+        });
+
+        fireEvent.keyDown(inputRef.current!, { key: 'Enter', code: 'Enter' });
+
+        expect(dispatchedEvents.length).toBe(1);
+        expect(dispatchedEvents[0].key).toBe('ArrowDown');
+        expect(dispatchedEvents[0].keyCode).toBe(40);
+
+        document.body.removeChild(pacContainer);
+    });
+
+    it('clicks hovered option when Enter is pressed while mouse is hovering an option', () => {
+        (window as any).google = mockGoogle;
+        loaderMocks.isGoogleMapsReady.mockReturnValue(true);
+        const inputRef = { current: null as HTMLInputElement | null };
+        renderComponent(inputRef);
+
+        const pacContainer = document.createElement('div');
+        pacContainer.className = 'pac-container';
+        pacContainer.style.display = 'block';
+        const pacItem = document.createElement('div');
+        pacItem.className = 'pac-item';
+        pacContainer.appendChild(pacItem);
+        document.body.appendChild(pacContainer);
+
+        // Mock querySelector for :hover
+        const clickSpy = vi.fn();
+        pacItem.click = clickSpy;
+        vi.spyOn(pacContainer, 'querySelector').mockImplementation((selector: string) => {
+            if (selector.includes(':hover')) return pacItem;
+            return null;
+        });
+
+        fireEvent.keyDown(inputRef.current!, { key: 'Enter', code: 'Enter' });
+
+        expect(clickSpy).toHaveBeenCalled();
+
+        document.body.removeChild(pacContainer);
+    });
+
+    it('falls back to Geocoder when place_changed fires without geometry', () => {
+        (window as any).google = mockGoogle;
+        loaderMocks.isGoogleMapsReady.mockReturnValue(true);
+        const inputRef = { current: null as HTMLInputElement | null };
+        const onPlaceSelect = vi.fn();
+
+        mockAutocomplete.mockImplementationOnce(function () {
+            return {
+                addListener: vi.fn().mockImplementation((event, callback) => {
+                    if (event === 'place_changed') placeChangedListener = callback;
+                    return { remove: vi.fn() };
+                }),
+                getPlace: vi.fn().mockReturnValue({ name: 'Central Park' }),
+            };
+        });
+
+        render(
+            <ThemeProvider theme={theme}>
+                <PlaceAutocomplete inputRef={inputRef} onPlaceSelect={onPlaceSelect} />
+            </ThemeProvider>
+        );
+
+        // Call the placeChangedListener with no geometry
+        placeChangedListener?.();
+
+        expect(onPlaceSelect).toHaveBeenCalledWith(expect.objectContaining({
+            geometry: expect.objectContaining({
+                location: expect.any(Object),
+            }),
+            name: 'Geocoded Place',
+        }));
     });
 });
