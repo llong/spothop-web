@@ -29,11 +29,32 @@ describe('groupFeedItems', () => {
         expect(groupFeedItems([])).toEqual([]);
     });
 
-    it('groups media uploaded together by the same user to the same spot, oldest first', () => {
+    it('groups media uploaded together by the same user to the same spot, photos oldest first', () => {
+        const groups = groupFeedItems([item('p3', 3), item('p2', 2), item('p1', 1)]);
+
+        expect(ids(groups)).toEqual([['p1', 'p2', 'p3']]);
+    });
+
+    it('puts a video with a thumbnail first, then the photos in upload order', () => {
         // the feed is newest first: video (last uploaded), then photo 2, then photo 1
-        const groups = groupFeedItems([item('video', 20, { media_type: 'video' }), item('p2', 2), item('p1', 1)]);
+        const video = item('video', 20, { media_type: 'video', thumbnail_url: 'https://x/thumb' });
+        const groups = groupFeedItems([video, item('p2', 2), item('p1', 1)]);
+
+        expect(ids(groups)).toEqual([['video', 'p1', 'p2']]);
+    });
+
+    it('keeps a video without a thumbnail after the photos (it would show as an empty tile)', () => {
+        const noThumb = item('video', 20, { media_type: 'video', thumbnail_url: '' });
+        const groups = groupFeedItems([noThumb, item('p2', 2), item('p1', 1)]);
 
         expect(ids(groups)).toEqual([['p1', 'p2', 'video']]);
+    });
+
+    it('orders several videos among themselves by upload time', () => {
+        const v = (id: string, s: number) => item(id, s, { media_type: 'video', thumbnail_url: 'https://x/t' });
+        const groups = groupFeedItems([v('v2', 30), v('v1', 20), item('p1', 1)]);
+
+        expect(ids(groups)).toEqual([['v1', 'v2', 'p1']]);
     });
 
     it('keeps a stable key (the newest item) so the card is not remounted when the group grows', () => {

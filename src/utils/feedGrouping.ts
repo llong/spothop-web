@@ -6,16 +6,19 @@ export const GROUP_GAP_MS = 5 * 60 * 1000;
 export interface FeedGroup {
     /** Stable while the group grows (older media loaded by later pages is added after the newest). */
     key: string;
-    /** Chronological: the order the media was uploaded in. */
+    /** Videos with a thumbnail first (the most engaging), then the rest in upload order. */
     items: FeedItem[];
 }
 
 const time = (item: FeedItem) => new Date(item.created_at).getTime();
 
+/** A video leads its post, unless it has no thumbnail (it would show as an empty tile). */
+const leadsPost = (item: FeedItem) => item.media_type === 'video' && !!item.thumbnail_url;
+
 /**
  * Turns the feed's one-row-per-photo/video into one post per upload: consecutive media from the same
- * user and spot, uploaded close together, become a single group shown as a carousel. Groups appear
- * where their newest media does, so the feed order is unchanged.
+ * user and spot, uploaded close together, become a single group shown as a carousel (videos first).
+ * Groups appear where their newest media does, so the feed order is unchanged.
  */
 export function groupFeedItems(items: FeedItem[]): FeedGroup[] {
     const groups: FeedGroup[] = [];
@@ -35,6 +38,8 @@ export function groupFeedItems(items: FeedItem[]): FeedGroup[] {
         }
     }
 
-    for (const group of groups) group.items.sort((a, b) => time(a) - time(b));
+    for (const group of groups) {
+        group.items.sort((a, b) => Number(leadsPost(b)) - Number(leadsPost(a)) || time(a) - time(b));
+    }
     return groups;
 }
