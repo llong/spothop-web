@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-router', () => ({
 }));
 
 vi.mock('@/routes/feed/-components/FeedItem', () => ({
-    FeedItemCard: () => <div data-testid="feed-item-card" />
+    FeedItemCard: ({ items }: { items: unknown[] }) => <div data-testid="feed-item-card" data-count={items.length} />
 }));
 
 vi.mock('react-virtuoso', () => ({
@@ -92,6 +92,19 @@ const mockProps = {
         render(<FeedContent {...mockProps} allItems={mockItems as any} />, { wrapper });
         // FeedItemCard should be rendered
         expect(screen.getByTestId('feed-item-card')).toBeInTheDocument();
+    });
+
+    it('renders one post for media uploaded together by the same user to the same spot', () => {
+        const base = { spot_id: 's1', uploader_id: 'u1', media_url: 'url', media_type: 'photo', spot_name: 'Test Spot', favorite_count: 0, comment_count: 0 };
+        const mockItems = [
+            { ...base, media_id: 'm2', created_at: '2026-11-08T12:00:05.000Z' },
+            { ...base, media_id: 'm1', created_at: '2026-11-08T12:00:04.000Z' },
+            { ...base, media_id: 'other', spot_id: 's2', created_at: '2026-11-08T11:00:00.000Z' },
+        ];
+        render(<FeedContent {...mockProps} allItems={mockItems as any} />, { wrapper });
+
+        const cards = screen.getAllByTestId('feed-item-card');
+        expect(cards.map((card) => card.dataset.count)).toEqual(['2', '1']);
     });
 
     it('renders end of feed message', () => {

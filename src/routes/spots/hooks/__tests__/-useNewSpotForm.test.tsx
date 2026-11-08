@@ -22,6 +22,8 @@ vi.mock('@/supabase', () => ({ default: { from: () => ({ insert: mocks.insert })
 vi.mock('@/services/spotService', () => ({ spotService: { deleteSpot: mocks.deleteSpot } }));
 
 import { useNewSpotForm } from '@/routes/spots/hooks/-useNewSpotForm';
+import { queryClient } from '@/lib/queryClient';
+import { feedKeys } from '@/hooks/feedKeys';
 
 const fillAndSubmit = async (result: ReturnType<typeof renderHook<ReturnType<typeof useNewSpotForm>, unknown>>['result']) => {
     await waitFor(() => expect(result.current.formState).toBeDefined());
@@ -85,5 +87,14 @@ describe('useNewSpotForm rollback', () => {
         expect(mocks.uploadMedia).toHaveBeenCalled();
         expect(mocks.deleteSpot).not.toHaveBeenCalled();
         expect(result.current.submissionState.success).toBe(true);
+    });
+
+    it('invalidates the feed on success so the new spot appears right away', async () => {
+        const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+        const { result } = renderHook(() => useNewSpotForm(1, 2));
+
+        await fillAndSubmit(result);
+
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: feedKeys.all });
     });
 });

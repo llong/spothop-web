@@ -1,12 +1,14 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useSpotQuery } from '@/hooks/useSpotQueries';
+import { useSpotQuery, useDeleteSpotMutation } from '@/hooks/useSpotQueries';
+import { feedKeys } from '@/hooks/feedKeys';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { spotService } from '@/services/spotService';
 
 vi.mock('@/services/spotService', () => ({
     spotService: {
         fetchSpotDetails: vi.fn(),
+        deleteSpot: vi.fn(),
     }
 }));
 
@@ -38,5 +40,15 @@ describe('useSpotQueries', () => {
 
         await waitFor(() => expect(result.current.isSuccess).toBe(true));
         expect(result.current.data).toEqual(mockSpot);
+    });
+
+    it('useDeleteSpotMutation clears the feed so the deleted spot does not linger there', async () => {
+        vi.mocked(spotService.deleteSpot).mockResolvedValue(undefined);
+        const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+        const { result } = renderHook(() => useDeleteSpotMutation(), { wrapper });
+
+        await result.current.mutateAsync('spot-1');
+
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: feedKeys.all });
     });
 });

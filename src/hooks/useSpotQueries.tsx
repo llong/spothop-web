@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { spotService } from '@/services/spotService';
+import { feedKeys } from './feedKeys';
 
 export const spotKeys = {
     all: ['spots'] as const,
@@ -30,6 +31,8 @@ export function useDeleteSpotMutation() {
         onSuccess: (_, spotId) => {
             queryClient.invalidateQueries({ queryKey: spotKeys.all });
             queryClient.removeQueries({ queryKey: spotKeys.details(spotId) });
+            // Otherwise the deleted spot (and its now-missing images) lingers in the feed until it goes stale
+            queryClient.invalidateQueries({ queryKey: feedKeys.all });
         },
     });
 }

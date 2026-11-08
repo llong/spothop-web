@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMediaUpload } from './useMediaUpload';
 import { spotKeys } from './useSpotQueries';
+import { feedKeys } from './feedKeys';
 import type { VideoAsset } from '@/types';
 import type { User } from '@supabase/supabase-js';
 
@@ -26,6 +27,7 @@ export const useMediaUploadMutation = ({ user, spotId }: UseMediaUploadMutationP
             await queryClient.refetchQueries({ 
                 queryKey: spotKeys.details(spotId)
             });
+            queryClient.invalidateQueries({ queryKey: feedKeys.all });
         }
     });
 };

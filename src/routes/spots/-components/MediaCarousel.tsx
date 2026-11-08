@@ -1,4 +1,4 @@
-import { useCallback, memo } from 'react';
+import { useCallback, useRef, memo } from 'react';
 import { Box, IconButton, Typography, Button } from '@mui/material';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -7,6 +7,8 @@ import MovieIcon from '@mui/icons-material/Movie';
 import type { MediaItem } from '@/types';
 import React from 'react';
 import { OptimizedImage } from '@/components/OptimizedImage';
+
+const SWIPE_THRESHOLD_PX = 50;
 
 interface MediaCarouselProps {
     media: MediaItem[];
@@ -21,6 +23,9 @@ interface MediaCarouselProps {
 
 export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChange, onItemClick, showVideo = false, onShowVideo }: MediaCarouselProps) => {
 
+    // Swipe left/right on touch screens (the arrows remain for mouse users)
+    const touchStartX = useRef<number | null>(null);
+
     const handleNext = useCallback((e: React.MouseEvent) => {
         if (e) e.stopPropagation();
         onSlideChange((activeSlide + 1) % media.length);
@@ -30,6 +35,14 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
         if (e) e.stopPropagation();
         onSlideChange((activeSlide - 1 + media.length) % media.length);
     }, [activeSlide, media.length, onSlideChange]);
+
+    const handleTouchEnd = (e: React.TouchEvent) => {
+        const startX = touchStartX.current;
+        touchStartX.current = null;
+        if (startX === null || media.length < 2) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) >= SWIPE_THRESHOLD_PX) onSlideChange((activeSlide + (dx < 0 ? 1 : -1) + media.length) % media.length);
+    };
 
     if (isLoading || media.length === 0) {
         return (
@@ -42,7 +55,11 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
     const currentItem = media[activeSlide];
 
     return (
-        <Box sx={{ position: 'relative', width: '100%', pt: '75%', bgcolor: 'grey.100', overflow: 'hidden' }}>
+        <Box
+            sx={{ position: 'relative', width: '100%', pt: '75%', bgcolor: 'grey.100', overflow: 'hidden' }}
+            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+            onTouchEnd={handleTouchEnd}
+        >
             {currentItem.type === 'photo' ? (
                 <OptimizedImage
                     src={currentItem.url}

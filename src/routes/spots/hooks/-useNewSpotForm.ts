@@ -11,6 +11,8 @@ import type { VideoAsset } from '@/types';
 import type { Enums } from '@/types/database.types';
 import supabase from '@/supabase';
 import { spotService } from '@/services/spotService';
+import { queryClient } from '@/lib/queryClient';
+import { feedKeys } from '@/hooks/feedKeys';
 
 export function useNewSpotForm(lat: number, lng: number) {
     const isOnline = useOnlineStatus();
@@ -117,6 +119,9 @@ export function useNewSpotForm(lat: number, lng: number) {
                 city,
                 country
             });
+
+            // The new spot should show up in the feed right away, not after the cached feed goes stale
+            queryClient.invalidateQueries({ queryKey: feedKeys.all });
 
             setSuccess(true);
             setStatusMessage('Spot created successfully!');

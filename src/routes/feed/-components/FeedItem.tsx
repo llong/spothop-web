@@ -37,33 +37,42 @@ const getFullUrl = (path: string) => {
 };
 
 interface FeedItemCardProps {
-    item: FeedItemType;
+    /** One upload's media (same spot and user), oldest first. Shown as a carousel when there are several. */
+    items: FeedItemType[];
     onCommentClick?: (item: FeedItemType) => void;
 }
 
+/** Feed rows are one photo/video each; the carousel wants MediaItems. */
+const toMediaItem = (item: FeedItemType): import('@/types').MediaItem => ({
+    id: item.media_id,
+    // Photos: render the 800px thumbnail in the feed (falls back to the original if missing)
+    url: getFullUrl(item.media_type === 'photo' ? (item.thumbnail_url || item.media_url) : item.media_url),
+    type: item.media_type,
+    thumbnailUrl: item.thumbnail_url ? getFullUrl(item.thumbnail_url) : undefined,
+} as import('@/types').MediaItem);
+
 /**
- * FeedItemCard displays a single item in the global feed.
- * Redesigned for a flat, modern X-style layout.
+ * FeedItemCard displays one post in the feed: a spot with the media a user uploaded to it.
+ * Redesigned for a flat, modern X-style layout. Likes/comments belong to each photo or video,
+ * so the comment button acts on the slide currently shown.
  */
-export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, onCommentClick }) => {
+export const FeedItemCard: FC<FeedItemCardProps> = memo(({ items, onCommentClick }) => {
+    const item = items[0]; // spot, uploader and time are shared by the whole post
     const auth = useAtomValue(userAtom);
     const currentUserId = auth?.user?.id;
     const [activeSlide, setActiveSlide] = useState(0);
     // Lifted video play state — survives Virtuoso remounts when scrolling
     const [showVideo, setShowVideo] = useState(false);
     const handleShowVideo = useCallback(() => setShowVideo(true), []);
+    const handleSlideChange = useCallback((index: number) => {
+        setActiveSlide(index);
+        setShowVideo(false); // a video only plays on the slide it was started on
+    }, []);
+    const activeItem = items[Math.min(activeSlide, items.length - 1)];
     const toggleFollowMutation = useToggleFollow();
     const navigate = useNavigate();
 
-    // Convert single feed item media to array for carousel
-    // Dependencies are strict primitives to prevent object literal traps triggering heavy carousel redraws
-    const media = useMemo(() => [{
-        id: item.media_id,
-        // Photos: render the 800px thumbnail in the feed (falls back to the original if missing)
-        url: getFullUrl(item.media_type === 'photo' ? (item.thumbnail_url || item.media_url) : item.media_url),
-        type: item.media_type,
-        thumbnailUrl: item.thumbnail_url ? getFullUrl(item.thumbnail_url) : undefined,
-    }], [item.media_id, item.media_url, item.media_type, item.thumbnail_url]) as import('@/types').MediaItem[];
+    const media = useMemo(() => items.map(toMediaItem), [items]);
 
     // Minimal spot object for useSpotFavorites
     const spot = useMemo(() => ({
@@ -213,7 +222,7 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, onCommentClick 
                     <MediaCarousel
                         media={media}
                         activeSlide={activeSlide}
-                        onSlideChange={setActiveSlide}
+                        onSlideChange={handleSlideChange}
                         showVideo={showVideo}
                         onShowVideo={handleShowVideo}
                     />
@@ -242,13 +251,13 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, onCommentClick 
                     <Stack direction="row" alignItems="center" spacing={0.5} sx={{ color: 'text.secondary' }}>
                         <IconButton
                             size="small"
-                            onClick={() => onCommentClick?.(item)}
+                            onClick={() => onCommentClick?.(activeItem)}
                             sx={{ '&:hover': { color: 'primary.main', bgcolor: 'rgba(29, 155, 240, 0.1)' } }}
                         >
                             <ChatBubbleOutlineIcon fontSize="small" />
                         </IconButton>
                         <Typography variant="caption" fontWeight={500}>
-                            {item.comment_count}
+                            {activeItem.comment_count}
                         </Typography>
                     </Stack>
 
@@ -265,4 +274,7 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ item, onCommentClick 
 
         </Box>
     );
-}, (prevProps, nextProps) => prevProps.item === nextProps.item);
+}, (prev, next) =>
+    prev.onCommentClick === next.onCommentClick &&
+    prev.items.length === next.items.length &&
+    prev.items.every((item, i) => item === next.items[i]));

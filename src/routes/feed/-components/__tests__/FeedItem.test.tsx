@@ -63,7 +63,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 describe('FeedItemCard', () => {
     it('renders feed item details correctly', () => {
-        render(<FeedItemCard item={mockItem} />, { wrapper });
+        render(<FeedItemCard items={[mockItem]} />, { wrapper });
 
         expect(screen.getByText('@skater1')).toBeInTheDocument();
         expect(screen.getByText('Test Spot')).toBeInTheDocument();
@@ -75,16 +75,53 @@ describe('FeedItemCard', () => {
     });
 
     it('displays photo when media_type is photo', () => {
-        render(<FeedItemCard item={mockItem} />, { wrapper });
+        render(<FeedItemCard items={[mockItem]} />, { wrapper });
         const img = screen.getByAltText('Spot media');
         expect(img).toHaveAttribute('src', mockItem.media_url);
     });
 
     it('calls onCommentClick when comment button is clicked', () => {
         const onCommentClick = vi.fn();
-        render(<FeedItemCard item={mockItem} onCommentClick={onCommentClick} />, { wrapper });
+        render(<FeedItemCard items={[mockItem]} onCommentClick={onCommentClick} />, { wrapper });
         const commentBtn = screen.getByTestId('ChatBubbleOutlineIcon').parentElement;
         fireEvent.click(commentBtn!);
         expect(onCommentClick).toHaveBeenCalledWith(mockItem);
+    });
+
+    describe('a post with several photos/videos', () => {
+        const second: FeedItem = { ...mockItem, media_id: 'm2', media_url: 'https://example.com/second.jpg', comment_count: 7 };
+        const video: FeedItem = { ...mockItem, media_id: 'm3', media_type: 'video', media_url: 'https://example.com/v.mp4', comment_count: 0 };
+
+        it('shows the media as a carousel starting at the first item', () => {
+            render(<FeedItemCard items={[mockItem, second, video]} />, { wrapper });
+
+            expect(screen.getByText('1 / 3')).toBeInTheDocument();
+            expect(screen.getByAltText('Spot media')).toHaveAttribute('src', mockItem.media_url);
+        });
+
+        it('moves between slides and shows the comment count of the visible one', () => {
+            render(<FeedItemCard items={[mockItem, second]} />, { wrapper });
+
+            fireEvent.click(screen.getByTestId('KeyboardArrowRightIcon').parentElement!);
+
+            expect(screen.getByText('2 / 2')).toBeInTheDocument();
+            expect(screen.getByAltText('Spot media')).toHaveAttribute('src', second.media_url);
+            expect(screen.getByText('7')).toBeInTheDocument();
+        });
+
+        it('opens comments for the visible slide, not the first one', () => {
+            const onCommentClick = vi.fn();
+            render(<FeedItemCard items={[mockItem, second]} onCommentClick={onCommentClick} />, { wrapper });
+
+            fireEvent.click(screen.getByTestId('KeyboardArrowRightIcon').parentElement!);
+            fireEvent.click(screen.getByTestId('ChatBubbleOutlineIcon').parentElement!);
+
+            expect(onCommentClick).toHaveBeenCalledWith(second);
+        });
+
+        it('shows one header for the whole post', () => {
+            render(<FeedItemCard items={[mockItem, second]} />, { wrapper });
+            expect(screen.getAllByText('@skater1')).toHaveLength(1);
+        });
     });
 });

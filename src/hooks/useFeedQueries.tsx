@@ -3,13 +3,9 @@ import { feedService } from '@/services/feedService';
 import { useSetAtom } from 'jotai';
 import { globalToastAtom } from './useNotifications';
 import { spotKeys } from './useSpotQueries'; // Moved import to top
+import { feedKeys } from './feedKeys';
 
-export const feedKeys = {
-    all: ['feed'] as const,
-    global: () => [...feedKeys.all, 'global', 'v3'] as const,
-    following: () => [...feedKeys.all, 'following', 'v3'] as const,
-    comments: (mediaId: string) => [...feedKeys.all, 'comments', mediaId] as const,
-};
+export { feedKeys };
 
 /**
  * Hook for fetching paginated global feed content.

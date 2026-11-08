@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import {
     Box,
     Typography,
@@ -15,6 +15,7 @@ import { FeedItemSkeleton } from './FeedItemSkeleton';
 import { FeedCommentDialog } from './FeedCommentDialog';
 import type { FeedItem } from '@/types';
 import { INITIAL_FEED_FILTERS } from '@/atoms/feed';
+import { groupFeedItems } from '@/utils/feedGrouping';
 
 interface FeedContentProps {
     isLoading: boolean;
@@ -44,6 +45,7 @@ export function FeedContent({
     currentUserId
 }: FeedContentProps) {
     const [activeCommentItem, setActiveCommentItem] = useState<FeedItem | null>(null);
+    const posts = useMemo(() => groupFeedItems(allItems), [allItems]);
 
     const handleCommentClick = useCallback((item: FeedItem) => {
         setActiveCommentItem(item);
@@ -112,18 +114,18 @@ export function FeedContent({
         <>
             <Virtuoso
                 useWindowScroll
-                data={allItems}
-                initialItemCount={import.meta.env.MODE === 'test' ? allItems.length : 0}
-                computeItemKey={(_, item) => item.media_id}
+                data={posts}
+                initialItemCount={import.meta.env.MODE === 'test' ? posts.length : 0}
+                computeItemKey={(_, post) => post.key}
                 overscan={1200}
                 endReached={() => {
                     if (hasNextPage && !isFetchingNextPage) {
                         fetchNextPage();
                     }
                 }}
-                itemContent={(_, item) => (
+                itemContent={(_, post) => (
                     <FeedItemCard
-                        item={item}
+                        items={post.items}
                         onCommentClick={handleCommentClick}
                     />
                 )}

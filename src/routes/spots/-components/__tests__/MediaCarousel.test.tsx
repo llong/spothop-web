@@ -100,4 +100,40 @@ describe('MediaCarousel', () => {
     fireEvent.click(screen.getByRole('img'));
     expect(onItemClick).toHaveBeenCalledWith(0);
   });
+
+  describe('swiping', () => {
+    const swipe = (from: number, to: number) => {
+      const area = screen.getByAltText('Spot media').parentElement!;
+      fireEvent.touchStart(area, { touches: [{ clientX: from }] });
+      fireEvent.touchEnd(area, { changedTouches: [{ clientX: to }] });
+    };
+
+    it('goes to the next slide on a swipe left', () => {
+      const onSlideChange = vi.fn();
+      renderComponent({ media: mockMedia, activeSlide: 0, onSlideChange });
+      swipe(300, 100);
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+
+    it('goes to the previous slide on a swipe right (wrapping around)', () => {
+      const onSlideChange = vi.fn();
+      renderComponent({ media: mockMedia, activeSlide: 0, onSlideChange });
+      swipe(100, 300);
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+
+    it('ignores small movements (taps)', () => {
+      const onSlideChange = vi.fn();
+      renderComponent({ media: mockMedia, activeSlide: 0, onSlideChange });
+      swipe(200, 220);
+      expect(onSlideChange).not.toHaveBeenCalled();
+    });
+
+    it('does nothing with a single item', () => {
+      const onSlideChange = vi.fn();
+      renderComponent({ media: [mockMedia[0]], activeSlide: 0, onSlideChange });
+      swipe(300, 100);
+      expect(onSlideChange).not.toHaveBeenCalled();
+    });
+  });
 });
