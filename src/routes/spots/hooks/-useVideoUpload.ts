@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { VideoAsset } from '@/types';
 import { captureVideoThumbnail } from '@/utils/videoProcessing';
@@ -11,7 +11,6 @@ export function useVideoUpload(onFilesSelect: (videos: VideoAsset[]) => void) {
     const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewVideo, setPreviewVideo] = useState<VideoAsset | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
@@ -22,9 +21,7 @@ export function useVideoUpload(onFilesSelect: (videos: VideoAsset[]) => void) {
             }
             setPendingFile(file);
             setTrimmerOpen(true);
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
+            event.target.value = ''; // allow picking the same file again
         }
     };
 
@@ -91,7 +88,6 @@ export function useVideoUpload(onFilesSelect: (videos: VideoAsset[]) => void) {
         activeVideoId,
         previewOpen,
         previewVideo,
-        fileInputRef,
         handleFileSelect,
         handleTrimmed,
         handleRemove,

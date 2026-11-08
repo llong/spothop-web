@@ -59,7 +59,7 @@ export const trimVideo = async (
 const once = (target: EventTarget, event: string) =>
     new Promise<void>((resolve) => target.addEventListener(event, () => resolve(), { once: true }));
 
-/** Grabs the frame at the middle of the video as a JPEG file, using the browser's own video playback. */
+/** Grabs the frame at the middle of the video as a WebP file (the only image type the bucket accepts). */
 export const captureVideoThumbnail = async (file: File): Promise<File> => {
     const url = URL.createObjectURL(file);
     try {
@@ -80,9 +80,9 @@ export const captureVideoThumbnail = async (file: File): Promise<File> => {
         canvas.height = video.videoHeight;
         canvas.getContext("2d")?.drawImage(video, 0, 0);
 
-        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.8));
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.8));
         if (!blob) throw new Error("Failed to generate thumbnail");
-        return new File([blob], `thumb_${file.name.split(".")[0]}.jpg`, { type: "image/jpeg" });
+        return new File([blob], `thumb_${file.name.split(".")[0]}.webp`, { type: "image/webp" });
     } finally {
         URL.revokeObjectURL(url);
     }

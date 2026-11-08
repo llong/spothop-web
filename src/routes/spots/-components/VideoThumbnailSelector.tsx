@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -9,6 +9,7 @@ import {
     Slider,
     Typography
 } from '@mui/material';
+import { useObjectUrl } from '@/hooks/useObjectUrl';
 
 interface VideoThumbnailSelectorProps {
     videoFile: File | null;
@@ -20,17 +21,10 @@ interface VideoThumbnailSelectorProps {
 export const VideoThumbnailSelector = ({ videoFile, open, onClose, onSelectThumbnail }: VideoThumbnailSelectorProps) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
 
-    useEffect(() => {
-        if (videoFile) {
-            const url = URL.createObjectURL(videoFile);
-            setVideoUrl(url);
-            return () => URL.revokeObjectURL(url);
-        }
-    }, [videoFile]);
+    const videoUrl = useObjectUrl(videoFile);
 
     const handleLoadedMetadata = () => {
         if (videoRef.current) {
@@ -70,12 +64,12 @@ export const VideoThumbnailSelector = ({ videoFile, open, onClose, onSelectThumb
 
                 canvas.toBlob((blob) => {
                     if (blob) {
-                        const fileName = `thumbnail_${videoFile.name.split('.')[0]}.jpg`;
-                        const file = new File([blob], fileName, { type: 'image/jpeg' });
+                        const fileName = `thumbnail_${videoFile.name.split('.')[0]}.webp`;
+                        const file = new File([blob], fileName, { type: 'image/webp' });
                         onSelectThumbnail(file);
                         onClose();
                     }
-                }, 'image/jpeg', 0.8);
+                }, 'image/webp', 0.8);
             }
         }
     };

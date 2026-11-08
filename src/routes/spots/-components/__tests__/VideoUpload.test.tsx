@@ -23,15 +23,16 @@ describe('VideoUpload Component - Video Preview', () => {
     it('renders video upload component', () => {
         render(<VideoUpload onFilesSelect={mockOnFilesSelect} />);
 
-        expect(screen.getByText('Upload videos (Optional)')).toBeInTheDocument();
-        expect(screen.getByText('All videos will be trimmed to max 20 seconds and optimized.')).toBeInTheDocument();
-        expect(screen.getByText('Select Video')).toBeInTheDocument();
+        expect(screen.getByText('Videos')).toBeInTheDocument();
+        expect(screen.getByText('Optional')).toBeInTheDocument();
+        expect(screen.getByText('Add a video')).toBeInTheDocument();
+        expect(screen.getByText('Trimmed to 20 seconds max and optimized')).toBeInTheDocument();
     });
 
     it('opens file input when Select Video button is clicked', () => {
         render(<VideoUpload onFilesSelect={mockOnFilesSelect} />);
 
-        const fileInput = screen.getByLabelText('Select Video').closest('input');
+        const fileInput = screen.getByLabelText(/Add a video/);
         expect(fileInput).toBeInTheDocument();
         expect(fileInput).toHaveAttribute('type', 'file');
         expect(fileInput).toHaveAttribute('accept', 'video/*');
@@ -41,7 +42,7 @@ describe('VideoUpload Component - Video Preview', () => {
         const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
         render(<VideoUpload onFilesSelect={mockOnFilesSelect} />);
 
-        const fileInput = screen.getByLabelText('Select Video').closest('input');
+        const fileInput = screen.getByLabelText(/Add a video/);
         const invalidFile = new File(['mock content'], 'test.txt', { type: 'text/plain' });
 
         Object.defineProperty(fileInput!, 'files', {
@@ -58,8 +59,7 @@ describe('VideoUpload Component - Video Preview', () => {
     it('shows placeholder when no videos are added', () => {
         render(<VideoUpload onFilesSelect={mockOnFilesSelect} />);
 
-        expect(screen.getByText('Upload videos (Optional)')).toBeInTheDocument();
-        expect(screen.getByText('Select Video')).toBeInTheDocument();
+        expect(screen.getByText('Add a video')).toBeInTheDocument();
     });
 
     it('does not show video preview dialog initially', () => {

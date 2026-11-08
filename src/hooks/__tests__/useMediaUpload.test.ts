@@ -24,11 +24,12 @@ vi.mock('@/supabase', () => ({
     },
 }));
 
+const { thumbnailLarge } = vi.hoisted(() => ({ thumbnailLarge: { blob: new Blob(['large']) } }));
 vi.mock('@/utils/imageOptimization', () => ({
     optimizePhoto: vi.fn().mockResolvedValue({
-        original: { blob: new Blob() },
-        thumbnailSmall: { blob: new Blob() },
-        thumbnailLarge: { blob: new Blob() },
+        original: { blob: new Blob(['original']) },
+        thumbnailSmall: { blob: new Blob(['small']) },
+        thumbnailLarge,
     }),
     generateImageFilename: vi.fn().mockReturnValue('test-image.jpg'),
 }));
@@ -51,11 +52,29 @@ describe('useMediaUpload hook', () => {
 
         await result.current.uploadMedia('spot123', [mockFile], []);
 
-        expect(checkContent).toHaveBeenCalledWith(mockFile);
         expect(optimizePhoto).toHaveBeenCalledWith(mockFile);
         expect(supabase.storage.from).toHaveBeenCalledWith('spot-media');
         expect(supabase.from).toHaveBeenCalledWith('spot_photos');
-        expect(mockSetStatusMessage).toHaveBeenCalledWith(expect.stringContaining('Optimizing and uploading 1 photos'));
+        expect(mockSetStatusMessage).toHaveBeenLastCalledWith('Uploading photos (1/1)...');
+    });
+
+    it('scans the small 800px version of a photo, not the full-size original', async () => {
+        const { result } = renderHook(() => useMediaUpload({ user: mockUser, setStatusMessage: mockSetStatusMessage }));
+        const mockFile = new File(['huge original'], 'test.jpg');
+
+        await result.current.uploadMedia('spot123', [mockFile], []);
+
+        expect(checkContent).toHaveBeenCalledTimes(1);
+        expect(checkContent).toHaveBeenCalledWith(thumbnailLarge.blob);
+    });
+
+    it('rejects the upload when the scan flags a photo', async () => {
+        vi.mocked(checkContent).mockResolvedValueOnce({ safe: false, reason: 'Nudity detected' });
+        const { result } = renderHook(() => useMediaUpload({ user: mockUser, setStatusMessage: mockSetStatusMessage }));
+
+        await expect(result.current.uploadMedia('spot123', [new File([], 'a.jpg')], []))
+            .rejects.toThrow('Upload rejected: Nudity detected');
+        expect(supabase.from).not.toHaveBeenCalledWith('spot_photos');
     });
 
     it('uploads videos correctly', async () => {
@@ -65,13 +84,29 @@ describe('useMediaUpload hook', () => {
         }));
 
         const mockVideoFile = new File([], 'test.mp4', { type: 'video/mp4' });
-        const mockVideoAsset = { id: 'v1', file: mockVideoFile, thumbnail: new Blob() };
+        const mockVideoAsset = { id: 'v1', file: mockVideoFile, thumbnail: new File(['t'], 'thumb.webp', { type: 'image/webp' }) };
 
         await result.current.uploadMedia('spot123', [], [mockVideoAsset as any]);
 
         expect(supabase.storage.from).toHaveBeenCalledWith('spot-media');
         expect(supabase.from).toHaveBeenCalledWith('spot_videos');
-        expect(mockSetStatusMessage).toHaveBeenCalledWith(expect.stringContaining('Uploading 1 videos'));
+        expect(mockSetStatusMessage).toHaveBeenCalledWith('Uploading video 1/1...');
+        // the video file itself can't be scanned; its thumbnail frame is
+        expect(checkContent).toHaveBeenCalledWith(mockVideoAsset.thumbnail);
+    });
+
+    it('fails the upload (instead of saving an empty thumbnail) when the video thumbnail upload is rejected', async () => {
+        // Regression: a rejected thumbnail used to be ignored and saved as thumbnail_url = ''
+        const upload = vi.fn()
+            .mockResolvedValueOnce({ error: null })
+            .mockResolvedValueOnce({ error: { message: 'mime type image/jpeg is not supported' } });
+        vi.mocked(supabase.storage.from).mockImplementation(() => ({ upload, getPublicUrl: vi.fn(() => ({ data: { publicUrl: 'http://mock.url' } })) }) as any);
+        const { result } = renderHook(() => useMediaUpload({ user: mockUser, setStatusMessage: mockSetStatusMessage }));
+        const asset = { id: 'v1', file: new File([], 'v.mp4', { type: 'video/mp4' }), thumbnail: new File([], 't.webp', { type: 'image/webp' }) };
+
+        await expect(result.current.uploadMedia('spot123', [], [asset]))
+            .rejects.toThrow('Error uploading video thumbnail: mime type image/jpeg is not supported');
+        expect(supabase.from).not.toHaveBeenCalledWith('spot_videos');
     });
 
     it('does not insert a photo row when one of its uploads fails', async () => {

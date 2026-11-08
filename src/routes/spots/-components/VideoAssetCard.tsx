@@ -1,17 +1,6 @@
-import {
-    Card,
-    Box,
-    Fab,
-    Typography,
-    Button,
-    IconButton,
-} from '@mui/material';
-import {
-    Delete as DeleteIcon,
-    VideoFile as VideoFileIcon,
-    Image as ImageIcon,
-    PlayArrow as PlayArrowIcon,
-} from '@mui/icons-material';
+import { Card, Box, Fab, Typography, IconButton, Tooltip } from '@mui/material';
+import { Close as CloseIcon, Image as ImageIcon, PlayArrow as PlayArrowIcon } from '@mui/icons-material';
+import { useObjectUrl } from '@/hooks/useObjectUrl';
 import type { VideoAsset } from '@/types';
 
 interface VideoAssetCardProps {
@@ -22,84 +11,57 @@ interface VideoAssetCardProps {
 }
 
 export function VideoAssetCard({ asset, onPreview, onChangeThumbnail, onRemove }: VideoAssetCardProps) {
+    const thumbnailUrl = useObjectUrl(asset.thumbnail);
+    const sizeMb = (asset.file.size / 1024 / 1024).toFixed(1);
+
     return (
-        <Card sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-                <Box sx={{ display: 'flex', gap: 2, flex: 1, minWidth: 0 }}>
-                    <Box
-                        onClick={() => asset.thumbnail && onPreview(asset)}
-                        sx={{
-                            position: 'relative',
-                            width: 227,
-                            height: 128,
-                            borderRadius: 1,
-                            overflow: 'hidden',
-                            cursor: asset.thumbnail ? 'pointer' : 'default',
-                            bgcolor: 'grey.200',
-                            flexShrink: 0
-                        }}
-                    >
-                        {asset.thumbnail ? (
-                            <>
-                                <Box
-                                    component="img"
-                                    src={URL.createObjectURL(asset.thumbnail)}
-                                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                                <Box
-                                    sx={{
-                                        position: 'absolute',
-                                        inset: 0,
-                                        bgcolor: 'rgba(0, 0, 0, 0.3)',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    <Fab
-                                        size="medium"
-                                        sx={{
-                                            width: 48,
-                                            height: 48,
-                                            bgcolor: 'rgba(255, 255, 255, 0.7)',
-                                            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' },
-                                            '& .MuiSvgIcon-root': { fontSize: 28, color: 'black' }
-                                        }}
-                                    >
-                                        <PlayArrowIcon />
-                                    </Fab>
-                                </Box>
-                            </>
-                        ) : (
-                            <Box sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <ImageIcon fontSize="large" color="disabled" />
-                            </Box>
-                        )}
-                    </Box>
+        <Card variant="outlined" sx={{ overflow: 'hidden' }}>
+            <Box
+                onClick={() => asset.thumbnail && onPreview(asset)}
+                sx={{
+                    position: 'relative',
+                    aspectRatio: '16 / 9',
+                    bgcolor: 'common.black',
+                    cursor: asset.thumbnail ? 'pointer' : 'default',
+                }}
+            >
+                {thumbnailUrl && (
+                    <Box component="img" src={thumbnailUrl} alt="" sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                )}
+                <Fab
+                    size="medium"
+                    aria-label="preview video"
+                    sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        bgcolor: 'rgba(255, 255, 255, 0.75)',
+                        color: 'common.black',
+                        '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.9)' },
+                    }}
+                >
+                    <PlayArrowIcon />
+                </Fab>
+            </Box>
 
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 0 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden' }}>
-                            <VideoFileIcon color="primary" />
-                            <Typography noWrap variant="body2">{asset.file.name}</Typography>
-                        </Box>
-                        <Typography variant="caption" color="text.secondary">
-                            {asset.thumbnail ? 'Thumbnail generated' : 'Generating thumbnail...'}
-                        </Typography>
-                        <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => onChangeThumbnail(asset.id)}
-                            disabled={!asset.thumbnail}
-                            sx={{ width: 'fit-content', mt: 'auto' }}
-                        >
-                            {asset.thumbnail ? 'Change Thumbnail' : 'Generating...'}
-                        </Button>
-                    </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, pl: 1.5, pr: 0.5, py: 0.5 }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography noWrap variant="body2" fontWeight={600}>{asset.file.name}</Typography>
+                    <Typography variant="caption" color="text.secondary">{sizeMb} MB · trimmed and optimized</Typography>
                 </Box>
-
-                <IconButton onClick={() => onRemove(asset.id)} color="error" sx={{ flexShrink: 0 }}>
-                    <DeleteIcon />
-                </IconButton>
+                <Tooltip title="Choose thumbnail frame">
+                    <span>
+                        <IconButton aria-label="change thumbnail" onClick={() => onChangeThumbnail(asset.id)} disabled={!asset.thumbnail}>
+                            <ImageIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
+                <Tooltip title="Remove video">
+                    <IconButton aria-label="remove video" onClick={() => onRemove(asset.id)} color="error">
+                        <CloseIcon />
+                    </IconButton>
+                </Tooltip>
             </Box>
         </Card>
     );

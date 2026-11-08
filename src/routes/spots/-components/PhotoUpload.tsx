@@ -1,109 +1,77 @@
-import { useState, useEffect } from 'react';
-import { Button, Box, Typography, Card, CardMedia, IconButton, Grid } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import { useState } from 'react';
+import { Box, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
+import { useObjectUrl } from '@/hooks/useObjectUrl';
+import { MediaSection, UploadTile } from './MediaUploadParts';
 
 interface PhotoUploadProps {
     onFilesSelect: (files: File[]) => void;
 }
 
+const PhotoPreview = ({ file, onRemove }: { file: File; onRemove: () => void }) => {
+    const url = useObjectUrl(file);
+    return (
+        <Box sx={{ position: 'relative', aspectRatio: '1', borderRadius: 2, overflow: 'hidden', bgcolor: 'action.hover' }}>
+            <Box
+                component="img"
+                src={url}
+                alt={file.name}
+                sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+            <IconButton
+                aria-label="remove photo"
+                onClick={onRemove}
+                size="small"
+                sx={{
+                    position: 'absolute',
+                    top: 6,
+                    right: 6,
+                    color: 'common.white',
+                    bgcolor: 'rgba(0, 0, 0, 0.6)',
+                    '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.8)' },
+                }}
+            >
+                <CloseIcon fontSize="small" />
+            </IconButton>
+        </Box>
+    );
+};
+
 export const PhotoUpload = ({ onFilesSelect }: PhotoUploadProps) => {
-    const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [files, setFiles] = useState<File[]>([]);
+
+    const update = (next: File[]) => {
+        setFiles(next);
+        onFilesSelect(next);
+    };
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files && event.target.files.length > 0) {
-            const newFiles = Array.from(event.target.files);
-
-            // Validate file types
-            const validFiles = newFiles.filter(file => file.type.startsWith('image/'));
-
-            if (validFiles.length !== newFiles.length) {
-                alert('Some files were skipped because they are not valid images.');
-            }
-
-            const updatedFiles = [...selectedFiles, ...validFiles];
-            setSelectedFiles(updatedFiles);
-            onFilesSelect(updatedFiles);
-
-            // Create preview URLs
-            const newPreviewUrls = validFiles.map(file => URL.createObjectURL(file));
-            setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
-        }
+        const picked = Array.from(event.target.files ?? []);
+        const images = picked.filter((file) => file.type.startsWith('image/'));
+        if (images.length !== picked.length) alert('Some files were skipped because they are not valid images.');
+        update([...files, ...images]);
+        event.target.value = ''; // allow picking the same photo again after removing it
     };
-
-    const handleRemove = (index: number) => {
-        URL.revokeObjectURL(previewUrls[index]);
-
-        const newPreviewUrls = previewUrls.filter((_, i) => i !== index);
-        setPreviewUrls(newPreviewUrls);
-
-        const newFiles = selectedFiles.filter((_, i) => i !== index);
-        setSelectedFiles(newFiles);
-        onFilesSelect(newFiles);
-    };
-
-    // Cleanup object URLs on unmount
-    useEffect(() => {
-        return () => {
-            previewUrls.forEach(url => URL.revokeObjectURL(url));
-        };
-    }, []);
 
     return (
-        <Box sx={{ width: '100%' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, p: 3, border: '2px dashed #ccc', borderRadius: 2, bgcolor: 'grey.50' }}>
-                <AddPhotoAlternateIcon sx={{ fontSize: 48, color: 'text.secondary' }} />
-                <Typography variant="body1" color="text.secondary">
-                    Upload photos of the spot (Required)
-                </Typography>
-                <Button
-                    variant="contained"
-                    component="label"
-                >
-                    Select Photos
-                    <input
-                        type="file"
-                        hidden
+        <MediaSection title="Photos" badge="Required">
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+                {files.map((file, index) => (
+                    <PhotoPreview key={`${file.name}-${file.lastModified}-${index}`} file={file} onRemove={() => update(files.filter((_, i) => i !== index))} />
+                ))}
+                <Box sx={{ gridColumn: files.length === 0 ? '1 / -1' : undefined }}>
+                    <UploadTile
+                        compact={files.length > 0}
+                        icon={<AddPhotoAlternateOutlinedIcon sx={{ fontSize: files.length > 0 ? 28 : 36 }} />}
+                        title={files.length > 0 ? 'Add more' : 'Add photos'}
+                        hint={files.length > 0 ? undefined : 'Show off the spot. You can pick several at once.'}
                         accept="image/*"
                         multiple
                         onChange={handleFileSelect}
                     />
-                </Button>
+                </Box>
             </Box>
-
-            {previewUrls.length > 0 && (
-                <Grid container spacing={2} sx={{ mt: 2 }}>
-                    {previewUrls.map((url, index) => (
-                        <Grid size={{ xs: 6, sm: 4 }} key={url}>
-                            <Card sx={{ position: 'relative' }}>
-                                <CardMedia
-                                    component="img"
-                                    image={url}
-                                    alt={`Spot preview ${index + 1}`}
-                                    sx={{ height: 150, objectFit: 'cover' }}
-                                />
-                                <IconButton
-                                    aria-label="remove photo"
-                                    onClick={() => handleRemove(index)}
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 4,
-                                        right: 4,
-                                        bgcolor: 'rgba(0, 0, 0, 0.6)',
-                                        color: 'white',
-                                        '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.8)' },
-                                        padding: '4px'
-                                    }}
-                                    size="small"
-                                >
-                                    <DeleteIcon fontSize="small" />
-                                </IconButton>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-            )}
-        </Box>
+        </MediaSection>
     );
 };
