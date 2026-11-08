@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import supabase from '@/supabase';
-import { optimizePhoto, generateImageFilename } from '@/utils/imageOptimization';
+import { optimizePhoto, generateImageFilename, imageExtension } from '@/utils/imageOptimization';
 import { checkContent } from '@/utils/moderation';
 import type { VideoAsset } from '@/types';
 
@@ -14,7 +14,7 @@ interface UseMediaUploadProps {
 }
 
 /** Uploads to the spot-media bucket and returns the public URL. Unique paths + 1-year cache. */
-async function upload(path: string, body: Blob, contentType: string, what: string) {
+async function upload(path: string, body: Blob, what: string, contentType = body.type) {
     const { error } = await supabase.storage
         .from(BUCKET)
         .upload(path, body, { contentType, cacheControl: '31536000', upsert: false });
@@ -61,14 +61,14 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
         const photoRows = await mapWithConcurrency(photos, PHOTO_CONCURRENCY, async (photo) => {
             const { original, thumbnailSmall, thumbnailLarge } = await optimizePhoto(photo);
             // Scan the 800px version: ~50x smaller than the original, so it is fast on mobile data
-            await assertSafe(thumbnailLarge.blob);
+            await assertSafe(thumbnailLarge);
 
-            const webpName = generateImageFilename(userId).replace(/\.[^/.]+$/, '') + '.webp';
+            const name = `${generateImageFilename(userId).replace(/\.[^/.]+$/, '')}.${imageExtension(original)}`;
             const folder = `spots/${spotId}/photos`;
             const [url, thumbnail_small_url, thumbnail_large_url] = await Promise.all([
-                upload(`${folder}/originals/${webpName}`, original.blob, 'image/webp', 'photo'),
-                upload(`${folder}/thumbnails/small/${webpName}`, thumbnailSmall.blob, 'image/webp', 'photo'),
-                upload(`${folder}/thumbnails/large/${webpName}`, thumbnailLarge.blob, 'image/webp', 'photo'),
+                upload(`${folder}/originals/${name}`, original, 'photo'),
+                upload(`${folder}/thumbnails/small/${name}`, thumbnailSmall, 'photo'),
+                upload(`${folder}/thumbnails/large/${name}`, thumbnailLarge, 'photo'),
             ]);
 
             done++;
@@ -90,9 +90,9 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
 
             const id = uuidv4();
             const [url, thumbnail_url] = await Promise.all([
-                upload(`spots/${spotId}/videos/originals/${id}.mp4`, file, 'video/mp4', 'video'),
+                upload(`spots/${spotId}/videos/originals/${id}.mp4`, file, 'video', 'video/mp4'),
                 thumbnail
-                    ? upload(`spots/${spotId}/videos/thumbnails/thumb_${id}.webp`, thumbnail, 'image/webp', 'video thumbnail')
+                    ? upload(`spots/${spotId}/videos/thumbnails/thumb_${id}.${imageExtension(thumbnail)}`, thumbnail, 'video thumbnail')
                     : Promise.resolve(''),
             ]);
 

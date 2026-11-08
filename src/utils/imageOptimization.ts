@@ -21,57 +21,53 @@ export function generateImageFilename(userId: string): string {
 }
 
 /**
- * Resizes and optimizes an image using the browser's Canvas API.
+ * Encodes a canvas as WebP, or as JPEG where the browser can't: Safari's toBlob silently returns a PNG
+ * when asked for WebP, which is large and not accepted by the storage buckets.
  */
-async function resizeImage(file: File, maxWidth: number, maxHeight: number): Promise<{ blob: Blob; url: string }> {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = URL.createObjectURL(file);
-        img.onload = () => {
-            URL.revokeObjectURL(img.src);
-            let width = img.width;
-            let height = img.height;
+export async function canvasToImageBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+    for (const type of ['image/webp', 'image/jpeg']) {
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, quality));
+        if (blob?.type === type) return blob;
+    }
+    throw new Error('Canvas to Blob failed');
+}
 
-            if (width > height) {
-                if (width > maxWidth) {
-                    height *= maxWidth / width;
-                    width = maxWidth;
-                }
-            } else {
-                if (height > maxHeight) {
-                    width *= maxHeight / height;
-                    height = maxHeight;
-                }
-            }
+/** File extension for an image made by canvasToImageBlob. */
+export const imageExtension = (blob: Blob) => (blob.type === 'image/webp' ? 'webp' : 'jpg');
 
-            const canvas = document.createElement('canvas');
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx?.drawImage(img, 0, 0, width, height);
+/**
+ * Downscales an image, keeping its aspect ratio: landscape images are limited by maxWidth,
+ * portrait images by maxHeight. Never upscales.
+ */
+async function resizeImage(file: File, maxWidth: number, maxHeight: number): Promise<Blob> {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    try {
+        await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = () => reject(new Error('Could not read the image'));
+            img.src = url;
+        });
+    } finally {
+        URL.revokeObjectURL(url);
+    }
 
-            canvas.toBlob((blob) => {
-                if (blob) {
-                    resolve({
-                        blob,
-                        url: URL.createObjectURL(blob)
-                    });
-                } else {
-                    reject(new Error('Canvas to Blob failed'));
-                }
-            }, 'image/webp', 0.85);
-        };
-        img.onerror = reject;
-    });
+    const scale = Math.min(1, img.width > img.height ? maxWidth / img.width : maxHeight / img.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    return canvasToImageBlob(canvas, 0.85);
 }
 
 /**
  * Optimizes a photo for upload, generating original, large, and small thumbnails.
  */
 export async function optimizePhoto(file: File): Promise<{
-    original: { blob: Blob; url: string };
-    thumbnailLarge: { blob: Blob; url: string };
-    thumbnailSmall: { blob: Blob; url: string };
+    original: Blob;
+    thumbnailLarge: Blob;
+    thumbnailSmall: Blob;
 }> {
     const [original, thumbnailLarge, thumbnailSmall] = await Promise.all([
         resizeImage(file, 1920, 1080), // Full HD max
@@ -79,9 +75,5 @@ export async function optimizePhoto(file: File): Promise<{
         resizeImage(file, 300, 300)    // Small thumbnail
     ]);
 
-    return {
-        original,
-        thumbnailLarge,
-        thumbnailSmall
-    };
+    return { original, thumbnailLarge, thumbnailSmall };
 }

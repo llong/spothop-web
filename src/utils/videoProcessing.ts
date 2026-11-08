@@ -8,6 +8,7 @@ import {
     Output,
     QUALITY_MEDIUM,
 } from "mediabunny";
+import { canvasToImageBlob, imageExtension } from "@/utils/imageOptimization";
 
 /** Trimmed videos are downscaled to this height (never upscaled). */
 const MAX_HEIGHT = 720;
@@ -59,7 +60,7 @@ export const trimVideo = async (
 const once = (target: EventTarget, event: string) =>
     new Promise<void>((resolve) => target.addEventListener(event, () => resolve(), { once: true }));
 
-/** Grabs the frame at the middle of the video as a WebP file (the only image type the bucket accepts). */
+/** Grabs the frame at the middle of the video as a WebP (or JPEG on Safari) file. */
 export const captureVideoThumbnail = async (file: File): Promise<File> => {
     const url = URL.createObjectURL(file);
     try {
@@ -80,9 +81,8 @@ export const captureVideoThumbnail = async (file: File): Promise<File> => {
         canvas.height = video.videoHeight;
         canvas.getContext("2d")?.drawImage(video, 0, 0);
 
-        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.8));
-        if (!blob) throw new Error("Failed to generate thumbnail");
-        return new File([blob], `thumb_${file.name.split(".")[0]}.webp`, { type: "image/webp" });
+        const blob = await canvasToImageBlob(canvas, 0.8);
+        return new File([blob], `thumb_${file.name.split(".")[0]}.${imageExtension(blob)}`, { type: blob.type });
     } finally {
         URL.revokeObjectURL(url);
     }

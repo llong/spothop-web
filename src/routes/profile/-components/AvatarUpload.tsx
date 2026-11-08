@@ -14,7 +14,7 @@ import type { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useAtom } from "jotai";
 import { userAtom } from "@/atoms/auth";
-import { getOptimizedImageUrl } from "@/utils/imageOptimization";
+import { getOptimizedImageUrl, canvasToImageBlob, imageExtension } from "@/utils/imageOptimization";
 
 interface AvatarUploadProps {
     avatarUrl: string | null;
@@ -72,13 +72,7 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
             500
         );
 
-        const blob = await new Promise<Blob | null>((resolve) => {
-            canvas.toBlob(resolve, 'image/webp', 0.9);
-        });
-
-        if (!blob) {
-            throw new Error("Failed to create blob.");
-        }
+        const blob = await canvasToImageBlob(canvas, 0.9);
 
         try {
             setUploading(true);
@@ -88,13 +82,17 @@ export const AvatarUpload = ({ avatarUrl, onUpload }: AvatarUploadProps) => {
             if (!file) {
                 throw new Error("No file selected.");
             }
-            const filePath = `${user?.user.id}.webp`;
+            const extension = imageExtension(blob);
+            const filePath = `${user?.user.id}.${extension}`;
 
-            const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, blob, { contentType: 'image/webp', upsert: true, cacheControl: '0' });
+            const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, blob, { contentType: blob.type, upsert: true, cacheControl: '0' });
 
             if (uploadError) {
                 throw uploadError;
             }
+
+            // Best effort: drop a leftover avatar in the other format (e.g. switching between Safari and Chrome)
+            void supabase.storage.from('avatars').remove([`${user?.user.id}.${extension === 'webp' ? 'jpg' : 'webp'}`]);
 
             let { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
             publicUrl += `?t=${new Date().getTime()}`;

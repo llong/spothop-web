@@ -10,6 +10,7 @@ import {
     Typography
 } from '@mui/material';
 import { useObjectUrl } from '@/hooks/useObjectUrl';
+import { canvasToImageBlob, imageExtension } from '@/utils/imageOptimization';
 
 interface VideoThumbnailSelectorProps {
     videoFile: File | null;
@@ -50,28 +51,18 @@ export const VideoThumbnailSelector = ({ videoFile, open, onClose, onSelectThumb
         }
     };
 
-    const handleCapture = () => {
-        if (videoRef.current && canvasRef.current && videoFile) {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
+    const handleCapture = async () => {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        if (!video || !canvas || !videoFile) return;
 
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        const fileName = `thumbnail_${videoFile.name.split('.')[0]}.webp`;
-                        const file = new File([blob], fileName, { type: 'image/webp' });
-                        onSelectThumbnail(file);
-                        onClose();
-                    }
-                }, 'image/webp', 0.8);
-            }
-        }
+        const blob = await canvasToImageBlob(canvas, 0.8);
+        onSelectThumbnail(new File([blob], `thumbnail_${videoFile.name.split('.')[0]}.${imageExtension(blob)}`, { type: blob.type }));
+        onClose();
     };
 
     return (

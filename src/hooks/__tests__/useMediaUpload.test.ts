@@ -24,14 +24,15 @@ vi.mock('@/supabase', () => ({
     },
 }));
 
-const { thumbnailLarge } = vi.hoisted(() => ({ thumbnailLarge: { blob: new Blob(['large']) } }));
+const { thumbnailLarge } = vi.hoisted(() => ({ thumbnailLarge: new Blob(['large'], { type: 'image/webp' }) }));
 vi.mock('@/utils/imageOptimization', () => ({
     optimizePhoto: vi.fn().mockResolvedValue({
-        original: { blob: new Blob(['original']) },
-        thumbnailSmall: { blob: new Blob(['small']) },
+        original: new Blob(['original'], { type: 'image/webp' }),
+        thumbnailSmall: new Blob(['small'], { type: 'image/webp' }),
         thumbnailLarge,
     }),
     generateImageFilename: vi.fn().mockReturnValue('test-image.jpg'),
+    imageExtension: (blob: Blob) => (blob.type === 'image/webp' ? 'webp' : 'jpg'),
 }));
 
 describe('useMediaUpload hook', () => {
@@ -65,7 +66,23 @@ describe('useMediaUpload hook', () => {
         await result.current.uploadMedia('spot123', [mockFile], []);
 
         expect(checkContent).toHaveBeenCalledTimes(1);
-        expect(checkContent).toHaveBeenCalledWith(thumbnailLarge.blob);
+        expect(checkContent).toHaveBeenCalledWith(thumbnailLarge);
+    });
+
+    it('uploads JPEG photos with a .jpg name and JPEG content type when WebP is unavailable (Safari)', async () => {
+        const jpeg = (name: string) => new Blob([name], { type: 'image/jpeg' });
+        vi.mocked(optimizePhoto).mockResolvedValueOnce({ original: jpeg('o'), thumbnailSmall: jpeg('s'), thumbnailLarge: jpeg('l') });
+        const upload = vi.fn().mockResolvedValue({ error: null });
+        vi.mocked(supabase.storage.from).mockImplementation(() => ({ upload, getPublicUrl: vi.fn(() => ({ data: { publicUrl: 'http://mock.url' } })) }) as any);
+        const { result } = renderHook(() => useMediaUpload({ user: mockUser, setStatusMessage: mockSetStatusMessage }));
+
+        await result.current.uploadMedia('spot123', [new File([], 'a.heic')], []);
+
+        expect(upload).toHaveBeenCalledTimes(3);
+        for (const [path, , options] of upload.mock.calls) {
+            expect(path).toMatch(/\.jpg$/);
+            expect(options.contentType).toBe('image/jpeg');
+        }
     });
 
     it('rejects the upload when the scan flags a photo', async () => {
