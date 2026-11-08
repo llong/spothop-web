@@ -136,4 +136,34 @@ describe('MediaCarousel', () => {
       expect(onSlideChange).not.toHaveBeenCalled();
     });
   });
+
+  describe('dots', () => {
+    it('shows one dot per item and marks the active one', () => {
+      renderComponent({ media: mockMedia, activeSlide: 1, onSlideChange: vi.fn() });
+      const dots = screen.getAllByRole('button', { name: /Go to item/ });
+      expect(dots).toHaveLength(2);
+      expect(dots[1]).toHaveAttribute('aria-current', 'true');
+      expect(dots[0]).toHaveAttribute('aria-current', 'false');
+    });
+
+    it('goes to an item when its dot is clicked', () => {
+      const onSlideChange = vi.fn();
+      renderComponent({ media: mockMedia, activeSlide: 0, onSlideChange });
+      fireEvent.click(screen.getByRole('button', { name: 'Go to item 2 of 2' }));
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+
+    it('has no dots or arrows for a single item', () => {
+      renderComponent({ media: [mockMedia[0]], activeSlide: 0, onSlideChange: vi.fn() });
+      expect(screen.queryByRole('button', { name: /Go to item/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Next' })).not.toBeInTheDocument();
+    });
+
+    it('keeps labelled arrows for mouse and keyboard users', () => {
+      const onSlideChange = vi.fn();
+      renderComponent({ media: mockMedia, activeSlide: 0, onSlideChange });
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+      expect(onSlideChange).toHaveBeenCalledWith(1);
+    });
+  });
 });

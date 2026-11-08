@@ -29,6 +29,9 @@ const router = createRouter({
   context: {
     queryClient,
   },
+  // New navigations start at the top (e.g. the feed after creating a spot), back/forward restore the position.
+  // Without this the window keeps the previous page's scroll offset.
+  scrollRestoration: true,
 })
 
 // Register the router instance for type safety

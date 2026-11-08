@@ -95,7 +95,9 @@ describe('FeedItemCard', () => {
         it('shows the media as a carousel starting at the first item', () => {
             render(<FeedItemCard items={[mockItem, second, video]} />, { wrapper });
 
-            expect(screen.getByText('1 / 3')).toBeInTheDocument();
+            const dots = screen.getAllByRole('button', { name: /Go to item/ });
+            expect(dots).toHaveLength(3);
+            expect(dots[0]).toHaveAttribute('aria-current', 'true');
             expect(screen.getByAltText('Spot media')).toHaveAttribute('src', mockItem.media_url);
         });
 
@@ -104,9 +106,17 @@ describe('FeedItemCard', () => {
 
             fireEvent.click(screen.getByTestId('KeyboardArrowRightIcon').parentElement!);
 
-            expect(screen.getByText('2 / 2')).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Go to item 2 of 2' })).toHaveAttribute('aria-current', 'true');
             expect(screen.getByAltText('Spot media')).toHaveAttribute('src', second.media_url);
             expect(screen.getByText('7')).toBeInTheDocument();
+        });
+
+        it('jumps straight to an item when its dot is clicked', () => {
+            render(<FeedItemCard items={[mockItem, second, video]} />, { wrapper });
+
+            fireEvent.click(screen.getByRole('button', { name: 'Go to item 2 of 3' }));
+
+            expect(screen.getByAltText('Spot media')).toHaveAttribute('src', second.media_url);
         });
 
         it('opens comments for the visible slide, not the first one', () => {

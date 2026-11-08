@@ -10,6 +10,27 @@ import { OptimizedImage } from '@/components/OptimizedImage';
 
 const SWIPE_THRESHOLD_PX = 50;
 
+/**
+ * Prev/next arrows are a mouse affordance: small, translucent and only shown while hovering the media.
+ * Touch screens (no hover) navigate by swiping and by the dots instead.
+ */
+const arrowSx = {
+    position: 'absolute',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    zIndex: 2,
+    width: 32,
+    height: 32,
+    color: 'common.white',
+    bgcolor: 'rgba(0, 0, 0, 0.45)',
+    backdropFilter: 'blur(4px)',
+    opacity: 0,
+    transition: 'opacity 0.15s, background-color 0.15s',
+    '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.65)' },
+    '&:focus-visible': { opacity: 1 },
+    '@media (hover: none)': { display: 'none' },
+} as const;
+
 interface MediaCarouselProps {
     media: MediaItem[];
     isLoading?: boolean;
@@ -56,7 +77,14 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
 
     return (
         <Box
-            sx={{ position: 'relative', width: '100%', pt: '75%', bgcolor: 'grey.100', overflow: 'hidden' }}
+            sx={{
+                position: 'relative',
+                width: '100%',
+                pt: '75%',
+                bgcolor: 'grey.100',
+                overflow: 'hidden',
+                '&:hover .carousel-arrow': { opacity: 1 },
+            }}
             onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
             onTouchEnd={handleTouchEnd}
         >
@@ -143,38 +171,18 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
             {media.length > 1 && (
                 <>
                     <IconButton
+                        className="carousel-arrow"
+                        aria-label="Previous"
                         onClick={handleBack}
-                        sx={{
-                            position: 'absolute',
-                            left: 16,
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            bgcolor: 'rgba(255,255,255,0.8)',
-                            color: 'black',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            '&:hover': { bgcolor: 'white' },
-                            zIndex: 2,
-                            width: 40,
-                            height: 40
-                        }}
+                        sx={{ ...arrowSx, left: 12 }}
                     >
                         <KeyboardArrowLeft />
                     </IconButton>
                     <IconButton
+                        className="carousel-arrow"
+                        aria-label="Next"
                         onClick={handleNext}
-                        sx={{
-                            position: 'absolute',
-                            right: 16,
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            bgcolor: 'rgba(255,255,255,0.8)',
-                            color: 'black',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            '&:hover': { bgcolor: 'white' },
-                            zIndex: 2,
-                            width: 40,
-                            height: 40
-                        }}
+                        sx={{ ...arrowSx, right: 12 }}
                     >
                         <KeyboardArrowRight />
                     </IconButton>
@@ -182,23 +190,46 @@ export const MediaCarousel = memo(({ media, isLoading, activeSlide, onSlideChang
                     <Box
                         sx={{
                             position: 'absolute',
-                            bottom: 16,
-                            right: 16,
-                            bgcolor: 'rgba(255,255,255,0.9)',
-                            color: 'black',
-                            px: 1.5,
-                            py: 0.5,
-                            borderRadius: 9999,
-                            fontSize: '0.7rem',
-                            fontWeight: 800,
-                            backdropFilter: 'blur(4px)',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                            bottom: 8,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            display: 'flex',
                             zIndex: 2,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em'
                         }}
                     >
-                        {activeSlide + 1} / {media.length}
+                        {media.map((item, index) => (
+                            <Box
+                                component="button"
+                                type="button"
+                                key={item.id}
+                                aria-label={`Go to item ${index + 1} of ${media.length}`}
+                                aria-current={index === activeSlide}
+                                onClick={(e: React.MouseEvent) => {
+                                    e.stopPropagation();
+                                    onSlideChange(index);
+                                }}
+                                // 14px hit area around a 6px dot
+                                sx={{
+                                    width: 14,
+                                    height: 14,
+                                    p: 0,
+                                    border: 0,
+                                    bgcolor: 'transparent',
+                                    cursor: 'pointer',
+                                    display: 'grid',
+                                    placeItems: 'center',
+                                    '&::before': {
+                                        content: '""',
+                                        width: 6,
+                                        height: 6,
+                                        borderRadius: '50%',
+                                        bgcolor: index === activeSlide ? 'common.white' : 'rgba(255, 255, 255, 0.55)',
+                                        boxShadow: '0 0 3px rgba(0, 0, 0, 0.6)',
+                                        transition: 'background-color 0.15s',
+                                    },
+                                }}
+                            />
+                        ))}
                     </Box>
                 </>
             )}
