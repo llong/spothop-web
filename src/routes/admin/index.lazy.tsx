@@ -11,6 +11,7 @@ import {
     ReportProblem,
     Person,
     Gavel,
+    Storage,
 } from '@mui/icons-material'
 import { useState, useCallback } from 'react'
 import { useAdminQueries } from '@/hooks/useAdminQueries'
@@ -19,6 +20,7 @@ import { adminService } from '@/services/adminService'
 import { debounce } from 'lodash'
 import { ModerationQueue } from './-components/ModerationQueue'
 import { UserManagement } from './-components/UserManagement'
+import { StorageCleanup } from './-components/StorageCleanup'
 
 export const Route = createLazyFileRoute('/admin/')({
     component: AdminDashboard,
@@ -92,6 +94,11 @@ export function AdminDashboard() {
                         iconPosition="start"
                         label="User Management"
                     />
+                    <Tab
+                        icon={<Storage />}
+                        iconPosition="start"
+                        label="Storage"
+                    />
                 </Tabs>
             </Paper>
 
@@ -119,6 +126,8 @@ export function AdminDashboard() {
                     isActioning={isActioning}
                 />
             )}
+
+            {activeTab === 2 && <StorageCleanup />}
         </Container>
     )
 }

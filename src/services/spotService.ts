@@ -2,26 +2,9 @@ import supabase from "@/supabase";
 import type { MediaItem, Spot, SpotVideoLink } from "@/types";
 import { reverseGeocode } from "@/utils/geocoding";
 import { extractStoragePath } from "@/utils/media-utils";
+import { readFunctionError, isFunctionNotDeployed } from "@/utils/functionErrors";
 import { favoriteService } from './spot/favoriteService';
 import { videoLinkService } from './spot/videoLinkService';
-
-/** Extracts the HTTP status and message from a supabase-js Functions error. */
-async function readFunctionError(error: unknown): Promise<{ status?: number; message: string }> {
-    const response = (error as { context?: Response }).context;
-    const fallback = (error as { message?: string }).message ?? '';
-    if (!response || typeof response.json !== 'function') return { message: fallback };
-    try {
-        const body = await response.clone().json();
-        return { status: response.status, message: body?.error ?? body?.message ?? fallback };
-    } catch {
-        return { status: response.status, message: fallback };
-    }
-}
-
-/** Supabase answers 404 "Requested function was not found" when an Edge Function is not deployed. */
-function isFunctionNotDeployed(status: number | undefined, message: string): boolean {
-    return status === 404 && /function was not found/i.test(message);
-}
 
 /**
  * Fallback used only when the delete-spot Edge Function is unavailable. Limited by RLS: it can only

@@ -1,6 +1,25 @@
 import supabase from "@/supabase";
 import type { ContentReport, UserProfile } from "@/types";
 import { extractStoragePath } from "@/utils/media-utils";
+import { readFunctionError, isFunctionNotDeployed } from "@/utils/functionErrors";
+
+/** Totals returned by the cleanup-orphan-media Edge Function (summed across pages). */
+export interface OrphanCleanupReport {
+    dryRun: boolean;
+    scannedFolders: number;
+    orphanFolders: number;
+    liveSpotsWithOrphans: number;
+    orphanFiles: number;
+    bytes: number;
+    skippedRecent: number;
+    removed: number;
+    sample: string[];
+}
+
+/** One page of results from the cleanup-orphan-media Edge Function. */
+interface OrphanCleanupPage extends Omit<OrphanCleanupReport, 'dryRun'> {
+    nextOffset: number | null;
+}
 
 export const adminService = {
     /**
@@ -188,5 +207,43 @@ export const adminService = {
 
         if (error) throw error;
         return data as UserProfile[];
+    },
+
+    /**
+     * Scans (dryRun: true) or cleans up (dryRun: false) files in the spot-media bucket that no spot
+     * references, by calling the admin-only cleanup-orphan-media Edge Function page by page and
+     * summing the results.
+     */
+    async cleanupOrphanMedia(dryRun: boolean): Promise<OrphanCleanupReport> {
+        const total: OrphanCleanupReport = {
+            dryRun, scannedFolders: 0, orphanFolders: 0, liveSpotsWithOrphans: 0,
+            orphanFiles: 0, bytes: 0, skippedRecent: 0, removed: 0, sample: [],
+        };
+
+        let offset: number | null = 0;
+        while (offset !== null) {
+            const response: { data: OrphanCleanupPage | null; error: unknown } =
+                await supabase.functions.invoke('cleanup-orphan-media', { body: { dryRun, offset } });
+            const { data, error } = response;
+            if (error || !data) {
+                const { status, message } = await readFunctionError(error ?? new Error('Empty response'));
+                throw new Error(
+                    isFunctionNotDeployed(status, message)
+                        ? 'The cleanup-orphan-media Edge Function is not deployed yet.'
+                        : message || 'Storage cleanup failed.'
+                );
+            }
+
+            total.scannedFolders += data.scannedFolders;
+            total.orphanFolders += data.orphanFolders;
+            total.liveSpotsWithOrphans += data.liveSpotsWithOrphans;
+            total.orphanFiles += data.orphanFiles;
+            total.bytes += data.bytes;
+            total.skippedRecent += data.skippedRecent;
+            total.removed += data.removed;
+            if (total.sample.length < 20) total.sample.push(...data.sample.slice(0, 20 - total.sample.length));
+            offset = data.nextOffset;
+        }
+        return total;
     }
 };
