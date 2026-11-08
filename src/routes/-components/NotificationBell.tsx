@@ -9,7 +9,7 @@ import {
     DeleteOutline
 } from '@mui/icons-material';
 import { useNotifications } from '@/hooks/useNotifications';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { Link, useNavigate } from '@tanstack/react-router';
 
 export const NotificationBell = () => {
@@ -128,7 +128,7 @@ export const NotificationBell = () => {
                                                     {renderNotificationText(notification)}
                                                 </Typography>
                                             }
-                                            secondary={formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                                            secondary={formatDistanceToNowStrict(new Date(notification.created_at), { addSuffix: true })}
                                         />
                                     </ListItemButton>
 

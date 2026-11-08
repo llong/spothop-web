@@ -9,7 +9,7 @@ import {
     Done
 } from '@mui/icons-material';
 import { useNotifications } from '@/hooks/useNotifications';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import supabase from '@/supabase';
 
 export const NotificationsComponent = () => {
@@ -125,7 +125,7 @@ export const NotificationsComponent = () => {
                                         secondary={
                                             <Stack spacing={0.5}>
                                                 <Typography variant="caption" color="text.secondary">
-                                                    {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                                                    {formatDistanceToNowStrict(new Date(notification.created_at), { addSuffix: true })}
                                                 </Typography>
                                             </Stack>
                                         }

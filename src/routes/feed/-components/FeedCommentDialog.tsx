@@ -21,7 +21,7 @@ import SendIcon from '@mui/icons-material/Send';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useMediaComments, usePostMediaComment, useToggleCommentReaction } from '@/hooks/useFeedQueries';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import type { FeedItem } from '@/types';
 
 interface FeedCommentDialogProps {
@@ -129,7 +129,7 @@ const FeedCommentDialogContent = ({
                                                         @{comment.author?.username || 'unknown'}
                                                     </Typography>
                                                     <Typography variant="caption" color="text.secondary">
-                                                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                                                        {formatDistanceToNowStrict(new Date(comment.created_at), { addSuffix: true })}
                                                     </Typography>
                                                 </Stack>
                                             }

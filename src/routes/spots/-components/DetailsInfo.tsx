@@ -10,7 +10,7 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { Link } from '@tanstack/react-router';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import type { Spot } from '@/types';
 
 interface DetailsInfoProps {
@@ -79,7 +79,7 @@ export const DetailsInfo = ({ spot }: DetailsInfoProps) => {
                         </Typography>
                     </Link>
                     <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                        Posted {spot.created_at ? formatDistanceToNow(new Date(spot.created_at), { addSuffix: true }) : ''}
+                        Posted {spot.created_at ? formatDistanceToNowStrict(new Date(spot.created_at), { addSuffix: true }) : ''}
                     </Typography>
                 </Box>
             </Box>

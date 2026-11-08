@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Box, Avatar, Typography, Stack, IconButton, Button, Divider } from '@mui/material';
 import { Link } from '@tanstack/react-router';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import type { MediaItem } from '@/types';
 import { getOptimizedImageUrl } from '@/utils/imageOptimization';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -75,7 +75,7 @@ export const MediaListItem = memo(({ item, currentUserId, onLike, onComment, onS
                                     </Typography>
                                 </Link>
                                 <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
-                                    · {formatDistanceToNow(new Date(item.createdAt), { addSuffix: false })}
+                                    · {formatDistanceToNowStrict(new Date(item.createdAt), { addSuffix: false })}
                                 </Typography>
                             </Stack>
                             <Typography variant="body2" color="text.secondary" noWrap sx={{ lineHeight: 1 }}>

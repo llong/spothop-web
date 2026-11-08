@@ -3,7 +3,7 @@ import { Container, Typography, Box, List, ListItem, ListItemAvatar, Avatar, Lis
 import { useConversationsQuery } from '@/hooks/useChatQueries';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/auth';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { ChatBubbleOutline, GroupsOutlined, PersonOutline } from '@mui/icons-material';
 import supabase from '@/supabase';
 import { useState } from 'react';
@@ -153,8 +153,8 @@ export const ChatInboxComponent = () => {
                                                             </Typography>
                                                             <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap', mt: 0.2 }}>
                                                                 {chat.lastMessage
-                                                                    ? `Last message ${formatDistanceToNow(new Date(chat.last_message_at), { addSuffix: true })}`
-                                                                    : `Created ${formatDistanceToNow(new Date(chat.created_at), { addSuffix: true })}`}
+                                                                    ? `Last message ${formatDistanceToNowStrict(new Date(chat.last_message_at), { addSuffix: true })}`
+                                                                    : `Created ${formatDistanceToNowStrict(new Date(chat.created_at), { addSuffix: true })}`}
                                                             </Typography>
                                                         </Box>
                                                     }
@@ -186,7 +186,7 @@ export const ChatInboxComponent = () => {
                                         </ListItemAvatar>
                                         <ListItemText
                                             primary={<Typography variant="subtitle1" fontWeight={700}>{chat.name || "New Group Chat"}</Typography>}
-                                            secondary={`Invited by @${creator?.profile?.username || 'someone'} • ${formatDistanceToNow(new Date(chat.created_at), { addSuffix: true })}`}
+                                            secondary={`Invited by @${creator?.profile?.username || 'someone'} • ${formatDistanceToNowStrict(new Date(chat.created_at), { addSuffix: true })}`}
                                         />
                                         <ListItemSecondaryAction>
                                             <Stack direction="row" spacing={1}>

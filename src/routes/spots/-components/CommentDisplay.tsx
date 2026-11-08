@@ -1,5 +1,5 @@
 import { Box, Typography, Avatar, Stack } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
 import type { SpotComment } from '@/types';
 
@@ -27,7 +27,7 @@ export const CommentDisplay = ({ comment, isReply = false }: CommentDisplayProps
                         </Typography>
                     </Link>
                     <Typography variant="caption" color="text.secondary">
-                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                        {formatDistanceToNowStrict(new Date(comment.created_at), { addSuffix: true })}
                     </Typography>
                 </Stack>
                 <Typography variant="body2" color="text.primary" sx={{ wordBreak: 'break-word' }}>

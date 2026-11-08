@@ -23,7 +23,7 @@ import {
     Delete,
     FlagOutlined
 } from '@mui/icons-material';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { Link } from '@tanstack/react-router';
 import type { SpotComment } from '@/types';
 import { CommentForm } from './CommentForm';
@@ -131,7 +131,7 @@ export const CommentItem = ({
 
                         <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1 }}>
                             <Typography variant="caption" color="text.secondary">
-                                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                                {formatDistanceToNowStrict(new Date(comment.created_at), { addSuffix: true })}
                                 {comment.is_edited && ' (edited)'}
                             </Typography>
                         </Stack>
