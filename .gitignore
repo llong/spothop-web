@@ -45,3 +45,6 @@ vite.config.d.ts
 # Environment files (keep the example)
 .env*
 !.env.example
+
+# Supabase CLI scratch files
+supabase/.temp/
