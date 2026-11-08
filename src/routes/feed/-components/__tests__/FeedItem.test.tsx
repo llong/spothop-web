@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { FeedItemCard } from '@/routes/feed/-components/FeedItem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -98,7 +98,7 @@ describe('FeedItemCard', () => {
             const dots = screen.getAllByRole('button', { name: /Go to item/ });
             expect(dots).toHaveLength(3);
             expect(dots[0]).toHaveAttribute('aria-current', 'true');
-            expect(screen.getByAltText('Spot media')).toHaveAttribute('src', mockItem.media_url);
+            expect(within(screen.getByLabelText('1 of 3')).getByAltText('Spot media')).toHaveAttribute('src', mockItem.media_url);
         });
 
         it('moves between slides and shows the comment count of the visible one', () => {
@@ -107,7 +107,7 @@ describe('FeedItemCard', () => {
             fireEvent.click(screen.getByTestId('KeyboardArrowRightIcon').parentElement!);
 
             expect(screen.getByRole('button', { name: 'Go to item 2 of 2' })).toHaveAttribute('aria-current', 'true');
-            expect(screen.getByAltText('Spot media')).toHaveAttribute('src', second.media_url);
+            expect(within(screen.getByLabelText('2 of 2')).getByAltText('Spot media')).toHaveAttribute('src', second.media_url);
             expect(screen.getByText('7')).toBeInTheDocument();
         });
 
@@ -116,7 +116,8 @@ describe('FeedItemCard', () => {
 
             fireEvent.click(screen.getByRole('button', { name: 'Go to item 2 of 3' }));
 
-            expect(screen.getByAltText('Spot media')).toHaveAttribute('src', second.media_url);
+            expect(screen.getByRole('button', { name: 'Go to item 2 of 3' })).toHaveAttribute('aria-current', 'true');
+            expect(screen.getByText('7')).toBeInTheDocument(); // the comment count now follows the second item
         });
 
         it('opens comments for the visible slide, not the first one', () => {
