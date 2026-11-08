@@ -56,6 +56,18 @@ describe('VideoTrimmer', () => {
         expect(onTrimmed).not.toHaveBeenCalled();
     });
 
+    it('shows the message when the result is rejected afterwards (e.g. no thumbnail) and stays open', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        vi.mocked(trimVideo).mockResolvedValue(new Blob(['out']));
+        onTrimmed.mockRejectedValueOnce(new Error("Couldn't read a thumbnail frame"));
+        renderLoaded();
+
+        fireEvent.click(screen.getByText('Trim & Save'));
+
+        expect(await screen.findByText("Couldn't read a thumbnail frame")).toBeInTheDocument();
+        expect(screen.getByText('Trim & Save')).toBeEnabled();
+    });
+
     it('can be cancelled before processing starts', () => {
         renderLoaded();
         fireEvent.click(screen.getByText('Cancel'));

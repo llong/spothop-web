@@ -31,15 +31,16 @@ export function useVideoUpload(onFilesSelect: (videos: VideoAsset[]) => void) {
         onFilesSelect(updatedVideos);
     };
 
+    /** Adds the trimmed video. Throws (so the trimmer can show it) when no thumbnail frame can be read. */
     const handleTrimmed = async (trimmedBlob: Blob) => {
         if (!pendingFile) return;
         const fileName = pendingFile.name.replace(/\.[^/.]+$/, "") + "_trimmed.mp4";
         const file = new File([trimmedBlob], fileName, { type: 'video/mp4' });
 
-        // A missing thumbnail is not fatal: the user can pick one later
+        // Every video needs a thumbnail (the middle frame by default), so a failure here rejects the video
         const thumbnail = await captureVideoThumbnail(file).catch((error) => {
             console.error('Failed to generate thumbnail', error);
-            return undefined;
+            throw new Error("Couldn't read a thumbnail frame from this video. Try another video.");
         });
         addVideo({ id: uuidv4(), file, thumbnail });
         setTrimmerOpen(false);

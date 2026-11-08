@@ -33,14 +33,15 @@ describe('useVideoUpload', () => {
         expect(result.current.pendingFile).toBeNull();
     });
 
-    it('still adds the video when the thumbnail cannot be generated', async () => {
+    it('rejects the video (and adds nothing) when no thumbnail frame can be read', async () => {
         vi.spyOn(console, 'error').mockImplementation(() => {});
         vi.mocked(captureVideoThumbnail).mockRejectedValue(new Error('no frame'));
         const { result } = setup();
 
-        await act(() => result.current.handleTrimmed(new Blob(['out'])));
+        await expect(act(() => result.current.handleTrimmed(new Blob(['out'])))).rejects.toThrow("Couldn't read a thumbnail frame");
 
-        expect(result.current.selectedVideos).toHaveLength(1);
-        expect(result.current.selectedVideos[0].thumbnail).toBeUndefined();
+        expect(result.current.selectedVideos).toHaveLength(0);
+        expect(onFilesSelect).not.toHaveBeenCalled();
+        expect(result.current.pendingFile).toBe(original); // the trimmer stays open to try again
     });
 });

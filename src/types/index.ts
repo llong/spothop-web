@@ -83,7 +83,8 @@ export interface SpotVideoLink {
 export interface VideoAsset {
     id: string;
     file: File;
-    thumbnail?: File;
+    /** Required: every video has a poster frame (the middle of the clip by default). */
+    thumbnail: File;
 }
 
 export interface SpotFilters {

@@ -10,7 +10,8 @@ const LAST_FRAME_OFFSET = 0.05;
 
 interface VideoTrimmerProps {
     file: File;
-    onTrimmed: (trimmedBlob: Blob) => void;
+    /** May reject (e.g. no thumbnail could be made); the message is shown and the dialog stays open. */
+    onTrimmed: (trimmedBlob: Blob) => void | Promise<void>;
     onCancel: () => void;
     maxDuration?: number;
 }
@@ -83,7 +84,7 @@ export const VideoTrimmer: React.FC<VideoTrimmerProps> = ({
         setProgress(0);
         setError(null);
         try {
-            onTrimmed(await trimVideo(file, start, end, setProgress, controller.signal));
+            await onTrimmed(await trimVideo(file, start, end, setProgress, controller.signal));
         } catch (err) {
             if (controller.signal.aborted) return; // the user cancelled
             console.error('Trimming failed:', err);

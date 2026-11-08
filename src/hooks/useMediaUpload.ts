@@ -86,14 +86,12 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
             setStatusMessage(`Uploading video ${index + 1}/${videos.length}...`);
 
             // The video file itself can't be scanned (the image API rejects it), so scan its thumbnail frame
-            if (thumbnail) await assertSafe(thumbnail);
+            await assertSafe(thumbnail);
 
             const id = uuidv4();
             const [url, thumbnail_url] = await Promise.all([
                 upload(`spots/${spotId}/videos/originals/${id}.mp4`, file, 'video', 'video/mp4'),
-                thumbnail
-                    ? upload(`spots/${spotId}/videos/thumbnails/thumb_${id}.${imageExtension(thumbnail)}`, thumbnail, 'video thumbnail')
-                    : Promise.resolve(''),
+                upload(`spots/${spotId}/videos/thumbnails/thumb_${id}.${imageExtension(thumbnail)}`, thumbnail, 'video thumbnail'),
             ]);
 
             const { error } = await supabase.from('spot_videos').insert({

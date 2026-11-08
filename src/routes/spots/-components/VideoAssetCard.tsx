@@ -17,17 +17,10 @@ export function VideoAssetCard({ asset, onPreview, onChangeThumbnail, onRemove }
     return (
         <Card variant="outlined" sx={{ overflow: 'hidden' }}>
             <Box
-                onClick={() => asset.thumbnail && onPreview(asset)}
-                sx={{
-                    position: 'relative',
-                    aspectRatio: '16 / 9',
-                    bgcolor: 'common.black',
-                    cursor: asset.thumbnail ? 'pointer' : 'default',
-                }}
+                onClick={() => onPreview(asset)}
+                sx={{ position: 'relative', aspectRatio: '16 / 9', bgcolor: 'common.black', cursor: 'pointer' }}
             >
-                {thumbnailUrl && (
-                    <Box component="img" src={thumbnailUrl} alt="" sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-                )}
+                <Box component="img" src={thumbnailUrl} alt="" sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                 <Fab
                     size="medium"
                     aria-label="preview video"
@@ -51,11 +44,9 @@ export function VideoAssetCard({ asset, onPreview, onChangeThumbnail, onRemove }
                     <Typography variant="caption" color="text.secondary">{sizeMb} MB · trimmed and optimized</Typography>
                 </Box>
                 <Tooltip title="Choose thumbnail frame">
-                    <span>
-                        <IconButton aria-label="change thumbnail" onClick={() => onChangeThumbnail(asset.id)} disabled={!asset.thumbnail}>
-                            <ImageIcon />
-                        </IconButton>
-                    </span>
+                    <IconButton aria-label="change thumbnail" onClick={() => onChangeThumbnail(asset.id)}>
+                        <ImageIcon />
+                    </IconButton>
                 </Tooltip>
                 <Tooltip title="Remove video">
                     <IconButton aria-label="remove video" onClick={() => onRemove(asset.id)} color="error">

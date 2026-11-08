@@ -6,14 +6,14 @@ export const GROUP_GAP_MS = 5 * 60 * 1000;
 export interface FeedGroup {
     /** Stable while the group grows (older media loaded by later pages is added after the newest). */
     key: string;
-    /** Videos with a thumbnail first (the most engaging), then the rest in upload order. */
+    /** Videos first (the most engaging), then the photos, each in upload order. */
     items: FeedItem[];
 }
 
 const time = (item: FeedItem) => new Date(item.created_at).getTime();
 
-/** A video leads its post, unless it has no thumbnail (it would show as an empty tile). */
-const leadsPost = (item: FeedItem) => item.media_type === 'video' && !!item.thumbnail_url;
+/** Videos lead their post: every video has a thumbnail, and video is the most engaging media. */
+const leadsPost = (item: FeedItem) => item.media_type === 'video';
 
 /**
  * Turns the feed's one-row-per-photo/video into one post per upload: consecutive media from the same
