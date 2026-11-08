@@ -1,162 +1,89 @@
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { toBlobURL, fetchFile } from "@ffmpeg/util"; // Import toBlobURL
+import {
+    ALL_FORMATS,
+    BlobSource,
+    BufferTarget,
+    Conversion,
+    Input,
+    Mp4OutputFormat,
+    Output,
+    QUALITY_MEDIUM,
+} from "mediabunny";
 
-let ffmpegInstance: FFmpeg | null = null;
+/** Trimmed videos are downscaled to this height (never upscaled). */
+const MAX_HEIGHT = 720;
 
-/**
- * Performs a pre-flight check of browser capabilities for multi-threaded FFmpeg.
- */
-export const checkFFmpegCapabilities = () => {
-    const isSharedArrayBufferAvailable =
-        typeof window.SharedArrayBuffer !== "undefined";
-    const isCrossOriginIsolated = window.crossOriginIsolated;
+/** Trimming uses the browser's WebCodecs (hardware video decoder/encoder). */
+export const isVideoTrimSupported = () =>
+    typeof VideoEncoder !== "undefined" && typeof VideoDecoder !== "undefined";
 
-    console.log("[FFmpeg Capabilities Check]:");
-    console.log(
-        " - SharedArrayBuffer:",
-        isSharedArrayBufferAvailable ? "✅ Available" : "❌ NOT Available"
-    );
-    console.log(
-        " - Cross-Origin Isolated:",
-        isCrossOriginIsolated ? "✅ Yes" : "❌ No (Check COOP/COEP headers)"
-    );
-
-    return {
-        multiThreadingSupported: isSharedArrayBufferAvailable && isCrossOriginIsolated,
-        isSharedArrayBufferAvailable,
-        isCrossOriginIsolated,
-    };
-};
+const openFile = (file: File) => new Input({ source: new BlobSource(file), formats: ALL_FORMATS });
 
 /**
- * Loads FFmpeg.wasm using local files from the public/ffmpeg directory
- * and initializes FFmpeg with corePath.
- */
-export const loadFFmpeg = async () => {
-    if (ffmpegInstance) return ffmpegInstance;
-
-    ffmpegInstance = new FFmpeg();
-
-    ffmpegInstance.on("log", ({ message }) => {
-        console.log("[FFmpeg Log]", message);
-    });
-
-    try {
-        // 1. Define the base path where your files live in /public
-        const baseURL = `${window.location.origin}/ffmpeg`;
-
-        console.log(`[loadFFmpeg] Loading core from: ${baseURL}`);
-
-        // 2. Use toBlobURL to fetch files as blobs rather than JS imports
-        await ffmpegInstance.load({
-            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-            // If you are using the multi-threaded version (ffmpeg-core-mt):
-            // workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, "text/javascript"),
-        });
-
-        console.log("[loadFFmpeg] LOAD SUCCESSFUL");
-    } catch (error) {
-        console.error("[loadFFmpeg] LOAD FAILED:", error);
-        ffmpegInstance = null;
-        throw error;
-    }
-
-    return ffmpegInstance;
-};
-
-/**
- * Trims and optimizes a video file using FFmpeg.wasm.
+ * Cuts `file` to [start, end] seconds and re-encodes it as a ≤720p H.264 MP4.
+ * Aborting `signal` rejects with a `ConversionCanceledError`.
  */
 export const trimVideo = async (
     file: File,
-    startTime: number,
-    duration: number,
-    onProgress?: (progress: number) => void,
-    signal?: AbortSignal // Add AbortSignal parameter
-): Promise<Uint8Array> => {
-    console.log("[trimVideo] Transcoding start:", file.name);
-
-    const instance = await loadFFmpeg();
-    if (!instance) throw new Error("FFmpeg engine failed to start");
-
-    const inputName = "input.mp4";
-    const outputName = "output.mp4";
-
-    const progressHandler = ({ progress }: { progress: number }) => {
-        if (onProgress) {
-            const p = Math.round(progress * 100);
-            onProgress(p);
-        }
-    };
-
-    instance.on("progress", progressHandler);
-
-    if (signal) {
-        signal.addEventListener("abort", () => {
-            console.log(
-                "[trimVideo] Abort signal received. Terminating FFmpeg instance."
-            );
-            instance.terminate(); // Terminate the FFmpeg worker
-            ffmpegInstance = null; // Ensure new instance is loaded next time
-        });
-    }
-
+    start: number,
+    end: number,
+    onProgress?: (percent: number) => void,
+    signal?: AbortSignal
+): Promise<Blob> => {
+    const input = openFile(file);
     try {
-        if (signal?.aborted) {
-            console.log("[trimVideo] Operation aborted before starting FFmpeg exec.");
-            throw new DOMException("Aborted", "AbortError");
+        const target = new BufferTarget();
+        const conversion = await Conversion.init({
+            input,
+            output: new Output({ format: new Mp4OutputFormat(), target }),
+            trim: { start, end },
+            video: (track) => ({
+                codec: "avc",
+                quality: QUALITY_MEDIUM,
+                height: Math.min(track.displayHeight, MAX_HEIGHT),
+            }),
+        });
+        if (!conversion.isValid) {
+            throw new Error("This video can't be processed on this device.");
         }
 
-        console.log("[trimVideo] Writing file to memory...");
-        await instance.writeFile(inputName, await fetchFile(file));
+        conversion.onProgress = (progress) => onProgress?.(Math.round(progress * 100));
+        signal?.addEventListener("abort", () => void conversion.cancel(), { once: true });
 
-        console.log(
-            `[trimVideo] Running FFmpeg: trim from ${startTime}s for ${duration}s...`
-        );
-
-        await instance.exec([
-            "-ss",
-            startTime.toString(),
-            "-i",
-            inputName,
-            "-t",
-            duration.toString(),
-            "-vf",
-            "scale=-2:720",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "ultrafast",
-            "-crf",
-            "28",
-            "-pix_fmt",
-            "yuv420p",
-            "-y",
-            outputName,
-        ]);
-
-        console.log("[trimVideo] TRANSCODING COMPLETE. Reading output...");
-        const data = await instance.readFile(outputName);
-        return data as Uint8Array;
-    } catch (error) {
-        console.error("[trimVideo] TRANSCODING FAILED:", error);
-        if (
-            signal &&
-            error instanceof Error &&
-            error.message.includes("ffmpeg.terminate()")
-        ) {
-            // If FFmpeg was terminated due to abort signal, throw an AbortError
-            throw new DOMException("Aborted", "AbortError");
-        }
-        throw error;
+        await conversion.execute();
+        return new Blob([target.buffer!], { type: "video/mp4" });
     } finally {
-        instance.off("progress", progressHandler);
-        try {
-            await instance.deleteFile(inputName);
-            await instance.deleteFile(outputName);
-        } catch {
-            // Ignore cleanup errors
-        }
+        input.dispose();
+    }
+};
+
+const once = (target: EventTarget, event: string) =>
+    new Promise<void>((resolve) => target.addEventListener(event, () => resolve(), { once: true }));
+
+/** Grabs the frame at the middle of the video as a JPEG file, using the browser's own video playback. */
+export const captureVideoThumbnail = async (file: File): Promise<File> => {
+    const url = URL.createObjectURL(file);
+    try {
+        const video = document.createElement("video");
+        video.muted = true;
+        video.playsInline = true;
+        video.src = url;
+
+        await Promise.race([
+            once(video, "loadedmetadata"),
+            once(video, "error").then(() => Promise.reject(new Error("Failed to load video for thumbnail"))),
+        ]);
+        video.currentTime = video.duration / 2;
+        await once(video, "seeked");
+
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d")?.drawImage(video, 0, 0);
+
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.8));
+        if (!blob) throw new Error("Failed to generate thumbnail");
+        return new File([blob], `thumb_${file.name.split(".")[0]}.jpg`, { type: "image/jpeg" });
+    } finally {
+        URL.revokeObjectURL(url);
     }
 };

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import type { VideoAsset } from '@/types';
+import { captureVideoThumbnail } from '@/utils/videoProcessing';
 
 export function useVideoUpload(onFilesSelect: (videos: VideoAsset[]) => void) {
     const [selectedVideos, setSelectedVideos] = useState<VideoAsset[]>([]);
@@ -27,27 +28,25 @@ export function useVideoUpload(onFilesSelect: (videos: VideoAsset[]) => void) {
         }
     };
 
-    const handleTrimmed = async (trimmedBlob: Blob, generateThumbnail: (file: File) => Promise<File>) => {
+    const addVideo = (asset: VideoAsset) => {
+        const updatedVideos = [...selectedVideos, asset];
+        setSelectedVideos(updatedVideos);
+        onFilesSelect(updatedVideos);
+    };
+
+    const handleTrimmed = async (trimmedBlob: Blob) => {
         if (!pendingFile) return;
         const fileName = pendingFile.name.replace(/\.[^/.]+$/, "") + "_trimmed.mp4";
-        const trimmedFile = new File([trimmedBlob], fileName, { type: 'video/mp4' });
+        const file = new File([trimmedBlob], fileName, { type: 'video/mp4' });
 
-        try {
-            const thumbnail = await generateThumbnail(trimmedFile);
-            const newAsset: VideoAsset = { id: uuidv4(), file: trimmedFile, thumbnail };
-            const updatedVideos = [...selectedVideos, newAsset];
-            setSelectedVideos(updatedVideos);
-            onFilesSelect(updatedVideos);
-        } catch (error) {
+        // A missing thumbnail is not fatal: the user can pick one later
+        const thumbnail = await captureVideoThumbnail(file).catch((error) => {
             console.error('Failed to generate thumbnail', error);
-            const newAsset: VideoAsset = { id: uuidv4(), file: trimmedFile };
-            const updatedVideos = [...selectedVideos, newAsset];
-            setSelectedVideos(updatedVideos);
-            onFilesSelect(updatedVideos);
-        } finally {
-            setTrimmerOpen(false);
-            setPendingFile(null);
-        }
+            return undefined;
+        });
+        addVideo({ id: uuidv4(), file, thumbnail });
+        setTrimmerOpen(false);
+        setPendingFile(null);
     };
 
     const handleRemove = (id: string) => {

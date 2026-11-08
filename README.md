@@ -9,7 +9,7 @@ web app (an installable PWA).
 - **Routing / data:** TanStack Router (file-based) and TanStack Query (persisted to IndexedDB), Jotai for client state
 - **Backend:** Supabase (Postgres + RLS, Auth, Storage, Realtime, Edge Functions)
 - **Maps:** Leaflet with CARTO tiles; Google Places Autocomplete, loaded lazily on first search
-- **Media:** client-side image optimization (WebP + thumbnails) and FFmpeg.wasm video trimming
+- **Media:** client-side image optimization (WebP + thumbnails) and WebCodecs video trimming (hardware H.264, via mediabunny)
 - **Analytics:** PostHog
 - **Hosting:** Vercel
 

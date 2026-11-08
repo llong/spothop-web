@@ -1,34 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { checkFFmpegCapabilities } from '@/utils/videoProcessing';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { isVideoTrimSupported } from '@/utils/videoProcessing';
 
 describe('videoProcessing utils', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-        // Reset global properties
-        Object.defineProperty(window, 'SharedArrayBuffer', {
-            value: undefined,
-            writable: true,
-            configurable: true
-        });
-        Object.defineProperty(window, 'crossOriginIsolated', {
-            value: false,
-            writable: true,
-            configurable: true
-        });
-    });
+    afterEach(() => vi.unstubAllGlobals());
 
-    describe('checkFFmpegCapabilities', () => {
-        it('returns false when requirements are not met', () => {
-            const caps = checkFFmpegCapabilities();
-            expect(caps.multiThreadingSupported).toBe(false);
+    describe('isVideoTrimSupported', () => {
+        it('is true when WebCodecs encoder and decoder exist', () => {
+            vi.stubGlobal('VideoEncoder', class {});
+            vi.stubGlobal('VideoDecoder', class {});
+            expect(isVideoTrimSupported()).toBe(true);
         });
 
-        it('returns true when SharedArrayBuffer and crossOriginIsolated are available', () => {
-            Object.defineProperty(window, 'SharedArrayBuffer', { value: class {} });
-            Object.defineProperty(window, 'crossOriginIsolated', { value: true });
-            
-            const caps = checkFFmpegCapabilities();
-            expect(caps.multiThreadingSupported).toBe(true);
+        it('is false without WebCodecs', () => {
+            vi.stubGlobal('VideoEncoder', undefined);
+            vi.stubGlobal('VideoDecoder', undefined);
+            expect(isVideoTrimSupported()).toBe(false);
         });
     });
 });

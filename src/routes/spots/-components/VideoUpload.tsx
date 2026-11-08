@@ -33,67 +33,6 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
         handleClosePreview
     } = useVideoUpload(onFilesSelect);
 
-    const generateVideoThumbnail = async (file: File): Promise<File> => {
-        return new Promise((resolve, reject) => {
-            const video = document.createElement('video');
-            const canvas = document.createElement('canvas');
-            let hasSeeked = false;
-
-            const handleLoadedMetadata = () => {
-                if (video.duration > 0) {
-                    video.currentTime = video.duration / 2;
-                }
-            };
-
-            const handleSeeked = () => {
-                if (!hasSeeked && video.videoWidth > 0 && video.videoHeight > 0) {
-                    hasSeeked = true;
-                    try {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        const ctx = canvas.getContext('2d');
-                        if (ctx) {
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            canvas.toBlob((blob) => {
-                                if (blob) {
-                                    const fileName = `thumb_${file.name.split('.')[0]}.jpg`;
-                                    const thumbnailFile = new File([blob], fileName, { type: 'image/jpeg' });
-                                    window.URL.revokeObjectURL(video.src);
-                                    resolve(thumbnailFile);
-                                } else {
-                                    reject(new Error('Failed to generate thumbnail blob'));
-                                }
-                            }, 'image/jpeg', 0.8);
-                        } else {
-                            reject(new Error('Failed to get canvas context'));
-                        }
-                    } catch (error) {
-                        reject(error);
-                    }
-                }
-            };
-
-            video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
-            video.addEventListener('seeked', handleSeeked);
-            video.onerror = () => {
-                window.URL.revokeObjectURL(video.src);
-                reject(new Error('Failed to load video for thumbnail generation'));
-            };
-            video.src = URL.createObjectURL(file);
-
-            setTimeout(() => {
-                if (!hasSeeked) {
-                    if (video.videoWidth > 0 && video.videoHeight > 0) {
-                        handleSeeked();
-                    } else {
-                        window.URL.revokeObjectURL(video.src);
-                        reject(new Error('Video loading timeout'));
-                    }
-                }
-            }, 3000);
-        });
-    };
-
     const activeVideo = selectedVideos.find(v => v.id === activeVideoId)?.file || null;
 
     return (
@@ -146,7 +85,7 @@ export const VideoUpload = ({ onFilesSelect }: VideoUploadProps) => {
                 {pendingFile && (
                     <VideoTrimmer
                         file={pendingFile}
-                        onTrimmed={(blob) => handleTrimmed(blob, generateVideoThumbnail)}
+                        onTrimmed={handleTrimmed}
                         onCancel={() => {
                             setTrimmerOpen(false);
                             setPendingFile(null);

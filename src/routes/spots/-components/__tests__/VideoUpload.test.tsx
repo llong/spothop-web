@@ -6,8 +6,10 @@ vi.mock('uuid', () => ({
     v4: () => 'test-uuid-123'
 }));
 
-vi.mock('@/routes/utils/videoProcessing', () => ({
-    trimVideo: vi.fn()
+vi.mock('@/utils/videoProcessing', () => ({
+    trimVideo: vi.fn(),
+    captureVideoThumbnail: vi.fn(),
+    isVideoTrimSupported: () => true,
 }));
 
 describe('VideoUpload Component - Video Preview', () => {

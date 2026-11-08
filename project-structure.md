@@ -4,7 +4,6 @@
 spothop-web/
 ├── .clinerules/              # AI coding standards and guidelines
 ├── public/                   # Static assets (robots.txt, icons)
-│   └── ffmpeg/               # FFmpeg WebAssembly files
 ├── sprints/                  # Sprint planning and milestones
 ├── src/                      # Main application source code
 │   ├── assets/               # React assets and SVGs

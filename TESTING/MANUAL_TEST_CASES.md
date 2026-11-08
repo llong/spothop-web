@@ -36,10 +36,10 @@ This checklist covers scenarios that are difficult to automate reliably, such as
 10. Click "Submit" to save the spot.
 11. **Verification:** Verify the uploaded video plays correctly in the Spot Gallery and is approximately 720p resolution.
 
-### TC-MEDIA-002: SharedArrayBuffer / Headers Check
-**Goal:** Ensure the security headers are correctly configured for FFmpeg.wasm.
+### TC-MEDIA-002: Video trimming on a phone
+**Goal:** Ensure trimming uses the hardware encoder and finishes quickly on mobile.
 **Steps:**
-1. Open the application in Chrome/Edge.
-2. Open DevTools (F12) -> Console.
-3. Type `self.crossOriginIsolated` and press Enter.
-4. **Expected Result:** Returns `true`. If `false`, FFmpeg.wasm will not work.
+1. On a phone, add a spot and select a 4K/HEVC video (about 20s).
+2. Drag the start and end dots. **Expected Result:** the preview shows the first kept frame for the start dot and the last kept frame for the end dot.
+3. Tap "Trim & Save". **Expected Result:** progress advances steadily and finishes in seconds, not minutes.
+

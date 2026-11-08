@@ -74,18 +74,6 @@ export default defineConfig({
   server: {
     port: 5000,
     host: true,
-    headers: {
-      // Required for FFmpeg.wasm to use SharedArrayBuffer (multi-threading)
-      // We are setting this to 'credentialless' temporarily to avoid CORP issues with Supabase images
-      "Cross-Origin-Embedder-Policy": "credentialless",
-      "Cross-Origin-Opener-Policy": "same-origin",
-    },
-  },
-  optimizeDeps: {
-    // Exclude FFmpeg.wasm related packages from Vite's dependency pre-bundling
-    // This is crucial for FFmpeg.wasm to load its workers correctly without corruption.
-    // See: https://github.com/ffmpegwasm/ffmpeg.wasm/issues/772
-    exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
   },
   build: {
     assetsInlineLimit: 0, // Prevent inlining assets to keep CSS small
