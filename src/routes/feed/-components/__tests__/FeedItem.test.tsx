@@ -65,7 +65,7 @@ describe('FeedItemCard', () => {
     it('renders feed item details correctly', () => {
         render(<FeedItemCard items={[mockItem]} />, { wrapper });
 
-        expect(screen.getByText('@skater1')).toBeInTheDocument();
+        expect(screen.getByText(/^@skater1 - .+ ago$/)).toBeInTheDocument();
         expect(screen.getByText('Test Spot')).toBeInTheDocument();
         expect(screen.getByText('Test City, Test Country')).toBeInTheDocument();
         // Check for the presence of the favorite icon, not a count.
@@ -132,7 +132,7 @@ describe('FeedItemCard', () => {
 
         it('shows one header for the whole post', () => {
             render(<FeedItemCard items={[mockItem, second]} />, { wrapper });
-            expect(screen.getAllByText('@skater1')).toHaveLength(1);
+            expect(screen.getAllByText(/^@skater1 - .+ ago$/)).toHaveLength(1);
         });
     });
 });

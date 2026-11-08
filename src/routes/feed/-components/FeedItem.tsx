@@ -16,7 +16,7 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import ShareIcon from '@mui/icons-material/Share';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNowStrict } from 'date-fns';
 import type { FeedItem as FeedItemType } from '@/types';
 import { useToggleFollow } from '@/hooks/useFeedQueries';
 import { OptimizedImage } from '@/components/OptimizedImage';
@@ -146,22 +146,17 @@ export const FeedItemCard: FC<FeedItemCardProps> = memo(({ items, onCommentClick
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                         <Box sx={{ minWidth: 0, flexShrink: 1 }}>
-                            <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0 }}>
-                                <Link
-                                    to="/profile/$username"
-                                    params={{ username: item.uploader_username || '' }}
-                                    style={{ color: 'inherit', textDecoration: 'none', fontWeight: 700 }}
-                                >
-                                    <Typography noWrap variant="subtitle1" fontWeight={700} sx={{ '&:hover': { textDecoration: 'underline' } }}>
-                                        {item.uploader_display_name || item.uploader_username}
-                                    </Typography>
-                                </Link>
-                                <Typography variant="body2" color="text.secondary" sx={{ flexShrink: 0 }}>
-                                    · {formatDistanceToNow(new Date(item.created_at), { addSuffix: false })}
+                            <Link
+                                to="/profile/$username"
+                                params={{ username: item.uploader_username || '' }}
+                                style={{ color: 'inherit', textDecoration: 'none', fontWeight: 700 }}
+                            >
+                                <Typography noWrap variant="subtitle1" fontWeight={700} sx={{ '&:hover': { textDecoration: 'underline' } }}>
+                                    {item.uploader_display_name || item.uploader_username}
                                 </Typography>
-                            </Stack>
+                            </Link>
                             <Typography variant="body2" color="text.secondary" noWrap sx={{ lineHeight: 1 }}>
-                                @{item.uploader_username}
+                                @{item.uploader_username} - {formatDistanceToNowStrict(new Date(item.created_at), { addSuffix: true })}
                             </Typography>
                         </Box>
 
