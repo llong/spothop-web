@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Box, Typography, Grid, CircularProgress, Card, CardContent, Divider, Container } from "@mui/material";
+import { Box, Typography, Grid, CircularProgress, Divider, Container } from "@mui/material";
 import { useProfileQuery, useSocialStatsQuery, useUserContentQuery } from "@/hooks/useProfileQueries";
 import { useAtomValue } from "jotai";
 import { userAtom } from "@/atoms/auth";
@@ -62,59 +62,53 @@ export function ProfileComponent() {
             <Divider sx={{ my: 3 }} />
             <Grid container spacing={3}>
                 <Grid size={{ xs: 12, md: 4 }}>
-                    <Card>
-                        <CardContent>
-                            <ProfileHeader
-                                profile={profile!}
-                                socialStats={socialData}
-                                formData={formData!}
-                                onAvatarUpload={async (url) => {
-                                    setFormData(prev => ({ ...prev!, avatarUrl: url }));
-                                    await updateProfile({ ...formData!, avatarUrl: url });
-                                }}
-                            />
-                        </CardContent>
-                    </Card>
+                    <Box component="section">
+                        <ProfileHeader
+                            profile={profile!}
+                            socialStats={socialData}
+                            formData={formData!}
+                            onAvatarUpload={async (url) => {
+                                setFormData(prev => ({ ...prev!, avatarUrl: url }));
+                                await updateProfile({ ...formData!, avatarUrl: url });
+                            }}
+                        />
+                    </Box>
                 </Grid>
                 <Grid size={{ xs: 12, md: 8 }}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" component="h2" gutterBottom fontWeight={700}>
-                                Public Profile
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                                This information will be displayed publicly.
-                            </Typography>
-                            <ProfileForm
-                                formData={formData}
-                                onFormChange={handleFormChange}
-                                onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    await updateProfile(formData);
-                                }}
-                                onSignOut={handleSignOut}
-                                isUpdating={isUpdating}
-                            />
-                        </CardContent>
-                    </Card>
+                    <Box component="section">
+                        <Typography variant="h6" component="h2" gutterBottom fontWeight={700}>
+                            Public Profile
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                            This information will be displayed publicly.
+                        </Typography>
+                        <ProfileForm
+                            formData={formData}
+                            onFormChange={handleFormChange}
+                            onSubmit={async (e) => {
+                                e.preventDefault();
+                                await updateProfile(formData);
+                            }}
+                            onSignOut={handleSignOut}
+                            isUpdating={isUpdating}
+                        />
+                    </Box>
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <FavoriteSpots favoriteSpots={favoriteSpots} />
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h6" component="h2" gutterBottom fontWeight={700}>
-                                Your Activity
-                            </Typography>
-                            <UserContentGallery
-                                createdSpots={createdSpots}
-                                uploadedMedia={userMedia}
-                                isLoading={loadingContent}
-                            />
-                        </CardContent>
-                    </Card>
+                    <Box component="section">
+                        <Typography variant="h6" component="h2" gutterBottom fontWeight={700}>
+                            Your Activity
+                        </Typography>
+                        <UserContentGallery
+                            createdSpots={createdSpots}
+                            uploadedMedia={userMedia}
+                            isLoading={loadingContent}
+                        />
+                    </Box>
                 </Grid>
 
                 <Grid size={{ xs: 12 }}>

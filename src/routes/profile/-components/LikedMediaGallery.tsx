@@ -68,29 +68,27 @@ const MediaCard = ({ item }: { item: LikedMediaItem }) => (
 
 export const LikedMediaGallery = ({ likedMedia, loadingMedia }: LikedMediaGalleryProps) => {
     return (
-        <Card>
-            <CardContent>
-                <Typography variant="h6" component="h2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
-                    <Favorite color="error" fontSize="small" /> Liked Photos & Videos
-                </Typography>
-                <Grid container spacing={2}>
-                    {likedMedia.length === 0 && !loadingMedia && (
-                        <Grid size={{ xs: 12 }}>
-                            <Typography variant="body2" color="text.secondary">No liked media yet.</Typography>
-                        </Grid>
-                    )}
-                    {loadingMedia && (
-                        <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-                            <CircularProgress size={24} />
-                        </Grid>
-                    )}
-                    {likedMedia.map((item) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
-                            <MediaCard item={item} />
-                        </Grid>
-                    ))}
-                </Grid>
-            </CardContent>
-        </Card>
+        <Box component="section">
+            <Typography variant="h6" component="h2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700 }}>
+                <Favorite color="error" fontSize="small" /> Liked Photos & Videos
+            </Typography>
+            <Grid container spacing={2}>
+                {likedMedia.length === 0 && !loadingMedia && (
+                    <Grid size={{ xs: 12 }}>
+                        <Typography variant="body2" color="text.secondary">No liked media yet.</Typography>
+                    </Grid>
+                )}
+                {loadingMedia && (
+                    <Grid size={{ xs: 12 }} sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                        <CircularProgress size={24} />
+                    </Grid>
+                )}
+                {likedMedia.map((item) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item.id}>
+                        <MediaCard item={item} />
+                    </Grid>
+                ))}
+            </Grid>
+        </Box>
     );
 };
