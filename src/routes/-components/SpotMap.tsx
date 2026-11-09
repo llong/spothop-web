@@ -98,7 +98,6 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
         moved,
         setMoved,
         isFollowingUser,
-        circleSize,
         userLocation,
         handleMove,
         handleCenterOnUser
@@ -138,7 +137,7 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
                 <TileLayer url={tileUrl} attribution='' />
 
                 {userLocation && (
-                    <UserLocationMarker location={userLocation} circleSize={circleSize} />
+                    <UserLocationMarker location={userLocation} />
                 )}
 
                 <MarkerClusterGroup

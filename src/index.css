@@ -50,3 +50,56 @@ button.jotai-devtools-trigger-button img {
   background: transparent !important;
   border: none !important;
 }
+
+/* "You are here" dot: a solid blue circle with a ring that pulses outwards (CSS only) */
+.user-location-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.user-location-dot {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+.user-location-dot::before,
+.user-location-dot::after {
+  content: "";
+  grid-area: 1 / 1;
+  border-radius: 50%;
+  background: #4285f4;
+}
+.user-location-dot::before {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  box-sizing: border-box;
+  z-index: 1;
+}
+.user-location-dot::after {
+  width: 14px;
+  height: 14px;
+  animation: user-location-pulse 2s ease-out infinite;
+}
+@keyframes user-location-pulse {
+  from { transform: scale(1); opacity: 0.6; }
+  to { transform: scale(2.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .user-location-dot::after { animation: none; opacity: 0; }
+}
+
+/* Spot popup: our own card (MapMarker) provides the background, so drop Leaflet's white frame and tip,
+   which clash with the dark theme */
+.spot-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+.spot-popup .leaflet-popup-content {
+  margin: 0;
+}
+.spot-popup .leaflet-popup-tip-container {
+  display: none;
+}

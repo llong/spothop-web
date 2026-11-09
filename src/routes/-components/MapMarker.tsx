@@ -67,7 +67,7 @@ export const MapMarker = memo(({ spot, onClick }: MapMarkerProps) => {
                     click: onClick,
                 }}
             >
-                <Popup closeButton={false} autoPan={false}>
+                <Popup className="spot-popup" closeButton={false} autoPan={false}>
                     <Box
                         sx={{ 
                             cursor: "pointer", 
@@ -75,7 +75,8 @@ export const MapMarker = memo(({ spot, onClick }: MapMarkerProps) => {
                             p: 1.5,
                             bgcolor: 'background.paper',
                             color: 'text.primary',
-                            borderRadius: 2
+                            borderRadius: 2,
+                            boxShadow: 4
                         }}
                         onClick={() => navigate({ to: "/spots/$spotId", params: { spotId: spot.id.toString() } })}
                     >

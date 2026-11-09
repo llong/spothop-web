@@ -8,7 +8,6 @@ import { userLocationAtom } from '@/atoms/map';
 export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngBounds) => void, lat?: number, lng?: number) => {
     const [moved, setMoved] = useState(false);
     const [isFollowingUser, setIsFollowingUser] = useState(true);
-    const [circleSize, setCircleSize] = useState(25);
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy: number } | null>(null);
     const setGlobalUserLocation = useSetAtom(userLocationAtom);
 
@@ -37,16 +36,6 @@ export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngB
             }, 300);
         }
 
-        const handleZoom = () => {
-            const zoom = map.getZoom();
-            setCircleSize(Math.max(25, Math.min(35, 25 * Math.pow(2, 17 - zoom))));
-        };
-
-        map.on('zoomend', handleZoom);
-        
-        return () => {
-            map.off('zoomend', handleZoom);
-        };
     }, [map, getSpots]);
 
     useEffect(() => {
@@ -99,7 +88,6 @@ export const useMapState = (map: LeafletMap | null, getSpots: (bounds: L.LatLngB
         moved,
         setMoved,
         isFollowingUser,
-        circleSize,
         userLocation,
         handleMove,
         handleCenterOnUser
