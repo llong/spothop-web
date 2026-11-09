@@ -1,6 +1,7 @@
 import supabase from "@/supabase";
 import type { ContentReport, UserProfile } from "@/types";
 import { extractStoragePath } from "@/utils/media-utils";
+import { imageExtension, pinThumbnail } from "@/utils/imageOptimization";
 import { readFunctionError, isFunctionNotDeployed } from "@/utils/functionErrors";
 
 /** Totals returned by the cleanup-orphan-media Edge Function (summed across pages). */
@@ -129,7 +130,7 @@ export const adminService = {
                 // 1. Try spot_photos
                 const { data: photo } = await supabase
                     .from('spot_photos')
-                    .select('url, thumbnail_small_url, thumbnail_large_url')
+                    .select('url, thumbnail_small_url, thumbnail_large_url, thumbnail_pin_url')
                     .eq('id', targetId)
                     .maybeSingle();
 
@@ -137,7 +138,8 @@ export const adminService = {
                     const paths = [
                         extractStoragePath(photo.url),
                         extractStoragePath(photo.thumbnail_small_url || ''),
-                        extractStoragePath(photo.thumbnail_large_url || '')
+                        extractStoragePath(photo.thumbnail_large_url || ''),
+                        extractStoragePath(photo.thumbnail_pin_url || '')
                     ].filter(Boolean);
 
                     const { error: delError } = await supabase.from('spot_photos').delete().eq('id', targetId);
@@ -207,6 +209,49 @@ export const adminService = {
 
         if (error) throw error;
         return data as UserProfile[];
+    },
+
+    /**
+     * Makes the map-pin thumbnail for photos uploaded before it existed, from their small thumbnail (no
+     * re-upload by users). Safe to run again: only photos without a pin thumbnail are processed.
+     * Updating other users' rows relies on the admin_update_photos policy.
+     */
+    async backfillPinThumbnails(onProgress?: (done: number, total: number) => void) {
+        const { data: photos, error } = await supabase
+            .from('spot_photos')
+            .select('id, spot_id, url, thumbnail_small_url, thumbnail_large_url')
+            .is('thumbnail_pin_url', null);
+        if (error) throw error;
+
+        let done = 0;
+        let failed = 0;
+        for (const photo of photos ?? []) {
+            try {
+                // The small thumbnail is ~20KB; fall back to larger sources for old rows without one
+                const source = photo.thumbnail_small_url || photo.thumbnail_large_url || photo.url;
+                const response = await fetch(source);
+                if (!response.ok) throw new Error(`Could not download ${source}`);
+
+                const pin = await pinThumbnail(await response.blob());
+                const path = `spots/${photo.spot_id}/photos/thumbnails/pin/${photo.id}.${imageExtension(pin)}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('spot-media')
+                    .upload(path, pin, { contentType: pin.type, cacheControl: '31536000', upsert: true });
+                if (uploadError) throw uploadError;
+
+                const { error: updateError } = await supabase
+                    .from('spot_photos')
+                    .update({ thumbnail_pin_url: supabase.storage.from('spot-media').getPublicUrl(path).data.publicUrl })
+                    .eq('id', photo.id);
+                if (updateError) throw updateError;
+                done++;
+            } catch (err) {
+                failed++;
+                console.error('Pin thumbnail backfill failed for photo', photo.id, err);
+            }
+            onProgress?.(done + failed, photos?.length ?? 0);
+        }
+        return { total: photos?.length ?? 0, done, failed };
     },
 
     /**

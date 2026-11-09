@@ -59,21 +59,22 @@ export const useMediaUpload = ({ user, setStatusMessage }: UseMediaUploadProps) 
         if (photos.length > 0) reportPhotoProgress();
 
         const photoRows = await mapWithConcurrency(photos, PHOTO_CONCURRENCY, async (photo) => {
-            const { original, thumbnailSmall, thumbnailLarge } = await optimizePhoto(photo);
+            const { original, thumbnailSmall, thumbnailLarge, thumbnailPin } = await optimizePhoto(photo);
             // Scan the 800px version: ~50x smaller than the original, so it is fast on mobile data
             await assertSafe(thumbnailLarge);
 
             const name = `${generateImageFilename(userId).replace(/\.[^/.]+$/, '')}.${imageExtension(original)}`;
             const folder = `spots/${spotId}/photos`;
-            const [url, thumbnail_small_url, thumbnail_large_url] = await Promise.all([
+            const [url, thumbnail_small_url, thumbnail_large_url, thumbnail_pin_url] = await Promise.all([
                 upload(`${folder}/originals/${name}`, original, 'photo'),
                 upload(`${folder}/thumbnails/small/${name}`, thumbnailSmall, 'photo'),
                 upload(`${folder}/thumbnails/large/${name}`, thumbnailLarge, 'photo'),
+                upload(`${folder}/thumbnails/pin/${name}`, thumbnailPin, 'photo'),
             ]);
 
             done++;
             reportPhotoProgress();
-            return { spot_id: spotId, user_id: userId, url, thumbnail_small_url, thumbnail_large_url };
+            return { spot_id: spotId, user_id: userId, url, thumbnail_small_url, thumbnail_large_url, thumbnail_pin_url };
         });
 
         // One insert per photo (not a batch): each needs its own created_at for the feed's timestamp cursor

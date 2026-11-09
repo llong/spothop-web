@@ -35,13 +35,9 @@ export async function canvasToImageBlob(canvas: HTMLCanvasElement, quality: numb
 /** File extension for an image made by canvasToImageBlob. */
 export const imageExtension = (blob: Blob) => (blob.type === 'image/webp' ? 'webp' : 'jpg');
 
-/**
- * Downscales an image, keeping its aspect ratio: landscape images are limited by maxWidth,
- * portrait images by maxHeight. Never upscales.
- */
-async function resizeImage(file: File, maxWidth: number, maxHeight: number): Promise<Blob> {
+async function loadImage(source: Blob): Promise<HTMLImageElement> {
     const img = new Image();
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(source);
     try {
         await new Promise<void>((resolve, reject) => {
             img.onload = () => resolve();
@@ -51,29 +47,53 @@ async function resizeImage(file: File, maxWidth: number, maxHeight: number): Pro
     } finally {
         URL.revokeObjectURL(url);
     }
+    return img;
+}
 
+/**
+ * Downscales an image, keeping its aspect ratio: landscape images are limited by maxWidth,
+ * portrait images by maxHeight. Never upscales.
+ */
+async function resizeImage(file: Blob, maxWidth: number, maxHeight: number): Promise<Blob> {
+    const img = await loadImage(file);
     const scale = Math.min(1, img.width > img.height ? maxWidth / img.width : maxHeight / img.height);
     const canvas = document.createElement('canvas');
     canvas.width = img.width * scale;
     canvas.height = img.height * scale;
     canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
-
     return canvasToImageBlob(canvas, 0.85);
 }
 
+/** Size of the square map-pin thumbnail (about 2x the pin's on-screen size). */
+const PIN_SIZE = 96;
+
+/** Center-crops an image to a small square, for the photo pins on the map. */
+export async function pinThumbnail(source: Blob): Promise<Blob> {
+    const img = await loadImage(source);
+    const side = Math.min(img.width, img.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = PIN_SIZE;
+    canvas
+        .getContext('2d')
+        ?.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, PIN_SIZE, PIN_SIZE);
+    return canvasToImageBlob(canvas, 0.8);
+}
+
 /**
- * Optimizes a photo for upload, generating original, large, and small thumbnails.
+ * Optimizes a photo for upload, generating the original plus large, small and map-pin thumbnails.
  */
 export async function optimizePhoto(file: File): Promise<{
     original: Blob;
     thumbnailLarge: Blob;
     thumbnailSmall: Blob;
+    thumbnailPin: Blob;
 }> {
-    const [original, thumbnailLarge, thumbnailSmall] = await Promise.all([
+    const [original, thumbnailLarge, thumbnailSmall, thumbnailPin] = await Promise.all([
         resizeImage(file, 1920, 1080), // Full HD max
         resizeImage(file, 800, 800),   // Large thumbnail
-        resizeImage(file, 300, 300)    // Small thumbnail
+        resizeImage(file, 300, 300),   // Small thumbnail
+        pinThumbnail(file),
     ]);
 
-    return { original, thumbnailLarge, thumbnailSmall };
+    return { original, thumbnailLarge, thumbnailSmall, thumbnailPin };
 }

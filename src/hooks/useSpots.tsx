@@ -19,7 +19,7 @@ export default function useSpots() {
             // We use a small subset of columns to speed up the transfer and processing.
             let query = supabase
                 .from('spots')
-                .select('id, name, latitude, longitude, difficulty, kickout_risk, is_lit, spot_type, created_at, spot_photos(url, thumbnail_small_url, thumbnail_large_url)')
+                .select('id, name, latitude, longitude, difficulty, kickout_risk, is_lit, spot_type, created_at')
                 .gte('latitude', bounds.getSouth())
                 .lte('latitude', bounds.getNorth())
                 .gte('longitude', bounds.getWest())
@@ -54,16 +54,24 @@ export default function useSpots() {
             }
 
             if (data) {
+                // Each spot's cover photo: its most liked one (a stable pseudo-random pick when there are no likes)
+                const { data: covers } = await supabase
+                    .from('spot_cover_photos')
+                    .select('spot_id, url, thumbnail_small_url, thumbnail_large_url, thumbnail_pin_url')
+                    .in('spot_id', data.map((spot) => spot.id));
+                const coverBySpot = new Map((covers ?? []).map((cover) => [cover.spot_id, cover]));
+
                 const formattedSpots = data.map((spot: any) => ({
                     ...spot,
                     // Map created_at to updated_at for compatibility if needed, or just use created_at
                     // But SpotsListCard checks updated_at. Let's inspect types again if possible, but for now fallback to created_at
                     updated_at: spot.created_at,
                     updatedAt: spot.created_at, // Provide both to be safe
-                    photoUrl: spot.spot_photos?.[0]?.url || null,
-                    // Small thumbnails for the map popup and list cards (originals are ~600KB)
-                    thumbnail_small_url: spot.spot_photos?.[0]?.thumbnail_small_url || undefined,
-                    thumbnail_large_url: spot.spot_photos?.[0]?.thumbnail_large_url || undefined,
+                    photoUrl: coverBySpot.get(spot.id)?.url || null,
+                    // Small thumbnails for the map pin, popup and list cards (originals are ~600KB)
+                    thumbnail_small_url: coverBySpot.get(spot.id)?.thumbnail_small_url || undefined,
+                    thumbnail_large_url: coverBySpot.get(spot.id)?.thumbnail_large_url || undefined,
+                    thumbnail_pin_url: coverBySpot.get(spot.id)?.thumbnail_pin_url || undefined,
                     favoriteCount: 0, // Removed subqueries for performance
                     commentCount: 0
                 }));

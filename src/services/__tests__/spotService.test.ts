@@ -105,6 +105,7 @@ describe('spotService', () => {
                                 url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/photos/originals/a.webp',
                                 thumbnail_small_url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/photos/thumbnails/small/a.webp',
                                 thumbnail_large_url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/photos/thumbnails/large/a.webp',
+                                thumbnail_pin_url: 'https://p.supabase.co/storage/v1/object/public/spot-media/spots/s/photos/thumbnails/pin/a.webp',
                                 thumbnailurl: null,
                             }], error: null })),
                         } as any;
@@ -136,11 +137,12 @@ describe('spotService', () => {
                 await spotService.deleteSpot(spotId);
 
                 // Regression: the old code selected only `url`, leaking both current-layout thumbnails
-                expect(photoSelect).toHaveBeenCalledWith('url, thumbnail_small_url, thumbnail_large_url, thumbnailurl');
+                expect(photoSelect).toHaveBeenCalledWith('url, thumbnail_small_url, thumbnail_large_url, thumbnail_pin_url, thumbnailurl');
                 expect(remove).toHaveBeenCalledWith([
                     'spots/s/photos/originals/a.webp',
                     'spots/s/photos/thumbnails/small/a.webp',
                     'spots/s/photos/thumbnails/large/a.webp',
+                    'spots/s/photos/thumbnails/pin/a.webp',
                     'spots/s/videos/originals/v.mp4',
                     'spots/s/videos/thumbnails/v.webp',
                 ]);

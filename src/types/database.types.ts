@@ -736,6 +736,7 @@ export type Database = {
           mediaid: string | null
           spot_id: string | null
           thumbnail_large_url: string | null
+          thumbnail_pin_url: string | null
           thumbnail_small_url: string | null
           thumbnailurl: string | null
           url: string
@@ -751,6 +752,7 @@ export type Database = {
           mediaid?: string | null
           spot_id?: string | null
           thumbnail_large_url?: string | null
+          thumbnail_pin_url?: string | null
           thumbnail_small_url?: string | null
           thumbnailurl?: string | null
           url: string
@@ -766,6 +768,7 @@ export type Database = {
           mediaid?: string | null
           spot_id?: string | null
           thumbnail_large_url?: string | null
+          thumbnail_pin_url?: string | null
           thumbnail_small_url?: string | null
           thumbnailurl?: string | null
           url?: string
@@ -1147,6 +1150,17 @@ export type Database = {
       }
     }
     Views: {
+      spot_cover_photos: {
+        Row: {
+          photo_id: string | null
+          spot_id: string | null
+          thumbnail_large_url: string | null
+          thumbnail_pin_url: string | null
+          thumbnail_small_url: string | null
+          url: string | null
+        }
+        Relationships: []
+      }
       geography_columns: {
         Row: {
           coord_dimension: number | null

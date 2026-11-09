@@ -12,12 +12,12 @@ import { videoLinkService } from './spot/videoLinkService';
  */
 async function deleteSpotFromBrowser(spotId: string) {
     const [{ data: photos }, { data: videos }] = await Promise.all([
-        supabase.from('spot_photos').select('url, thumbnail_small_url, thumbnail_large_url, thumbnailurl').eq('spot_id', spotId),
+        supabase.from('spot_photos').select('url, thumbnail_small_url, thumbnail_large_url, thumbnail_pin_url, thumbnailurl').eq('spot_id', spotId),
         supabase.from('spot_videos').select('url, thumbnail_url').eq('spot_id', spotId),
     ]);
 
     const urls = [
-        ...(photos || []).flatMap((p) => [p.url, p.thumbnail_small_url, p.thumbnail_large_url, p.thumbnailurl]),
+        ...(photos || []).flatMap((p) => [p.url, p.thumbnail_small_url, p.thumbnail_large_url, p.thumbnail_pin_url, p.thumbnailurl]),
         ...(videos || []).flatMap((v) => [v.url, v.thumbnail_url]),
     ];
     const paths = [...new Set(urls.map((u) => extractStoragePath(u ?? '')).filter(Boolean))];

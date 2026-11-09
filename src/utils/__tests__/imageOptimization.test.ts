@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getOptimizedImageUrl, generateImageFilename, optimizePhoto, canvasToImageBlob, imageExtension } from '@/utils/imageOptimization';
+import { getOptimizedImageUrl, generateImageFilename, optimizePhoto, pinThumbnail, canvasToImageBlob, imageExtension } from '@/utils/imageOptimization';
 
 describe('imageOptimization', () => {
     beforeEach(() => {
@@ -64,6 +64,17 @@ describe('imageOptimization', () => {
             expect(result.thumbnailLarge).toBeInstanceOf(Blob);
             expect(result.thumbnailSmall).toBeInstanceOf(Blob);
             expect(result.original.type).toBe('image/webp');
+        });
+
+        it('makes a 96px square pin thumbnail, cropped from the centre', async () => {
+            const draws: number[][] = [];
+            const canvas = { width: 0, height: 0, getContext: () => ({ drawImage: (...args: number[]) => draws.push(args.slice(1)) }), toBlob: (cb: (b: Blob) => void, type: string) => cb(new Blob([], { type })) };
+            document.createElement = vi.fn(() => canvas as any);
+
+            await pinThumbnail(new File(['x'], 'a.jpg')); // the Image mock is 2000x1000
+
+            expect([canvas.width, canvas.height]).toEqual([96, 96]);
+            expect(draws[0]).toEqual([500, 0, 1000, 1000, 0, 0, 96, 96]);
         });
 
         it('limits landscape photos by width, never upscaling', async () => {

@@ -56,6 +56,7 @@ export interface Spot {
     }[];
     thumbnail_small_url?: string;
     thumbnail_large_url?: string;
+    thumbnail_pin_url?: string;
     media?: MediaItem[];
     videoLinks?: SpotVideoLink[];
 }

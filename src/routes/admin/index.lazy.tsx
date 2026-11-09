@@ -21,6 +21,7 @@ import { debounce } from 'lodash'
 import { ModerationQueue } from './-components/ModerationQueue'
 import { UserManagement } from './-components/UserManagement'
 import { StorageCleanup } from './-components/StorageCleanup'
+import { PinThumbnailBackfill } from './-components/PinThumbnailBackfill'
 
 export const Route = createLazyFileRoute('/admin/')({
     component: AdminDashboard,
@@ -127,7 +128,12 @@ export function AdminDashboard() {
                 />
             )}
 
-            {activeTab === 2 && <StorageCleanup />}
+            {activeTab === 2 && (
+                <>
+                    <StorageCleanup />
+                    <PinThumbnailBackfill />
+                </>
+            )}
         </Container>
     )
 }

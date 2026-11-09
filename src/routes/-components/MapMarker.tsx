@@ -1,4 +1,5 @@
-import { memo, Suspense, useState, useEffect } from "react";
+import { memo, Suspense, useState, useEffect, useMemo } from "react";
+import { divIcon } from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import { Box, Typography, Stack } from "@mui/material";
 import type { Spot } from "@/types";
@@ -13,6 +14,23 @@ interface MapMarkerProps {
     spot: Spot;
     onClick?: () => void;
 }
+
+const PIN_SIZE = 44;
+
+/** A round photo pin; spots without a pin thumbnail yet keep Leaflet's default marker. */
+const photoPinIcon = (url: string) => {
+    const pin = document.createElement('div');
+    pin.style.cssText = `width:${PIN_SIZE}px;height:${PIN_SIZE}px;border-radius:50%;border:3px solid #fff;` +
+        'box-shadow:0 2px 6px rgba(0,0,0,.45);background:#ddd center/cover no-repeat;box-sizing:border-box';
+    pin.style.backgroundImage = `url("${encodeURI(url)}")`;
+    return divIcon({
+        html: pin,
+        className: '', // drop Leaflet's default white square
+        iconSize: [PIN_SIZE, PIN_SIZE],
+        iconAnchor: [PIN_SIZE / 2, PIN_SIZE / 2],
+        popupAnchor: [0, -PIN_SIZE / 2],
+    });
+};
 
 export const MapMarker = memo(({ spot, onClick }: MapMarkerProps) => {
     const navigate = useNavigate();
@@ -34,10 +52,17 @@ export const MapMarker = memo(({ spot, onClick }: MapMarkerProps) => {
         buildLocation();
     }, [spot.address, spot.city, spot.country, spot.latitude, spot.longitude, buildLocationString]);
 
+    const icon = useMemo(
+        () => (spot.thumbnail_pin_url ? photoPinIcon(spot.thumbnail_pin_url) : undefined),
+        [spot.thumbnail_pin_url]
+    );
+
     return (
         <Suspense fallback={null}>
             <Marker
                 position={[spot.latitude, spot.longitude]}
+                // an explicit `icon: undefined` would override Leaflet's default marker
+                {...(icon && { icon })}
                 eventHandlers={{
                     click: onClick,
                 }}

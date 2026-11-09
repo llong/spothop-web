@@ -5,14 +5,18 @@ import { useAtom, useAtomValue } from 'jotai';
 
 
 
+const cover = { spot_id: 1, url: 'photo1', thumbnail_small_url: 's', thumbnail_large_url: 'l', thumbnail_pin_url: 'p' };
+
 vi.mock('@/supabase', () => ({
     default: {
-        from: vi.fn(() => ({
+        from: vi.fn((table: string) => table === 'spot_cover_photos' ? {
+            select: () => ({ in: vi.fn().mockResolvedValue({ data: [cover], error: null }) }),
+        } : ({
             select: vi.fn().mockImplementation(() => ({
                 gte: vi.fn().mockImplementation(() => ({
                     lte: vi.fn().mockImplementation(() => ({
                         gte: vi.fn().mockImplementation(() => ({
-                            lte: vi.fn().mockResolvedValue({ data: [{ id: 1, name: 'Spot 1', spot_photos: [{ url: 'photo1' }] }], error: null })
+                            lte: vi.fn().mockResolvedValue({ data: [{ id: 1, name: 'Spot 1' }], error: null })
                         }))
                     }))
                 }))
@@ -56,7 +60,10 @@ describe('useSpots hook', () => {
             await result.current.getSpots(mockBounds);
         });
 
-        expect(mockSetSpots).toHaveBeenCalled();
+        // Each spot carries its cover photo's urls (from the spot_cover_photos view)
+        expect(mockSetSpots).toHaveBeenCalledWith([
+            expect.objectContaining({ id: 1, photoUrl: 'photo1', thumbnail_small_url: 's', thumbnail_large_url: 'l', thumbnail_pin_url: 'p' }),
+        ]);
         expect(result.current.isLoading).toBe(false);
     });
 });
