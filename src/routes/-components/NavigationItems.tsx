@@ -31,7 +31,7 @@ export function NavigationItems() {
                         Profile
                     </Button>
                     <Button color="inherit" component={Link} to="/chat" startIcon={<ChatBubble />}>
-                        Inbox
+                        Messages
                     </Button>
                 </>
             )}

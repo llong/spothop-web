@@ -1,5 +1,5 @@
 import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import { Home, AccountCircle, ChatBubble, DynamicFeed, EmojiEvents } from '@mui/icons-material';
+import { Place, AccountCircle, ChatBubble, DynamicFeed, EmojiEvents } from '@mui/icons-material';
 import { Link, useLocation } from '@tanstack/react-router';
 import { useAtomValue } from 'jotai'; // Import useAtomValue
 import { userAtom } from '@/atoms/auth'; // Import userAtom
@@ -11,10 +11,10 @@ export const BottomNav = () => {
     // Define menu items, conditional on auth status
     const menuItems = [
         { label: 'Feed', to: '/feed', icon: <DynamicFeed /> },
-        { label: 'Spots', to: '/spots', icon: <Home /> },
+        { label: 'Spots', to: '/spots', icon: <Place /> },
         { label: 'Contests', to: '/contests', icon: <EmojiEvents /> },
         ...(auth?.user ? [ // Only show for logged-in users
-            { label: 'Inbox', to: '/chat', icon: <ChatBubble /> },
+            { label: 'Messages', to: '/chat', icon: <ChatBubble /> },
             { label: 'Profile', to: '/profile', icon: <AccountCircle /> },
         ] : []),
     ];

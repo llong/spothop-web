@@ -29,7 +29,7 @@ describe('BottomNav', () => {
         expect(screen.getByText('Feed')).toBeInTheDocument();
         expect(screen.getByText('Spots')).toBeInTheDocument();
         expect(screen.getByText('Contests')).toBeInTheDocument();
-        expect(screen.queryByText('Inbox')).not.toBeInTheDocument();
+        expect(screen.queryByText('Messages')).not.toBeInTheDocument();
         expect(screen.queryByText('Profile')).not.toBeInTheDocument();
     });
 
@@ -40,7 +40,7 @@ describe('BottomNav', () => {
         expect(screen.getByText('Feed')).toBeInTheDocument();
         expect(screen.getByText('Spots')).toBeInTheDocument();
         expect(screen.getByText('Contests')).toBeInTheDocument();
-        expect(screen.getByText('Inbox')).toBeInTheDocument();
+        expect(screen.getByText('Messages')).toBeInTheDocument();
         expect(screen.getByText('Profile')).toBeInTheDocument();
     });
 });
