@@ -114,6 +114,8 @@ const SpotMapComponent = ({ spots, getSpots, onMarkerClick, lat, lng }: SpotMapP
 
     useEffect(() => {
         setMapAtom(map);
+        // Other pages (the feed's search bar) read this atom: never leave them a destroyed map
+        return () => setMapAtom(null);
     }, [map, setMapAtom]);
 
     const handleSearchArea = () => {
