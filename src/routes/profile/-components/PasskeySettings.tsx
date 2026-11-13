@@ -3,6 +3,7 @@ import { Alert, Box, Button, IconButton, List, ListItem, ListItemText, Stack, Ty
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyIcon from "@mui/icons-material/Key";
 import supabase from "@/supabase";
+import { registerPasskey } from "@/lib/passkeys";
 
 interface PasskeyRow {
     id: string;
@@ -32,7 +33,7 @@ export const PasskeySettings = () => {
     const handleAdd = async () => {
         setError("");
         setBusy(true);
-        const { error } = await supabase.auth.registerPasskey();
+        const { error } = await registerPasskey();
         setBusy(false);
         if (error) {
             setError(error.message);

@@ -12,6 +12,7 @@ import {
     Stack
 } from '@mui/material';
 import KeyIcon from '@mui/icons-material/Key';
+import { friendlyPasskeySignInError } from '@/lib/passkeys';
 import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/auth';
@@ -35,7 +36,7 @@ export function LoginForm() {
         setError('')
         const { data, error } = await supabase.auth.signInWithPasskey()
         if (error) {
-            setError(error.message)
+            setError(friendlyPasskeySignInError(error))
         } else if (data) {
             navigate({ to: '/feed' })
         }
