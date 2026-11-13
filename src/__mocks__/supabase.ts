@@ -10,6 +10,13 @@ export const supabase: any = {
         signInWithPassword: vi.fn(),
         signUp: vi.fn(),
         signOut: vi.fn(),
+        signInWithPasskey: vi.fn(),
+        registerPasskey: vi.fn(),
+        passkey: {
+            list: vi.fn(() => Promise.resolve({ data: [], error: null })),
+            update: vi.fn(),
+            delete: vi.fn(),
+        },
     },
     from: vi.fn(() => ({
         select: vi.fn().mockReturnThis(),

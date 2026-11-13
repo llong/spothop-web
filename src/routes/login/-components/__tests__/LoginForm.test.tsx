@@ -8,6 +8,7 @@ vi.mock('@/supabase', () => ({
     default: {
         auth: {
             signInWithPassword: vi.fn(),
+            signInWithPasskey: vi.fn(),
         },
     }
 }));
@@ -37,7 +38,7 @@ describe('LoginForm', () => {
         render(<LoginForm />);
         expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Sign In/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /^Sign In$/i })).toBeInTheDocument();
     });
 
     it('calls signInWithPassword on submit', async () => {
@@ -46,7 +47,7 @@ describe('LoginForm', () => {
 
         fireEvent.change(screen.getByLabelText(/Email Address/i), { target: { value: 'test@example.com' } });
         fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'password123' } });
-        fireEvent.click(screen.getByRole('button', { name: /Sign In/i }));
+        fireEvent.click(screen.getByRole('button', { name: /^Sign In$/i }));
 
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
             email: 'test@example.com',
@@ -61,8 +62,22 @@ describe('LoginForm', () => {
         } as any);
         render(<LoginForm />);
 
-        fireEvent.click(screen.getByRole('button', { name: /Sign In/i }));
+        fireEvent.click(screen.getByRole('button', { name: /^Sign In$/i }));
 
         expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    });
+
+    it('calls signInWithPasskey when the passkey button is clicked', async () => {
+        vi.mocked(supabase.auth.signInWithPasskey).mockResolvedValue({ data: {}, error: null } as any);
+        render(<LoginForm />);
+        fireEvent.click(screen.getByRole('button', { name: /Sign in with a passkey/i }));
+        await vi.waitFor(() => expect(supabase.auth.signInWithPasskey).toHaveBeenCalled());
+    });
+
+    it('shows an error when passkey sign-in fails', async () => {
+        vi.mocked(supabase.auth.signInWithPasskey).mockResolvedValue({ data: null, error: { message: 'cancelled' } } as any);
+        render(<LoginForm />);
+        fireEvent.click(screen.getByRole('button', { name: /Sign in with a passkey/i }));
+        expect(await screen.findByText('cancelled')).toBeInTheDocument();
     });
 });

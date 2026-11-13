@@ -11,6 +11,7 @@ import {
     Paper,
     Stack
 } from '@mui/material';
+import KeyIcon from '@mui/icons-material/Key';
 import supabase from '@/supabase';
 import { useAtomValue } from 'jotai';
 import { userAtom } from '@/atoms/auth';
@@ -29,6 +30,16 @@ export function LoginForm() {
         }
     }, [user])
 
+
+    const handlePasskeySignIn = async () => {
+        setError('')
+        const { data, error } = await supabase.auth.signInWithPasskey()
+        if (error) {
+            setError(error.message)
+        } else if (data) {
+            navigate({ to: '/feed' })
+        }
+    };
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -116,6 +127,18 @@ export function LoginForm() {
                             sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 'bold' }}
                         >
                             Sign In
+                        </Button>
+
+                        <Button
+                            type="button"
+                            fullWidth
+                            variant="outlined"
+                            size="large"
+                            startIcon={<KeyIcon />}
+                            onClick={handlePasskeySignIn}
+                            sx={{ mb: 2, py: 1.5, fontWeight: 'bold' }}
+                        >
+                            Sign in with a passkey
                         </Button>
 
                         <Box sx={{ textAlign: 'center', mt: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>

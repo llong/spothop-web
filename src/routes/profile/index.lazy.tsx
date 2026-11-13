@@ -10,6 +10,7 @@ import { ProfileForm } from "./-components/ProfileForm";
 import { FavoriteSpots } from "./-components/FavoriteSpots";
 import { LikedMediaGallery } from "./-components/LikedMediaGallery";
 import { UserContentGallery } from "./-components/UserContentGallery";
+import { PasskeySettings } from "./-components/PasskeySettings";
 import type { UserProfile } from "@/types";
 
 export const Route = createLazyFileRoute("/profile/")({
@@ -93,6 +94,9 @@ export function ProfileComponent() {
                             isUpdating={isUpdating}
                         />
                     </Box>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                    <PasskeySettings />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                     <FavoriteSpots favoriteSpots={favoriteSpots} />
